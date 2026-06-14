@@ -1424,16 +1424,27 @@ function delPartner(id){ const i=DB.partners.findIndex(p=>p.id===id); if(i>-1){ 
 async function cloudLoad(){
   if(!CLOUD) return;
   try {
+    // 원본 시드 데이터를 미리 백업 (클라우드가 비었을 때 채우기 위해)
+    const seedShips = [...DB.shipments, ...DB.imports];
+    const seedParts = [...DB.partners];
+
     const { data: ships } = await sb.from('shipments').select('*').order('created_at',{ascending:true});
     const { data: parts } = await sb.from('partners').select('*').order('created_at',{ascending:true});
-    if(ships){ DB.shipments = ships.filter(s=>s.type==='export'); DB.imports = ships.filter(s=>s.type==='import'); }
-    if(parts && parts.length){ DB.partners = parts; }
-    // 클라우드가 비어있으면 시드 데이터를 한 번 올림
+
+    // 클라우드가 비어있으면 → 시드 데이터를 올리고, DB는 시드 그대로 유지
     if(ships && ships.length===0){
-      for(const s of [...DB.shipments, ...DB.imports]) await sb.from('shipments').insert(s);
+      for(const s of seedShips){ try{ await sb.from('shipments').insert(s); }catch(e){} }
+      // DB.shipments / DB.imports 는 원본 시드 그대로 둠 (덮어쓰지 않음)
+    } else if(ships){
+      DB.shipments = ships.filter(s=>s.type==='export');
+      DB.imports = ships.filter(s=>s.type==='import');
     }
+
     if(parts && parts.length===0){
-      for(const p of DB.partners) await sb.from('partners').insert(p);
+      for(const p of seedParts){ try{ await sb.from('partners').insert(p); }catch(e){} }
+      // DB.partners 는 원본 시드 그대로 둠
+    } else if(parts && parts.length){
+      DB.partners = parts;
     }
   } catch(e){ console.warn('cloud load fail', e); }
 }
