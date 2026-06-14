@@ -286,11 +286,64 @@
   .sp-back{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;margin-bottom:16px;color:var(--ink);font-family:inherit;}
   .sp-foot{text-align:center;font-size:11px;color:var(--ink-faint,#92A0AC);margin-top:30px;}
   .sp-detail .vt-stage{min-height:480px;}
+
+  /* ===== 컨펌 시트 ===== */
+  .cf-sheet{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:6px;}
+  .cf-row{display:flex;border-bottom:1px solid var(--line);}
+  .cf-row:last-child{border-bottom:none;}
+  .cf-row .cf-l{width:38%;background:#F1F6FA;padding:11px 14px;font-size:12.5px;font-weight:600;color:var(--ink);border-right:1px solid var(--line);}
+  .cf-row .cf-v{flex:1;padding:11px 14px;font-size:13px;color:var(--ink);display:flex;align-items:center;gap:8px;}
+  .cf-row.hl .cf-l{background:#FFF1D0;color:#7A5C12;}
+  .cf-row.hl .cf-v{background:#FFFBF2;font-weight:700;}
+  .cf-chk{font-size:10px;color:#B8862F;background:#FFF1D0;border-radius:10px;padding:2px 8px;font-weight:600;}
+  /* 화주 컨펌 외부 화면 */
+  #confirmPortal{position:fixed;inset:0;background:#EEF3F7;overflow-y:auto;z-index:9999;display:none;}
+  .cp-wrap{max-width:640px;margin:0 auto;padding:30px 16px 60px;}
+  .cp-card{background:#fff;border-radius:16px;box-shadow:0 6px 30px rgba(11,37,69,.12);overflow:hidden;}
+  .cp-top{background:linear-gradient(135deg,#0B2545,#13315C);color:#fff;padding:26px 28px;}
+  .cp-top .nm{font-size:13px;opacity:.7;}
+  .cp-top .ttl{font-size:21px;font-weight:800;margin-top:3px;}
+  .cp-top .sub{font-size:12.5px;opacity:.8;margin-top:8px;line-height:1.5;}
+  .cp-body{padding:24px 28px;}
+  .cp-done{text-align:center;padding:50px 28px;}
+  .cp-done .ico{font-size:54px;}
+  .cp-done h2{color:var(--ink);margin:14px 0 6px;}
+  .cp-done p{color:var(--ink-soft);font-size:13.5px;line-height:1.6;}
+  .cp-btns{display:flex;gap:10px;margin-top:22px;}
+  .cp-btns button{flex:1;border:none;border-radius:10px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .cp-ok{background:var(--ok,#2E8B57);color:#fff;}
+  .cp-no{background:#fff;color:#C0392B;border:1.5px solid #C0392B !important;}
+  .cp-reject-box{margin-top:16px;}
+  .cp-reject-box textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:12px;font-size:13px;font-family:inherit;box-sizing:border-box;}
+
+  /* ===== 서류 대조 ===== */
+  .vf-docs{display:flex;gap:10px;margin:16px 0;flex-wrap:wrap;}
+  .vf-doc{flex:1;min-width:130px;border:1.5px dashed var(--line);border-radius:11px;padding:14px 12px;text-align:center;background:#FAFBFC;}
+  .vf-doc.has{border-style:solid;border-color:var(--ok,#2E8B57);background:#F4FBF6;}
+  .vf-doc .vf-ico{font-size:26px;}
+  .vf-doc .vf-nm{font-size:12.5px;font-weight:700;color:var(--ink);margin-top:5px;}
+  .vf-doc .vf-st{font-size:11px;color:var(--ink-soft);margin:3px 0 8px;}
+  .vf-table{width:100%;border-collapse:collapse;margin-top:6px;font-size:12.5px;}
+  .vf-table th,.vf-table td{border:1px solid var(--line);padding:8px 10px;text-align:left;}
+  .vf-table th{background:#F1F6FA;color:var(--navy);font-weight:700;font-size:11.5px;}
+  .vf-table th span{font-weight:400;font-size:9.5px;color:var(--ink-soft);}
+  .vf-table .vf-lbl{background:#F8FAFC;font-weight:600;color:var(--ink);}
+  .vf-table .vf-base{background:#FFFBF2;}
+  .vf-table tr.vf-key td{font-weight:700;}
+  .vf-table .vf-ok{color:#2E8B57;background:#F1F9F4;}
+  .vf-table .vf-no{color:#C0392B;background:#FBE9E7;font-weight:700;}
+  .vf-table .vf-na{color:#B0BCC6;}
+  .vf-verdict{border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:14.5px;font-weight:700;line-height:1.4;}
+  .vf-verdict.ok{background:#F1F9F4;color:#2E8B57;border:1px solid #A8D8BC;}
+  .vf-verdict.no{background:#FBE9E7;color:#C0392B;border:1px solid #F0B5AC;}
+  .vf-verdict span{display:block;font-size:11.5px;font-weight:400;margin-top:5px;color:var(--ink-soft);}
 </style>
 </head>
 <body>
 <!-- ===== 화주 전용 대시보드 (외부 링크 접속 시) ===== -->
 <div id="shipperPortal" style="display:none;"></div>
+<!-- ===== 화주 컨펌 화면 (외부 링크 접속 시) ===== -->
+<div id="confirmPortal"></div>
 
 <div id="loginScreen">
   <div class="login-card">
@@ -558,7 +611,8 @@ function renderShipRows(list, type){
   if(!list.length) return `<tr><td colspan="8"><div class="empty"><div class="empty-ico">📭</div><h4>등록된 건이 없습니다</h4><p>AI 자동 등록 또는 직접 등록으로 시작하세요.</p><button class="btn btn-ai" data-aiparse="${type}">🤖 AI 자동 등록</button></div></td></tr>`;
   return list.map(s=>{
     const profit = s.revenue - s.cost;
-    return `<tr><td class="mono">${s.id}</td><td><div class="cell-strong">${s.type==='export'?s.shipper:s.consignee}</div><div class="cell-sub">${s.type==='export'?s.consignee:s.shipper}</div></td><td class="cell-sub">${s.pol}<br>→ ${s.pod}</td><td>${s.carrier}<br><span class="cell-sub mono">${s.bl||'B/L 대기'}</span></td><td class="cell-sub">${s.qty}</td><td><span class="badge ${STATUS_MAP[s.status].cls}">${STATUS_MAP[s.status].label}</span></td><td><span style="font-weight:700;color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span><br><span class="cell-sub">매출 ${won(s.revenue)}</span></td><td><span class="row-link" data-detail="${s.id}" data-type="${type}">상세 →</span></td></tr>`;
+    const cf = s.confirmStatus && s.confirmStatus!=='confirmed' ? `<br><span class="cell-sub" style="color:${(CONFIRM_LABEL[s.confirmStatus]||{}).color||'#888'};font-weight:600">${(CONFIRM_LABEL[s.confirmStatus]||{}).label||''}</span>` : '';
+    return `<tr><td class="mono">${s.id}</td><td><div class="cell-strong">${s.type==='export'?s.shipper:s.consignee}</div><div class="cell-sub">${s.type==='export'?s.consignee:s.shipper}</div></td><td class="cell-sub">${s.pol}<br>→ ${s.pod}</td><td>${s.carrier}<br><span class="cell-sub mono">${s.bl||'B/L 대기'}</span></td><td class="cell-sub">${s.qty}${cf}</td><td><span class="badge ${STATUS_MAP[s.status].cls}">${STATUS_MAP[s.status].label}</span></td><td><span style="font-weight:700;color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span><br><span class="cell-sub">매출 ${won(s.revenue)}</span></td><td><span class="row-link" data-detail="${s.id}" data-type="${type}">상세 →</span></td></tr>`;
   }).join('');
 }
 
@@ -1064,6 +1118,7 @@ async function runAiParse(type){
 }
 
 function showAiReview(type, d){
+  window._lastAiParse = d;  // AI 추출 건 표시 (컨펌 대상)
   const shippers = DB.partners.filter(p=>p.kind==='shipper');
   const f = (v)=> (v===undefined||v===null)?'':v;
   $('#modalBox').querySelector('.modal-body').innerHTML = `
@@ -1168,9 +1223,10 @@ function shipmentDetail(id, type){
         <div class="detail-cell"><div class="k">ETD / ETA</div><div class="v">${s.etd} → ${s.eta}</div></div>
         <div class="detail-cell"><div class="k">손익</div><div class="v" style="color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)} <span style="font-size:11px;color:var(--ink-soft)">(매출 ${won(s.revenue)})</span></div></div>
         ${s.memo?`<div class="detail-cell full"><div class="k">메모</div><div class="v" style="font-weight:500">${s.memo}</div></div>`:''}
+        ${s.confirmStatus?`<div class="detail-cell full"><div class="k">화주 컨펌 상태</div><div class="v" style="font-weight:700;color:${(CONFIRM_LABEL[s.confirmStatus]||{}).color||'#888'}">${(CONFIRM_LABEL[s.confirmStatus]||{}).label||s.confirmStatus}${s.confirmedAt?` <span style="font-size:11px;color:var(--ink-soft);font-weight:400">(${s.confirmedAt})</span>`:''}</div></div>`:''}
       </div>
     </div>
-    <div class="modal-foot"><button class="btn btn-danger-ghost" data-delship="${s.id}" data-type="${type}">삭제</button><button class="btn btn-ghost" data-doc="invoice" data-shipid="${s.id}" data-type="${type}">📄 인보이스</button><button class="btn btn-ghost" data-doc="bl" data-shipid="${s.id}" data-type="${type}">📋 B/L 출력</button><button class="btn btn-ghost" onclick="closeModal()">닫기</button></div>`);
+    <div class="modal-foot"><button class="btn btn-danger-ghost" data-delship="${s.id}" data-type="${type}">삭제</button><button class="btn btn-ghost" data-cfopenmodal="${s.id}|${type}">📋 화주 컨펌</button><button class="btn btn-ghost" data-vfopen="${s.id}|${type}">🔍 서류 대조</button><button class="btn btn-ghost" data-doc="invoice" data-shipid="${s.id}" data-type="${type}">📄 인보이스</button><button class="btn btn-ghost" data-doc="bl" data-shipid="${s.id}" data-type="${type}">📋 B/L 출력</button><button class="btn btn-ghost" onclick="closeModal()">닫기</button></div>`);
   bindActions();
 }
 
@@ -1376,6 +1432,17 @@ function bindActions(){
   document.querySelectorAll('[data-newpartner]').forEach(b=> b.onclick = ()=>{ openModal(partnerForm()); bindActions(); });
   document.querySelectorAll('[data-saveship]').forEach(b=> b.onclick = ()=> saveShipment(b.dataset.saveship));
   document.querySelectorAll('[data-savepartner]').forEach(b=> b.onclick = savePartner);
+  // 컨펌 시스템 버튼
+  document.querySelectorAll('[data-cfopenmodal]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.cfopenmodal.split('|'); openConfirmModal(id,t); });
+  document.querySelectorAll('[data-cfpdf]').forEach(b=> b.onclick = ()=> confirmPDF(b.dataset.cfpdf));
+  document.querySelectorAll('[data-cfmail]').forEach(b=> b.onclick = ()=> confirmMail(b.dataset.cfmail));
+  document.querySelectorAll('[data-cfdone]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.cfdone.split('|'); confirmDone(id,t); });
+  document.querySelectorAll('[data-cfopen]').forEach(b=> b.onclick = ()=>{ const s=findShipById(b.dataset.cfopen); if(s) window.open(confirmLink(s),'_blank'); });
+  document.querySelectorAll('[data-cfcopy]').forEach(b=> b.onclick = ()=>{ const s=findShipById(b.dataset.cfcopy); if(s){ navigator.clipboard?.writeText(confirmLink(s)).then(()=>toast('🔗 컨펌 링크 복사됨')).catch(()=>{}); } });
+  // 서류 대조 버튼
+  document.querySelectorAll('[data-vfopen]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.vfopen.split('|'); openVerifyModal(id,t); });
+  document.querySelectorAll('[data-vfupload]').forEach(b=> b.onclick = ()=>{ const [dt,id]=b.dataset.vfupload.split('|'); verifyUpload(dt,id); });
+  document.querySelectorAll('[data-vfpdf]').forEach(b=> b.onclick = ()=> verifyPDF(b.dataset.vfpdf));
   document.querySelectorAll('[data-detail]').forEach(b=> b.onclick = ()=> shipmentDetail(b.dataset.detail, b.dataset.type));
   document.querySelectorAll('[data-delship]').forEach(b=> b.onclick = ()=> delShipment(b.dataset.delship, b.dataset.type));
   document.querySelectorAll('[data-doc]').forEach(b=> b.onclick = ()=> printDoc(b.dataset.doc, b.dataset.shipid, b.dataset.type));
@@ -1404,12 +1471,366 @@ function saveShipment(type){
   const f = $('#shipForm');
   if(!f.shipper.value || !f.consignee.value || !f.pol.value || !f.pod.value){ toast('⚠ 필수 항목(*)을 입력해주세요.'); return; }
   const id = type==='export' ? `EXP-${seqExp++}` : `IMP-${seqImp++}`;
-  const obj = { id, type, mode:f.mode.value, shipper:f.shipper.value, consignee:f.consignee.value, pol:f.pol.value, pod:f.pod.value, carrier:f.carrier.value||'-', booking:f.booking.value, bl:f.bl.value, container:f.container.value, incoterms:f.incoterms.value, commodity:f.commodity.value||'-', qty:f.qty.value||'-', status: f.bl.value?'sailing':'booking', etd:f.etd.value||'-', eta:f.eta.value||'-', revenue:Number(f.revenue.value)||0, cost:Number(f.cost.value)||0, paid:false, blReleased:false, memo:f.memo.value };
+  const fromAi = !!window._lastAiParse;  // AI 추출로 들어온 건인지
+  const obj = { id, type, mode:f.mode.value, shipper:f.shipper.value, consignee:f.consignee.value, pol:f.pol.value, pod:f.pod.value, carrier:f.carrier.value||'-', booking:f.booking.value, bl:f.bl.value, container:f.container.value, incoterms:f.incoterms.value, commodity:f.commodity.value||'-', qty:f.qty.value||'-', status: f.bl.value?'sailing':'booking', etd:f.etd.value||'-', eta:f.eta.value||'-', revenue:Number(f.revenue.value)||0, cost:Number(f.cost.value)||0, paid:false, blReleased:false, memo:f.memo.value,
+    confirmStatus: fromAi ? 'pending' : 'confirmed', confirmedAt:'' };
   (type==='export'?DB.shipments:DB.imports).push(obj);
   cloudUpsertShip(obj);
-  closeModal(); toast(`✓ ${id} 건이 등록되었습니다.${CLOUD?' (클라우드 저장됨)':''}`); render();
+  window._lastAiParse = null;
+  closeModal();
+  render();
+  if(obj.confirmStatus==='pending'){
+    toast(`✓ ${id} 등록됨 — 화주 컨펌이 필요합니다.`);
+    setTimeout(()=>openConfirmModal(id, type), 400);
+  } else {
+    toast(`✓ ${id} 건이 등록되었습니다.${CLOUD?' (클라우드 저장됨)':''}`);
+  }
 }
 function delShipment(id, type){ const arr=type==='export'?DB.shipments:DB.imports; const i=arr.findIndex(s=>s.id===id); if(i>-1){ arr.splice(i,1); cloudDeleteShip(id); closeModal(); toast(`🗑 ${id} 건 삭제됨`); render(); } }
+
+/* ============================================================
+   화주 컨펌 시스템
+   - AI가 추출한 내역을 화주에게 확인받는 단계
+   - 수량·중량 오류 방지 + 책임소재 명확화
+   ============================================================ */
+const CONFIRM_LABEL = {
+  pending:  {label:'⏳ 컨펌 대기', cls:'b-booking', color:'#B8862F'},
+  confirmed:{label:'✅ 화주 확정', cls:'b-arrived', color:'#2E8B57'},
+  rejected: {label:'✏️ 수정 요청', cls:'b-delay',   color:'#C0392B'}
+};
+
+function findShipById(id){ return [...DB.shipments, ...DB.imports].find(s=>s.id===id); }
+
+// 포워더용 컨펌 관리 모달
+function openConfirmModal(id, type){
+  const s = findShipById(id); if(!s) return;
+  const link = confirmLink(s);
+  const st = s.confirmStatus||'confirmed';
+  openModal(`
+    <div class="modal-head"><h3>📋 발주 내역 컨펌 — ${s.id}</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <div class="ai-result-banner" style="background:linear-gradient(135deg,#FFF8E8,#FFF1D0);border-color:#E8C57A;">
+        <span class="ico">📋</span>
+        <div><b>AI가 추출한 내역입니다.</b> <span style="font-size:12.5px;color:var(--ink-soft)">수량·품목이 정확한지 화주에게 확인받으세요. 확정 전까지는 "컨펌 대기" 상태입니다.</span></div>
+      </div>
+      <div class="cf-sheet">
+        ${cfRow('화주 (Shipper)', s.shipper)}
+        ${cfRow('수하인 (Consignee)', s.consignee)}
+        ${cfRow('품목 (Commodity)', s.commodity, true)}
+        ${cfRow('수량 / 컨테이너', s.qty, true)}
+        ${cfRow('노선', `${s.pol} → ${s.pod}`)}
+        ${cfRow('선사 (Carrier)', s.carrier)}
+        ${cfRow('인코텀즈', s.incoterms)}
+        ${cfRow('출항예정 (ETD)', s.etd)}
+        ${cfRow('도착예정 (ETA)', s.eta)}
+        ${s.memo?cfRow('메모', s.memo):''}
+      </div>
+      <div style="background:#F1F6FA;border:1px solid var(--line);border-radius:9px;padding:13px 15px;margin-top:14px;">
+        <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:7px;">현재 상태: <span style="color:${CONFIRM_LABEL[st].color}">${CONFIRM_LABEL[st].label}</span></div>
+        <div style="font-size:11.5px;color:var(--ink-soft);line-height:1.6;">화주에게 아래 링크를 보내면, 화주가 이 내역을 직접 확인하고 <b>맞습니다 / 수정요청</b>을 선택할 수 있습니다.</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;align-items:center;">
+          <input readonly value="${link}" style="flex:1;min-width:200px;font-family:'IBM Plex Mono',monospace;font-size:11px;border:1px solid var(--line);border-radius:7px;padding:8px 10px;background:#fff;color:var(--ink-soft);">
+          <button class="btn btn-ghost btn-sm" data-cfcopy="${s.id}">📋 복사</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot" style="flex-wrap:wrap;gap:8px;">
+      <button class="btn btn-ghost btn-sm" data-cfpdf="${s.id}">📄 컨펌서 PDF</button>
+      <button class="btn btn-ghost btn-sm" data-cfmail="${s.id}">✉️ 컨펌 요청 메일</button>
+      <button class="btn btn-ghost btn-sm" data-cfopen="${s.id}">👁️ 화주 화면 미리보기</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-primary btn-sm" data-cfdone="${s.id}|${s.type}">✅ 화주 확정 처리</button>
+    </div>`, true);
+  bindActions();
+}
+function cfRow(label, val, hl){
+  return `<div class="cf-row ${hl?'hl':''}"><div class="cf-l">${label}</div><div class="cf-v">${val||'-'}${hl?'<span class="cf-chk">⚠️ 확인</span>':''}</div></div>`;
+}
+
+// 화주 컨펌용 토큰 링크 (건별)
+function confirmToken(id){
+  let h=9176; const salt='seaflow_confirm_'+id;
+  for(let i=0;i<salt.length;i++){ h=((h<<5)+h+salt.charCodeAt(i))>>>0; }
+  return h.toString(36)+'c'+id.replace(/[^0-9]/g,'');
+}
+function confirmLink(s){
+  const base = window.location.origin + window.location.pathname;
+  return `${base}?confirm=${confirmToken(s.id)}&id=${encodeURIComponent(s.id)}`;
+}
+
+// 컨펌서 PDF (브라우저 인쇄)
+function confirmPDF(id){
+  const s = findShipById(id); if(!s) return;
+  const w = window.open('', '_blank');
+  const today = new Date().toLocaleDateString('ko-KR');
+  w.document.write(`<html><head><title>발주 컨펌서 - ${s.id}</title>
+  <style>
+    @media print{.noprint{display:none;}}
+    body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;margin:0;background:#f5f5f5;color:#1a2733;}
+    .page{max-width:760px;margin:20px auto;background:#fff;padding:46px 50px;box-shadow:0 2px 16px rgba(0,0,0,.1);}
+    .hd{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #0B2545;padding-bottom:18px;margin-bottom:8px;}
+    .hd .ttl{font-size:25px;font-weight:800;color:#0B2545;letter-spacing:-.5px;}
+    .hd .sub{font-size:12px;color:#5B6B7A;margin-top:4px;}
+    .hd .meta{text-align:right;font-size:12px;color:#5B6B7A;line-height:1.7;}
+    .hd .meta b{color:#0B2545;font-size:15px;}
+    .notice{background:#FFF8E8;border:1px solid #E8C57A;border-radius:8px;padding:12px 16px;font-size:12.5px;color:#7A5C12;margin:20px 0;line-height:1.6;}
+    table{width:100%;border-collapse:collapse;margin-top:6px;}
+    th,td{border:1px solid #D8E0E6;padding:11px 14px;font-size:13.5px;text-align:left;}
+    th{background:#F1F6FA;color:#0B2545;font-weight:700;width:34%;}
+    tr.hl th{background:#FFF1D0;} tr.hl td{background:#FFFBF2;font-weight:700;color:#0B2545;}
+    .sign{display:flex;gap:30px;margin-top:34px;}
+    .sign .box{flex:1;border:1px solid #D8E0E6;border-radius:8px;padding:16px;min-height:90px;}
+    .sign .box .t{font-size:12px;font-weight:700;color:#0B2545;margin-bottom:8px;}
+    .sign .box .l{font-size:11px;color:#8597A6;}
+    .foot{margin-top:30px;text-align:center;font-size:11px;color:#92A0AC;border-top:1px solid #eee;padding-top:14px;}
+    .stamp{display:inline-block;border:2px solid #C0392B;color:#C0392B;border-radius:8px;padding:5px 14px;font-size:13px;font-weight:800;transform:rotate(-4deg);}
+    .btn{background:#0B2545;color:#fff;border:none;border-radius:8px;padding:11px 22px;font-size:14px;cursor:pointer;margin:18px 8px 0;}
+  </style></head><body>
+  <div class="page">
+    <div class="hd">
+      <div><div class="ttl">발주 내역 컨펌서</div><div class="sub">Shipment Confirmation Sheet</div></div>
+      <div class="meta"><b>${s.id}</b><br>발행일 ${today}<br>SeaFlow Forwarding</div>
+    </div>
+    <div class="notice">📋 아래 내역은 <b>AI가 발주서에서 자동 추출</b>한 것입니다. 특히 <b>품목과 수량</b>이 정확한지 확인 후, 이상이 없으면 회신 부탁드립니다. 본 컨펌 내역은 향후 운임·통관·B/L 발행의 기준이 됩니다.</div>
+    <table>
+      <tr><th>화주 (Shipper)</th><td>${s.shipper}</td></tr>
+      <tr><th>수하인 (Consignee)</th><td>${s.consignee}</td></tr>
+      <tr class="hl"><th>품목 (Commodity)</th><td>${s.commodity}</td></tr>
+      <tr class="hl"><th>수량 / 컨테이너 (Q'ty)</th><td>${s.qty}</td></tr>
+      <tr><th>선적항 → 도착항</th><td>${s.pol} → ${s.pod}</td></tr>
+      <tr><th>선사 (Carrier)</th><td>${s.carrier}</td></tr>
+      <tr><th>인코텀즈 (Incoterms)</th><td>${s.incoterms}</td></tr>
+      <tr><th>출항예정 (ETD)</th><td>${s.etd}</td></tr>
+      <tr><th>도착예정 (ETA)</th><td>${s.eta}</td></tr>
+      ${s.memo?`<tr><th>비고 (Remarks)</th><td>${s.memo}</td></tr>`:''}
+    </table>
+    <div class="sign">
+      <div class="box"><div class="t">화주 확인 (Shipper)</div><div class="l">위 내역이 사실과 같음을 확인합니다.<br><br>서명/날인: ___________________</div></div>
+      <div class="box"><div class="t">포워더 (Forwarder)</div><div class="l">SeaFlow Forwarding<br><br>담당자: ___________________</div></div>
+    </div>
+    <div class="foot">본 문서는 SeaFlow 시스템에서 자동 생성되었습니다 · 수량·품목 오류 발견 시 즉시 회신 바랍니다.</div>
+    <div class="noprint" style="text-align:center;">
+      <button class="btn" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+      <button class="btn" style="background:#5B6B7A" onclick="window.close()">닫기</button>
+    </div>
+  </div></body></html>`);
+  w.document.close();
+}
+
+// 컨펌 요청 메일 초안
+function confirmMail(id){
+  const s = findShipById(id); if(!s) return;
+  const ship = DB.partners.find(p=>p.name===s.shipper) || {};
+  const link = confirmLink(s);
+  const subj = encodeURIComponent(`[컨펌요청] ${s.id} 발주 내역 확인 부탁드립니다 (${s.commodity})`);
+  const body = encodeURIComponent(`${ship.manager||s.shipper} 님 안녕하세요. SeaFlow Forwarding입니다.\n\n보내주신 발주 건의 내역을 아래와 같이 정리했습니다.\n특히 품목과 수량이 정확한지 확인 부탁드립니다.\n\n────────────────────\n· 건 번호: ${s.id}\n· 품목: ${s.commodity}\n· 수량: ${s.qty}   ← 확인 부탁드립니다\n· 노선: ${s.pol} → ${s.pod}\n· 선사: ${s.carrier}\n· 인코텀즈: ${s.incoterms}\n· 출항예정: ${s.etd}\n────────────────────\n\n▶ 온라인 확인/컨펌: ${link}\n   (위 링크에서 "맞습니다" 또는 "수정요청"을 눌러주시면 됩니다)\n\n이상이 있으면 회신 부탁드립니다. 감사합니다.\n\nSeaFlow Forwarding`);
+  window.open(`mailto:${ship.email||''}?subject=${subj}&body=${body}`, '_blank');
+  toast('✉️ 컨펌 요청 메일 초안이 열렸습니다.');
+}
+
+// 포워더가 수동으로 확정 처리
+function confirmDone(id, type){
+  const s = findShipById(id); if(!s) return;
+  s.confirmStatus = 'confirmed';
+  s.confirmedAt = new Date().toISOString().slice(0,10);
+  cloudUpsertShip(s);
+  closeModal(); render();
+  toast(`✅ ${id} 화주 확정 처리되었습니다.`);
+}
+
+/* ============================================================
+   AI 서류 대조 (Document Cross-Check)
+   - 화주 컨펌 내역 ↔ 선사 B/L ↔ 인보이스/패킹리스트
+   - 세 서류의 품목·수량·중량·노선을 AI로 추출해 자동 비교
+   - 불일치 항목을 빨간색으로 경고
+   ============================================================ */
+
+// 화물별 추출된 서류 보관 (메모리)
+window._docStore = window._docStore || {};  // { shipId: { bl:{...}, invoice:{...} } }
+
+function openVerifyModal(id, type){
+  const s = findShipById(id); if(!s) return;
+  const store = window._docStore[id] || {};
+  openModal(`
+    <div class="modal-head"><h3>🔍 AI 서류 대조 — ${s.id}</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <div class="ai-result-banner" style="background:linear-gradient(135deg,#EAF2FB,#DCEBF8);border-color:#A9CCE8;">
+        <span class="ico">🔍</span>
+        <div><b>3개 서류를 AI가 자동 대조합니다.</b> <span style="font-size:12.5px;color:var(--ink-soft)">화주 컨펌 내역을 기준으로, 선사 B/L과 인보이스를 올리면 다른 부분을 찾아 경고합니다.</span></div>
+      </div>
+
+      <div class="vf-docs">
+        <div class="vf-doc ${store.confirmBase?'has':''}">
+          <div class="vf-ico">📋</div>
+          <div class="vf-nm">화주 컨펌 내역</div>
+          <div class="vf-st">기준 문서 (자동)</div>
+        </div>
+        <div class="vf-doc ${store.bl?'has':''}" id="vfBlBox">
+          <div class="vf-ico">📄</div>
+          <div class="vf-nm">선사 B/L</div>
+          <div class="vf-st">${store.bl?'✅ 추출됨':'미등록'}</div>
+          <button class="btn btn-ai btn-sm" data-vfupload="bl|${id}">${store.bl?'다시 올리기':'B/L 올리기'}</button>
+        </div>
+        <div class="vf-doc ${store.invoice?'has':''}" id="vfInvBox">
+          <div class="vf-ico">🧾</div>
+          <div class="vf-nm">인보이스/패킹</div>
+          <div class="vf-st">${store.invoice?'✅ 추출됨':'미등록'}</div>
+          <button class="btn btn-ai btn-sm" data-vfupload="invoice|${id}">${store.invoice?'다시 올리기':'인보이스 올리기'}</button>
+        </div>
+      </div>
+
+      <div id="vfResult">${renderVerifyTable(s, store)}</div>
+    </div>
+    <div class="modal-foot" style="flex-wrap:wrap;gap:8px;">
+      <button class="btn btn-ghost btn-sm" data-vfpdf="${id}">📄 대조 결과 PDF</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-ghost" onclick="closeModal()">닫기</button>
+    </div>`, true);
+  bindActions();
+}
+
+// 대조 테이블 렌더
+function renderVerifyTable(s, store){
+  // 비교할 항목 정의 (라벨, 컨펌값, bl키, invoice키)
+  const rows = [
+    {k:'품목', base:s.commodity, bl:store.bl?.commodity, inv:store.invoice?.commodity, key:true},
+    {k:'수량/컨테이너', base:s.qty, bl:store.bl?.qty, inv:store.invoice?.qty, key:true},
+    {k:'중량 (Weight)', base:s.weight||'(미입력)', bl:store.bl?.weight, inv:store.invoice?.weight, key:true},
+    {k:'화주(Shipper)', base:s.shipper, bl:store.bl?.shipper, inv:store.invoice?.shipper},
+    {k:'수하인(Consignee)', base:s.consignee, bl:store.bl?.consignee, inv:store.invoice?.consignee},
+    {k:'선적항(POL)', base:s.pol, bl:store.bl?.pol, inv:store.invoice?.pol},
+    {k:'도착항(POD)', base:s.pod, bl:store.bl?.pod, inv:store.invoice?.pod},
+  ];
+  const hasBl = !!store.bl, hasInv = !!store.invoice;
+  if(!hasBl && !hasInv){
+    return `<div style="text-align:center;padding:30px;color:var(--ink-soft);font-size:13px;">
+      위에서 <b>선사 B/L</b> 또는 <b>인보이스</b>를 올리면<br>화주 컨펌 내역과 자동으로 대조합니다.</div>`;
+  }
+  // 정규화 비교 (공백·대소문자 무시)
+  const norm = v => (v||'').toString().toUpperCase().replace(/\s|,/g,'').trim();
+  let mismatch = 0, checked = 0;
+  const body = rows.map(r=>{
+    const cells = [];
+    // 기준
+    cells.push(`<td class="vf-base">${r.base||'-'}</td>`);
+    // B/L
+    if(hasBl){
+      const has = r.bl!==undefined && r.bl!==null && r.bl!=='';
+      const ok = has && norm(r.bl)===norm(r.base);
+      if(has){ checked++; if(!ok) mismatch++; }
+      cells.push(`<td class="${has?(ok?'vf-ok':'vf-no'):'vf-na'}">${has?r.bl:'—'}${has?(ok?' ✓':' ✗'):''}</td>`);
+    }
+    // 인보이스
+    if(hasInv){
+      const has = r.inv!==undefined && r.inv!==null && r.inv!=='';
+      const ok = has && norm(r.inv)===norm(r.base);
+      if(has){ checked++; if(!ok) mismatch++; }
+      cells.push(`<td class="${has?(ok?'vf-ok':'vf-no'):'vf-na'}">${has?r.inv:'—'}${has?(ok?' ✓':' ✗'):''}</td>`);
+    }
+    return `<tr class="${r.key?'vf-key':''}"><td class="vf-lbl">${r.k}</td>${cells.join('')}</tr>`;
+  }).join('');
+
+  const head = `<tr><th>항목</th><th>📋 화주 컨펌<br><span>(기준)</span></th>${hasBl?'<th>📄 선사 B/L</th>':''}${hasInv?'<th>🧾 인보이스</th>':''}</tr>`;
+
+  let verdict;
+  if(mismatch===0 && checked>0){
+    verdict = `<div class="vf-verdict ok">✅ 모든 항목 일치 — 검증 완료<br><span>화주 컨펌 내역과 서류가 모두 일치합니다. B/L 발급/전달을 진행하셔도 됩니다.</span></div>`;
+  } else if(mismatch>0){
+    verdict = `<div class="vf-verdict no">⚠️ ${mismatch}개 항목 불일치 — 확인 필요<br><span>빨간 항목이 화주 컨펌과 다릅니다. 선사/화주에 확인 후 진행하세요. 특히 수량·중량 차이는 운임·통관 문제로 이어집니다.</span></div>`;
+  } else {
+    verdict = '';
+  }
+
+  return `${verdict}<div style="overflow-x:auto;"><table class="vf-table">${head}${body}</table></div>
+    <p style="font-size:11px;color:var(--ink-soft);margin-top:10px;line-height:1.5;">✓ = 컨펌 내역과 일치 · ✗ = 불일치 · — = 해당 서류에 없는 항목. 비교는 공백·대소문자를 무시합니다.</p>`;
+}
+
+// 서류 업로드 → AI 추출 → 대조
+function verifyUpload(docType, id){
+  // 파일 선택
+  const inp = document.createElement('input');
+  inp.type='file'; inp.accept='image/*,application/pdf';
+  inp.onchange = async ()=>{
+    const file = inp.files[0]; if(!file) return;
+    const label = docType==='bl'?'선사 B/L':'인보이스';
+    const box = document.getElementById(docType==='bl'?'vfBlBox':'vfInvBox');
+    if(box) box.querySelector('.vf-st').textContent = '⏳ AI 분석 중...';
+    try{
+      const b64 = await fileToBase64(file);
+      if(!AI_PARSE_URL) throw new Error('Supabase 미연결');
+      const res = await fetch(AI_PARSE_URL, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${SUPABASE_KEY}`, 'apikey':SUPABASE_KEY },
+        body: JSON.stringify({ image:b64, imageType:file.type||'image/jpeg' })
+      });
+      const data = await res.json();
+      if(data.error) throw new Error(data.error);
+      let raw = (data.result||'').replace(/```json/gi,'').replace(/```/g,'').trim();
+      const parsed = JSON.parse(raw);
+      window._docStore[id] = window._docStore[id] || {};
+      window._docStore[id][docType] = parsed;
+      toast(`✨ ${label} 추출 완료! 자동 대조했습니다.`);
+      openVerifyModal(id);  // 모달 새로고침 (대조 결과 표시)
+    }catch(err){
+      if(box) box.querySelector('.vf-st').textContent = '⚠️ 분석 실패';
+      toast(`⚠️ ${label} 분석 실패 — 서류파싱 함수 배포 후 작동합니다.`);
+    }
+  };
+  inp.click();
+}
+
+// 대조 결과 PDF
+function verifyPDF(id){
+  const s = findShipById(id); if(!s) return;
+  const store = window._docStore[id] || {};
+  const tableHtml = renderVerifyTable(s, store)
+    .replace(/data-[a-z]+="[^"]*"/g,'')
+    .replace(/<button[^>]*>.*?<\/button>/g,'');
+  const w = window.open('','_blank');
+  const today = new Date().toLocaleDateString('ko-KR');
+  w.document.write(`<html><head><title>서류 대조 결과 - ${s.id}</title>
+  <style>
+    @media print{.noprint{display:none;}}
+    body{font-family:'Malgun Gothic',sans-serif;margin:0;background:#f5f5f5;color:#1a2733;}
+    .page{max-width:780px;margin:20px auto;background:#fff;padding:42px 46px;box-shadow:0 2px 16px rgba(0,0,0,.1);}
+    .hd{display:flex;justify-content:space-between;border-bottom:3px solid #0B2545;padding-bottom:16px;}
+    .hd .ttl{font-size:23px;font-weight:800;color:#0B2545;}
+    .hd .sub{font-size:12px;color:#5B6B7A;margin-top:3px;}
+    .hd .meta{text-align:right;font-size:12px;color:#5B6B7A;line-height:1.7;}
+    .hd .meta b{color:#0B2545;font-size:15px;}
+    table{width:100%;border-collapse:collapse;margin-top:18px;}
+    th,td{border:1px solid #D8E0E6;padding:9px 12px;font-size:12.5px;text-align:left;}
+    th{background:#F1F6FA;color:#0B2545;font-weight:700;}
+    th span{font-weight:400;font-size:10px;}
+    .vf-key td{font-weight:700;}
+    .vf-lbl{background:#F8FAFC;font-weight:600;}
+    .vf-base{background:#FFFBF2;}
+    .vf-ok{color:#2E8B57;background:#F1F9F4;}
+    .vf-no{color:#C0392B;background:#FBE9E7;font-weight:700;}
+    .vf-na{color:#B0BCC6;}
+    .vf-verdict{border-radius:10px;padding:16px 18px;margin-top:18px;font-size:15px;font-weight:700;}
+    .vf-verdict.ok{background:#F1F9F4;color:#2E8B57;border:1px solid #A8D8BC;}
+    .vf-verdict.no{background:#FBE9E7;color:#C0392B;border:1px solid #F0B5AC;}
+    .vf-verdict span{display:block;font-size:12px;font-weight:400;margin-top:5px;color:#5B6B7A;}
+    .foot{margin-top:26px;text-align:center;font-size:11px;color:#92A0AC;border-top:1px solid #eee;padding-top:13px;}
+    .btn{background:#0B2545;color:#fff;border:none;border-radius:8px;padding:11px 22px;font-size:14px;cursor:pointer;margin:18px 8px 0;}
+  </style></head><body>
+  <div class="page">
+    <div class="hd">
+      <div><div class="ttl">서류 대조 결과</div><div class="sub">Document Cross-Check Report</div></div>
+      <div class="meta"><b>${s.id}</b><br>${today}<br>SeaFlow Forwarding</div>
+    </div>
+    ${tableHtml}
+    <div class="foot">본 대조는 SeaFlow AI가 화주 컨펌 내역을 기준으로 자동 비교한 결과입니다 · 최종 확인은 담당자 책임 하에 이루어집니다.</div>
+    <div class="noprint" style="text-align:center;">
+      <button class="btn" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+      <button class="btn" style="background:#5B6B7A" onclick="window.close()">닫기</button>
+    </div>
+  </div></body></html>`);
+  w.document.close();
+}
+
+
 function savePartner(){
   const f = $('#partnerForm');
   if(!f.name.value){ toast('⚠ 상호를 입력해주세요.'); return; }
@@ -1869,9 +2290,97 @@ function initVoyageTrackerForShipper(ref){
   vtShow(ref);
 }
 
-// === 화주 포털 진입 체크 (가장 먼저 실행) ===
-if(!checkShipperPortal()){
-  // 화주 모드가 아니면 → 평소대로 구글 세션 체크 (포워더 로그인)
+// === 화주 컨펌 화면 (외부 링크) ===
+function checkConfirmPortal(){
+  const q = new URLSearchParams(window.location.search);
+  const token = q.get('confirm'), id = q.get('id');
+  if(!token || !id) return false;
+  document.getElementById('confirmPortal').style.display='block';
+  document.getElementById('loginScreen').style.display='none';
+  (async()=>{
+    if(CLOUD){
+      document.getElementById('confirmPortal').innerHTML =
+        '<div class="cp-wrap" style="padding-top:80px;text-align:center;color:var(--ink-soft)">☁️ 발주 내역을 불러오는 중...</div>';
+      try{ await cloudLoad(); }catch(e){}
+    }
+    // 토큰 검증
+    if(confirmToken(id)!==token){
+      document.getElementById('confirmPortal').innerHTML =
+        `<div class="cp-wrap"><div class="cp-card"><div class="cp-done"><div class="ico">🔒</div><h2>잘못된 접근입니다</h2><p>링크가 올바르지 않습니다. 담당자에게 정확한 링크를 요청해 주세요.</p></div></div></div>`;
+      return;
+    }
+    renderConfirmPortal(id);
+  })();
+  return true;
+}
+function renderConfirmPortal(id){
+  const s = findShipById(id);
+  const box = document.getElementById('confirmPortal');
+  if(!s){ box.innerHTML = `<div class="cp-wrap"><div class="cp-card"><div class="cp-done"><div class="ico">❓</div><h2>내역을 찾을 수 없습니다</h2><p>담당자에게 문의해 주세요.</p></div></div></div>`; return; }
+
+  // 이미 확정/거절된 경우
+  if(s.confirmStatus==='confirmed'){
+    box.innerHTML = cpDoneScreen('✅','확인 완료','이미 확정된 발주 내역입니다. 감사합니다.', s); return;
+  }
+  box.innerHTML = `
+    <div class="cp-wrap"><div class="cp-card">
+      <div class="cp-top">
+        <div class="nm">SeaFlow Forwarding · 발주 컨펌</div>
+        <div class="ttl">발주 내역을 확인해 주세요</div>
+        <div class="sub">아래는 보내주신 발주서에서 자동 추출한 내역입니다.<br><b>특히 품목과 수량</b>이 정확한지 확인 부탁드립니다.</div>
+      </div>
+      <div class="cp-body">
+        <div class="cf-sheet">
+          ${cfRow('화주', s.shipper)}
+          ${cfRow('수하인', s.consignee)}
+          ${cfRow('품목', s.commodity, true)}
+          ${cfRow('수량 / 컨테이너', s.qty, true)}
+          ${cfRow('노선', `${s.pol} → ${s.pod}`)}
+          ${cfRow('선사', s.carrier)}
+          ${cfRow('인코텀즈', s.incoterms)}
+          ${cfRow('출항예정', s.etd)}
+          ${cfRow('도착예정', s.eta)}
+        </div>
+        <div class="cp-btns">
+          <button class="cp-ok" id="cpOk">✅ 내용이 맞습니다</button>
+          <button class="cp-no" id="cpNo">✏️ 수정이 필요합니다</button>
+        </div>
+        <div class="cp-reject-box" id="cpRejectBox" style="display:none;">
+          <textarea id="cpRejectMsg" rows="3" placeholder="어느 부분을 수정해야 하나요? (예: 수량이 2x40HC가 맞습니다)"></textarea>
+          <button class="cp-no" style="width:100%;margin-top:8px;color:#fff;background:#C0392B;border:none !important;" id="cpRejectSend">수정요청 보내기</button>
+        </div>
+      </div>
+    </div>
+    <div class="sp-foot" style="margin-top:18px;">powered by <b>SeaFlow</b></div>
+    </div>`;
+
+  document.getElementById('cpOk').onclick = ()=>{
+    s.confirmStatus='confirmed'; s.confirmedAt=new Date().toISOString().slice(0,10);
+    cloudUpsertShip(s);
+    box.innerHTML = cpDoneScreen('✅','확인해 주셔서 감사합니다','발주 내역이 확정되었습니다. 이 내용으로 선적·통관이 진행됩니다.', s);
+  };
+  document.getElementById('cpNo').onclick = ()=>{
+    document.getElementById('cpRejectBox').style.display='block';
+  };
+  document.getElementById('cpRejectSend').onclick = ()=>{
+    const msg = document.getElementById('cpRejectMsg').value.trim();
+    s.confirmStatus='rejected'; s.memo=(s.memo?s.memo+' / ':'')+'[화주 수정요청] '+(msg||'(내용 미기재)');
+    cloudUpsertShip(s);
+    box.innerHTML = cpDoneScreen('✏️','수정요청이 접수되었습니다','담당자가 확인 후 다시 연락드리겠습니다. 감사합니다.', s);
+  };
+}
+function cpDoneScreen(ico, title, desc, s){
+  return `<div class="cp-wrap"><div class="cp-card">
+    <div class="cp-done"><div class="ico">${ico}</div><h2>${title}</h2><p>${desc}</p>
+    <div style="margin-top:18px;font-size:12px;color:var(--ink-faint)">건 번호 ${s.id} · ${s.commodity} · ${s.qty}</div></div>
+  </div><div class="sp-foot" style="margin-top:18px;">powered by <b>SeaFlow</b></div></div>`;
+}
+
+// === 외부 진입 체크 (가장 먼저 실행) ===
+if(checkConfirmPortal()){
+  // 화주 컨펌 모드
+} else if(!checkShipperPortal()){
+  // 화주 대시보드도 아니면 → 포워더 로그인
   checkGoogleSession();
 }
 </script>
