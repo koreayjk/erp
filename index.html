@@ -381,18 +381,28 @@ if(CLOUD){ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
 
 const DB = {
   shipments: [
-    { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'HMM', booking:'HDMU2501887', bl:'HDMUBSC2501887', container:'HMMU1234567', incoterms:'FOB', commodity:'자동차 부품', qty:'1 x 40HC', status:'transit', etd:'2025-05-28', eta:'2025-06-03', revenue:4200000, cost:3350000, paid:true, blReleased:true, memo:'' },
-    { id:'EXP-2502', type:'export', mode:'sea', shipper:'서울화학', consignee:'GUANGZHOU IMPORT LTD', pol:'인천(KRINC)', pod:'광저우(CNCAN)', carrier:'고려해운', booking:'KMTC25A0445', bl:'KMTCSEL2502', container:'KMTU8845120', incoterms:'CIF', commodity:'화학 원료', qty:'2 x 20GP', status:'arrived', etd:'2025-05-20', eta:'2025-05-27', revenue:5800000, cost:4600000, paid:false, blReleased:false, memo:'운임 미입금 - B/L 보류중' },
-    { id:'EXP-2503', type:'export', mode:'sea', shipper:'한빛전자', consignee:'LA ELECTRONICS INC.', pol:'부산(KRPUS)', pod:'로스앤젤레스(USLAX)', carrier:'Maersk', booking:'MAEU25778120', bl:'', container:'', incoterms:'FOB', commodity:'전자제품', qty:'1 x 40HC', status:'booking', etd:'2025-06-15', eta:'2025-07-01', revenue:7100000, cost:5900000, paid:false, blReleased:false, memo:'B/L 발행 대기' },
+    // ===== 대한정밀(주) — 자동차 부품 수출 (3건) =====
+    { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'HMM', booking:'HDMU2501887', bl:'HDMUBSC2501887', container:'HMMU1234567', incoterms:'FOB', commodity:'자동차 엔진 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-08', eta:'2025-06-14', revenue:4200000, cost:3350000, paid:true, blReleased:true, memo:'' },
+    { id:'EXP-2502', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'OSAKA AUTO PARTS', pol:'부산(KRPUS)', pod:'오사카(JPOSA)', carrier:'고려해운', booking:'KMTC25B1120', bl:'KMTCBSC2502', container:'KMTU3340125', incoterms:'CIF', commodity:'브레이크 패드', qty:'2 x 20GP', status:'arrived', etd:'2025-05-30', eta:'2025-06-05', revenue:3100000, cost:2400000, paid:true, blReleased:true, memo:'' },
+    { id:'EXP-2503', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'LA MOTORS INC.', pol:'부산(KRPUS)', pod:'로스앤젤레스(USLAX)', carrier:'Maersk', booking:'MAEU25778120', bl:'', container:'', incoterms:'FOB', commodity:'변속기 부품', qty:'1 x 40HC', status:'booking', etd:'2025-06-22', eta:'2025-07-09', revenue:7100000, cost:5900000, paid:false, blReleased:false, memo:'선적 예약 완료, B/L 발행 대기' },
+
+    // ===== 그린푸드(주) — 식품 수출 (3건) =====
+    { id:'EXP-2504', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HANOI FOOD IMPORT', pol:'부산(KRPUS)', pod:'하이퐁(VNHPH)', carrier:'SM상선', booking:'SMLM25C0331', bl:'SMLMBSC2504', container:'SMLU7782041', incoterms:'CIF', commodity:'김·건어물', qty:'1 x 20RF', status:'transit', etd:'2025-06-07', eta:'2025-06-13', revenue:2900000, cost:2200000, paid:true, blReleased:true, memo:'냉장 컨테이너' },
+    { id:'EXP-2505', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HK GOURMET LTD', pol:'부산(KRPUS)', pod:'홍콩(HKHKG)', carrier:'ONE', booking:'ONEY25D5540', bl:'ONEYBSC2505', container:'ONEU9921077', incoterms:'FOB', commodity:'인삼 가공식품', qty:'1 x 20GP', status:'transit', etd:'2025-06-10', eta:'2025-06-16', revenue:3600000, cost:2750000, paid:false, blReleased:true, memo:'30일 신용 거래' },
+    { id:'EXP-2506', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'SAIGON MART', pol:'인천(KRINC)', pod:'호치민(VNSGN)', carrier:'고려해운', booking:'KMTC25D2231', bl:'', container:'', incoterms:'CIF', commodity:'라면·스낵류', qty:'2 x 40HC', status:'booking', etd:'2025-06-25', eta:'2025-07-02', revenue:5200000, cost:4100000, paid:false, blReleased:false, memo:'부킹 확정, 선적 준비중' },
+
+    // ===== 한빛전자 — 전자제품 수출 (3건) =====
+    { id:'EXP-2507', type:'export', mode:'sea', shipper:'한빛전자', consignee:'NY ELECTRONICS', pol:'부산(KRPUS)', pod:'뉴욕(USNYC)', carrier:'Maersk', booking:'MAEU25E3390', bl:'MAEUBSC2507', container:'MRKU5567810', incoterms:'FOB', commodity:'LED 디스플레이', qty:'2 x 40HC', status:'transit', etd:'2025-06-05', eta:'2025-06-28', revenue:9800000, cost:7900000, paid:true, blReleased:true, memo:'고가 화물 · 적하보험 가입' },
+    { id:'EXP-2508', type:'export', mode:'sea', shipper:'한빛전자', consignee:'HAMBURG TECH GMBH', pol:'부산(KRPUS)', pod:'함부르크(DEHAM)', carrier:'HMM', booking:'HDMU25E7745', bl:'HDMUBSC2508', container:'HMMU8830012', incoterms:'CIF', commodity:'반도체 부품', qty:'1 x 20GP', status:'delay', etd:'2025-05-25', eta:'2025-06-20', revenue:6400000, cost:5100000, paid:false, blReleased:true, memo:'⚠️ 수에즈 운하 우회로 5일 지연' },
+    { id:'EXP-2509', type:'export', mode:'sea', shipper:'한빛전자', consignee:'LA ELECTRONICS INC.', pol:'부산(KRPUS)', pod:'롱비치(USLGB)', carrier:'ONE', booking:'ONEY25E1180', bl:'ONEYBSC2509', container:'ONEU2245518', incoterms:'FOB', commodity:'배터리 모듈', qty:'1 x 40HC', status:'arrived', etd:'2025-05-18', eta:'2025-06-10', revenue:8200000, cost:6600000, paid:true, blReleased:true, memo:'통관 완료' },
   ],
-  imports: [
-    { id:'IMP-2511', type:'import', mode:'sea', shipper:'SHANGHAI MFG CO.', consignee:'(주)코리아유통', pol:'상하이(CNSHA)', pod:'부산(KRPUS)', carrier:'ONE', booking:'ONEY2511002', bl:'ONEYSHA2511', container:'ONEU5521340', incoterms:'CIF', commodity:'생활용품', qty:'1 x 40HC', status:'transit', etd:'2025-05-30', eta:'2025-06-05', revenue:3400000, cost:2700000, paid:true, blReleased:true, memo:'' },
-  ],
+  imports: [],
   partners: [
-    { id:'P01', kind:'shipper', name:'대한정밀(주)', bizno:'128-81-44021', manager:'김상호 부장', phone:'010-2233-1100', email:'shkim@daehan.co.kr', addr:'경기도 안산시 단원구', memo:'주력 화주 · 월 4~6건' },
-    { id:'P02', kind:'shipper', name:'서울화학', bizno:'214-86-77123', manager:'이정민 과장', phone:'010-8842-3321', email:'jm.lee@seoulchem.com', addr:'서울시 금천구', memo:'위험물 취급 주의' },
-    { id:'P03', kind:'carrier', name:'HMM', bizno:'-', manager:'영업팀', phone:'1800-0006', email:'-', addr:'서울시 종로구', memo:'Open API 연동 가능' },
-    { id:'P04', kind:'customs', name:'우리관세사무소', bizno:'201-90-11234', manager:'박관세 관세사', phone:'051-441-2200', email:'woori@customs.kr', addr:'부산시 중구', memo:'부산항 통관 전담' },
+    { id:'P01', kind:'shipper', name:'대한정밀(주)', bizno:'128-81-44021', manager:'김상호 부장', phone:'010-2233-1100', email:'shkim@daehan.co.kr', addr:'경기도 안산시 단원구', memo:'주력 화주 · 월 4~6건 · 자동차 부품' },
+    { id:'P02', kind:'shipper', name:'그린푸드(주)', bizno:'214-86-77123', manager:'이정민 과장', phone:'010-8842-3321', email:'jm.lee@greenfood.co.kr', addr:'서울시 금천구', memo:'식품 수출 · 냉장 컨테이너 자주 사용' },
+    { id:'P03', kind:'shipper', name:'한빛전자', bizno:'506-81-22987', manager:'박지훈 차장', phone:'010-5521-7788', email:'jh.park@hanbit-e.com', addr:'경기도 수원시 영통구', memo:'고가 전자제품 · 적하보험 필수' },
+    { id:'P04', kind:'carrier', name:'HMM', bizno:'-', manager:'영업팀', phone:'1800-0006', email:'-', addr:'서울시 종로구', memo:'Open API 연동 가능' },
+    { id:'P05', kind:'customs', name:'우리관세사무소', bizno:'201-90-11234', manager:'박관세 관세사', phone:'051-441-2200', email:'woori@customs.kr', addr:'부산시 중구', memo:'부산항 통관 전담' },
   ]
 };
 const STATUS_MAP = { booking:{label:'부킹',cls:'b-booking'}, sailing:{label:'선적완료',cls:'b-sailing'}, transit:{label:'운송중',cls:'b-transit'}, arrived:{label:'입항',cls:'b-arrived'}, delay:{label:'지연',cls:'b-delay'} };
