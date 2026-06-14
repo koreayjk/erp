@@ -270,6 +270,17 @@
 const SUPABASE_URL = "https://poatacueqqfcfwqambxz.supabase.co";   // 예: "https://abcdefgh.supabase.co"
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvYXRhY3VlcXFmY2Z3cWFtYnh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MDg0NDAsImV4cCI6MjA5Njk4NDQ0MH0.D5PeZ2IBOSA_RnYInPVTsSY28INw_kWDgAwi7RUEqMg";   // 예: "eyJhbG..."  (anon public key)
 
+/* ====================================================
+   AI 엔진 설정 (Supabase Edge Function 경유 - 보안)
+   - 서류 파싱: Claude  (함수: ai-parse)
+   - AI 비서:   Gemini  (함수: ai-assistant)
+   ★ 실제 API 키는 Supabase Secret에 안전하게 보관됩니다.
+     브라우저에는 키가 노출되지 않습니다.
+   ==================================================== */
+const FN_BASE = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1` : "";
+const AI_PARSE_URL = FN_BASE ? `${FN_BASE}/ai-parse` : "";
+const AI_ASSISTANT_URL = FN_BASE ? `${FN_BASE}/ai-assistant` : "";
+
 let sb = null;
 const CLOUD = !!(SUPABASE_URL && SUPABASE_KEY && window.supabase);
 if(CLOUD){ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
@@ -365,15 +376,19 @@ ${JSON.stringify(data, null, 1)}
 - 데이터에 없는 내용은 추측하지 말고 "현재 데이터로는 알 수 없다"고 답하세요
 - HTML 태그 없이 일반 텍스트로 답하되, 줄바꿈과 '•' 기호로 읽기 쉽게 구성`;
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ model:"claude-sonnet-4-6", max_tokens:1000, messages:[{role:"user",content:prompt}] })
+    if(!AI_ASSISTANT_URL){ throw new Error('Supabase 미연결'); }
+    // AI 비서: Supabase Edge Function(ai-assistant) → Gemini
+    const res = await fetch(AI_ASSISTANT_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", "Authorization":`Bearer ${SUPABASE_KEY}`, "apikey": SUPABASE_KEY },
+      body:JSON.stringify({ prompt })
     });
     const d = await res.json();
-    const answer = d.content.filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+    if(d.error){ throw new Error(d.error); }
+    const answer = d.answer || '';
     box.innerHTML = `<div class="panel"><div class="panel-head"><div class="panel-title">✨ AI 분석 결과</div></div><div class="panel-body" style="padding:20px;"><div style="background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:8px;padding:18px;font-size:14px;line-height:1.8;white-space:pre-wrap;color:var(--ink);">${answer.replace(/</g,'&lt;')}</div><div style="margin-top:12px;font-size:11.5px;color:var(--ink-soft);">💡 질문: "${question}"</div></div></div>`;
   } catch(err){
-    box.innerHTML = `<div class="panel"><div class="panel-body" style="padding:30px;text-align:center;color:var(--ink-soft)">⚠️ 분석 중 문제가 발생했어요. 다시 시도해주세요.</div></div>`;
+    box.innerHTML = `<div class="panel"><div class="panel-body" style="padding:30px;text-align:center;color:var(--ink-soft)">⚠️ 분석 중 문제가 발생했어요. (AI 비서 함수 배포 후 작동합니다)</div></div>`;
   }
 }
 
@@ -855,40 +870,19 @@ async function runAiParse(type){
       <div class="ai-loading-sub">${hasImage?'이미지에서 선적 정보를 읽는 중':'화주 양식에서 선적 정보를 추출하는 중'}</div>
     </div>`;
   $('#aiRunBtn').style.display = 'none';
-  const instruction = `당신은 한국 포워딩(국제물류) 회사의 서류 입력 도우미입니다.
-${hasImage?'첨부된 이미지(화주 서류)를 읽고':'아래 화주가 보낸 선적 관련 서류(이메일/S/R/인보이스 등)에서'} 포워딩 ERP에 입력할 항목을 추출하세요. 한국 포워딩 실무 기준으로 판단합니다.
-${hasImage?'':`\n서류 내용:\n"""\n${text}\n"""\n`}
-다음 JSON 형식으로만 응답하세요. 설명/마크다운/코드펜스 없이 순수 JSON만 출력합니다.
-찾을 수 없는 항목은 빈 문자열("")로 둡니다.
-- shipper: 수출자/송하인 (회사명)
-- consignee: 수입자/수하인 (회사명, 영문이면 영문 그대로)
-- pol: 선적항 (가능하면 "도시명(UNLOCODE)" 형식, 예: "부산(KRPUS)". 모르면 도시명만)
-- pod: 도착항 (같은 형식)
-- carrier: 선사명 (HMM, Maersk, ONE, 고려해운, SM Line 등)
-- commodity: 품목/품명 (한글로 간결하게)
-- qty: 수량/컨테이너 (예: "1 x 40HC", "2 x 20GP")
-- incoterms: 인코텀즈 (FOB, CIF, CFR, EXW, DDP, DAP 중 하나)
-- etd: 출항예정일 (YYYY-MM-DD 형식으로 변환. 연도 없으면 2025 가정. 추정 불가하면 "")
-- revenue: 매출/운임 금액 (숫자만, 원화 기준. USD 등 외화면 빈 문자열)
-- memo: 기타 특이사항을 짧게 (없으면 "")`;
-  let messageContent;
-  if(hasImage){
-    messageContent = [
-      { type:'image', source:{ type:'base64', media_type: window._pendingImageType||'image/jpeg', data: window._pendingImage } },
-      { type:'text', text: instruction }
-    ];
-  } else {
-    messageContent = instruction;
-  }
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    if(!AI_PARSE_URL){ throw new Error('Supabase 미연결 - 서류파싱 함수가 배포되어야 작동합니다.'); }
+    // 서류 파싱: Supabase Edge Function(ai-parse) → Claude
+    const res = await fetch(AI_PARSE_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, messages: [{ role: "user", content: messageContent }] })
+      headers: { "Content-Type": "application/json", "Authorization":`Bearer ${SUPABASE_KEY}`, "apikey": SUPABASE_KEY },
+      body: JSON.stringify(hasImage
+        ? { image: window._pendingImage, imageType: window._pendingImageType||'image/jpeg' }
+        : { text })
     });
     const data = await res.json();
-    let raw = data.content.filter(b=>b.type==='text').map(b=>b.text).join('').trim();
-    raw = raw.replace(/```json/gi,'').replace(/```/g,'').trim();
+    if(data.error){ throw new Error(data.error); }
+    let raw = (data.result||'').replace(/```json/gi,'').replace(/```/g,'').trim();
     const parsed = JSON.parse(raw);
     window._pendingImage = null;
     showAiReview(type, parsed);
@@ -897,7 +891,7 @@ ${hasImage?'':`\n서류 내용:\n"""\n${text}\n"""\n`}
       <div class="ai-loading">
         <div style="font-size:40px">⚠️</div>
         <div class="ai-loading-text">분석 중 문제가 발생했어요</div>
-        <div class="ai-loading-sub">다시 시도하거나 직접 입력해주세요.<br>${(err.message||'').slice(0,80)}</div>
+        <div class="ai-loading-sub">서류파싱 함수(ai-parse) 배포 후 작동합니다.<br>${(err.message||'').slice(0,80)}</div>
         <button class="btn btn-ghost" onclick="closeModal()">닫기</button>
       </div>`;
   }
@@ -1276,12 +1270,31 @@ document.getElementById('googleBtn2').onclick = googleLogin;
 async function checkGoogleSession(){
   if(CLOUD && sb){
     try {
+      // 구글에서 #access_token=... 형태로 돌아온 경우 Supabase가 자동으로 세션을 설정함
+      // getSession을 약간 기다렸다가 호출 (URL 해시 처리 시간 확보)
+      await new Promise(r=>setTimeout(r, 300));
       const { data } = await sb.auth.getSession();
       if(data && data.session){
         const user = data.session.user;
         const name = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || user.email || '내 회사';
+        // 주소창의 토큰 해시를 깔끔하게 제거
+        if(window.location.hash.includes('access_token')){
+          history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
         enterApp(name);
+        return;
       }
+      // 로그인 상태 변화 감지 (구글 리디렉션 직후 대비)
+      sb.auth.onAuthStateChange((event, session)=>{
+        if(session && document.getElementById('loginScreen').style.display!=='none'){
+          const u = session.user;
+          const nm = (u.user_metadata && (u.user_metadata.full_name || u.user_metadata.name)) || u.email || '내 회사';
+          if(window.location.hash.includes('access_token')){
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+          enterApp(nm);
+        }
+      });
     } catch(e){ /* 세션 없음 - 로그인 화면 유지 */ }
   }
 }
