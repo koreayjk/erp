@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SeaFlow · 한국형 AI 포워딩 ERP</title>
+<style>
+  :root {
+    --navy:#0B2545; --navy2:#13315C; --steel:#134074; --sky:#3A7CA5; --skyl:#5FA8D3;
+    --ice:#EEF4F8; --line:#D8E1E8; --ink:#1A2733; --soft:#5A6B7A; --gold:#B8862F; --ok:#2E8B57; --paper:#FBFCFD;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html { scroll-behavior:smooth; }
+  body { font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif; color:var(--ink); line-height:1.6; -webkit-font-smoothing:antialiased; }
+  a { text-decoration:none; color:inherit; }
+  .wrap { max-width:1140px; margin:0 auto; padding:0 24px; }
+  .btn { display:inline-flex; align-items:center; gap:8px; padding:13px 26px; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; border:none; font-family:inherit; transition:all 0.18s; }
+  .btn-primary { background:var(--sky); color:#fff; }
+  .btn-primary:hover { background:var(--steel); transform:translateY(-1px); }
+  .btn-gold { background:var(--gold); color:#fff; }
+  .btn-gold:hover { filter:brightness(1.08); transform:translateY(-1px); }
+  .btn-ghost { background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,0.35); }
+  .btn-ghost:hover { border-color:#fff; }
+
+  /* nav */
+  nav { position:sticky; top:0; z-index:100; background:rgba(11,37,69,0.95); backdrop-filter:blur(8px); border-bottom:1px solid rgba(255,255,255,0.08); }
+  .nav-in { display:flex; align-items:center; justify-content:space-between; height:64px; }
+  .logo { display:flex; align-items:center; gap:10px; color:#fff; font-size:21px; font-weight:800; letter-spacing:-0.4px; }
+  .logo .mk { width:32px; height:32px; background:linear-gradient(135deg,var(--skyl),var(--sky)); border-radius:8px; display:grid; place-items:center; font-size:17px; }
+  .nav-links { display:flex; gap:28px; align-items:center; }
+  .nav-links a { color:rgba(255,255,255,0.8); font-size:14.5px; font-weight:500; }
+  .nav-links a:hover { color:#fff; }
+
+  /* hero */
+  .hero { background:linear-gradient(160deg,var(--navy) 0%,var(--steel) 100%); color:#fff; padding:90px 0 110px; position:relative; overflow:hidden; }
+  .hero::after { content:'🌊'; position:absolute; right:-40px; bottom:-60px; font-size:340px; opacity:0.05; }
+  .hero-badge { display:inline-block; background:rgba(95,168,211,0.18); border:1px solid rgba(95,168,211,0.4); color:var(--skyl); padding:6px 16px; border-radius:20px; font-size:13px; font-weight:600; margin-bottom:24px; }
+  .hero h1 { font-size:52px; font-weight:800; letter-spacing:-1.5px; line-height:1.15; margin-bottom:22px; }
+  .hero h1 .hl { color:var(--skyl); }
+  .hero p { font-size:19px; color:#C9D8E5; max-width:620px; margin-bottom:36px; }
+  .hero-cta { display:flex; gap:14px; flex-wrap:wrap; }
+  .hero-stats { display:flex; gap:40px; margin-top:54px; }
+  .hero-stat .n { font-size:34px; font-weight:800; color:#fff; }
+  .hero-stat .l { font-size:13px; color:var(--skyl); margin-top:2px; }
+
+  /* section */
+  section { padding:88px 0; }
+  .sec-kicker { text-align:center; font-size:13px; font-weight:700; color:var(--sky); letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  .sec-title { text-align:center; font-size:36px; font-weight:800; letter-spacing:-0.8px; margin-bottom:14px; }
+  .sec-sub { text-align:center; font-size:17px; color:var(--soft); max-width:600px; margin:0 auto 56px; }
+
+  /* problem */
+  .prob-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+  .prob { background:#fff; border:1px solid var(--line); border-radius:14px; padding:26px; display:flex; gap:18px; }
+  .prob .ic { font-size:32px; flex-shrink:0; }
+  .prob h3 { font-size:17px; font-weight:700; margin-bottom:6px; }
+  .prob p { font-size:14px; color:var(--soft); }
+  .problem-sec { background:var(--ice); }
+
+  /* features */
+  .feat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  .feat { background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:30px 26px; transition:all 0.2s; }
+  .feat:hover { border-color:var(--sky); box-shadow:0 8px 30px rgba(58,124,165,0.12); transform:translateY(-3px); }
+  .feat .ic { width:54px; height:54px; border-radius:14px; background:linear-gradient(135deg,var(--ice),#DCEAF3); display:grid; place-items:center; font-size:26px; margin-bottom:18px; }
+  .feat h3 { font-size:18px; font-weight:700; margin-bottom:8px; }
+  .feat p { font-size:14px; color:var(--soft); }
+  .feat .tag { display:inline-block; font-size:10.5px; font-weight:700; color:#fff; background:var(--gold); padding:2px 9px; border-radius:10px; margin-left:6px; vertical-align:middle; }
+
+  /* compare */
+  .compare-sec { background:var(--navy); color:#fff; }
+  .compare-sec .sec-title { color:#fff; }
+  .compare-sec .sec-kicker { color:var(--skyl); }
+  .ctable { max-width:840px; margin:0 auto; background:var(--navy2); border-radius:16px; overflow:hidden; border:1px solid var(--steel); }
+  .ctable table { width:100%; border-collapse:collapse; }
+  .ctable th, .ctable td { padding:15px 18px; text-align:center; font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.08); }
+  .ctable th { background:rgba(0,0,0,0.2); font-weight:700; font-size:13px; }
+  .ctable th.us, .ctable td.us { background:rgba(184,134,47,0.14); }
+  .ctable th.us { color:var(--gold); }
+  .ctable td:first-child, .ctable th:first-child { text-align:left; font-weight:600; }
+  .ctable .yes { color:var(--ok); font-weight:800; font-size:17px; }
+  .ctable .no { color:#C0392B; font-weight:800; font-size:16px; }
+  .ctable .us .yes { color:var(--gold); }
+
+  /* pricing */
+  .price-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; max-width:920px; margin:0 auto; }
+  .price { background:#fff; border:1px solid var(--line); border-radius:18px; padding:34px 28px; text-align:center; position:relative; }
+  .price.hl { border:2px solid var(--gold); box-shadow:0 12px 40px rgba(184,134,47,0.15); transform:scale(1.03); }
+  .price .pop { position:absolute; top:-13px; left:50%; transform:translateX(-50%); background:var(--gold); color:#fff; font-size:11.5px; font-weight:700; padding:4px 16px; border-radius:12px; }
+  .price .name { font-size:19px; font-weight:700; margin-bottom:4px; }
+  .price .seats { font-size:13px; color:var(--soft); margin-bottom:18px; }
+  .price .amt { font-size:40px; font-weight:800; color:var(--navy); }
+  .price .amt small { font-size:16px; color:var(--soft); font-weight:600; }
+  .price .per { font-size:13px; color:var(--soft); margin-bottom:22px; }
+  .price ul { list-style:none; text-align:left; margin-bottom:24px; }
+  .price li { font-size:13.5px; padding:7px 0; padding-left:26px; position:relative; color:var(--ink); }
+  .price li::before { content:'✓'; position:absolute; left:0; color:var(--ok); font-weight:800; }
+  .price .btn { width:100%; justify-content:center; }
+
+  /* cta */
+  .cta-sec { background:linear-gradient(135deg,var(--steel),var(--sky)); color:#fff; text-align:center; }
+  .cta-sec h2 { font-size:38px; font-weight:800; letter-spacing:-0.8px; margin-bottom:16px; }
+  .cta-sec p { font-size:18px; color:rgba(255,255,255,0.9); margin-bottom:32px; }
+
+  /* footer */
+  footer { background:var(--navy); color:rgba(255,255,255,0.6); padding:44px 0; font-size:13.5px; }
+  .foot-in { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+
+  @media (max-width:860px){
+    .hero h1 { font-size:36px; } .hero p { font-size:16px; }
+    .prob-grid, .feat-grid, .price-grid { grid-template-columns:1fr; }
+    .nav-links { display:none; }
+    .hero-stats { gap:24px; flex-wrap:wrap; }
+    .price.hl { transform:none; }
+    .sec-title { font-size:28px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-in">
+    <div class="logo"><div class="mk">🌊</div> SeaFlow</div>
+    <div class="nav-links">
+      <a href="#problem">문제</a>
+      <a href="#features">기능</a>
+      <a href="#compare">비교</a>
+      <a href="#pricing">요금</a>
+      <a href="#contact" class="btn btn-primary" style="padding:9px 20px;font-size:14px;">무료 체험</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-badge">🇰🇷 한국 포워더를 위한 첫 AI 물류 ERP</div>
+    <h1>수출입 물류의 모든 입력을<br><span class="hl">AI가 대신</span>합니다</h1>
+    <p>화주가 어떤 양식으로 보내도 AI가 읽고 자동 입력. 선사 연동, 실시간 추적, 한국 세무까지. 윈사비스가 못하는 걸 SeaFlow가 합니다.</p>
+    <div class="hero-cta">
+      <a class="btn btn-gold" href="#contact">🚀 무료로 시작하기</a>
+      <a class="btn btn-ghost" href="#features">기능 둘러보기</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="n">10분 → 30초</div><div class="l">건당 입력 시간</div></div>
+      <div class="hero-stat"><div class="n">100%</div><div class="l">한국어 지원</div></div>
+      <div class="hero-stat"><div class="n">4,900+</div><div class="l">잠재 고객사</div></div>
+    </div>
+  </div>
+</header>
+
+<section class="problem-sec" id="problem">
+  <div class="wrap">
+    <div class="sec-kicker">The Problem</div>
+    <h2 class="sec-title">아직도 손으로 입력하시나요?</h2>
+    <p class="sec-sub">한국 포워딩 업체 대부분이 20년 된 프로그램으로 모든 정보를 수동 입력하고 있습니다.</p>
+    <div class="prob-grid">
+      <div class="prob"><div class="ic">⌨️</div><div><h3>끝없는 수동 입력</h3><p>화주 서류를 한 칸씩 직접 타이핑. 한 건에 5~10분씩, 하루 수십 건.</p></div></div>
+      <div class="prob"><div class="ic">📑</div><div><h3>제각각인 화주 양식</h3><p>이메일·엑셀·PDF·카톡 사진까지. 표준이 없어 자동화가 불가능했습니다.</p></div></div>
+      <div class="prob"><div class="ic">📞</div><div><h3>"우리 화물 어디예요?"</h3><p>화주 문의 전화에 일일이 선사 사이트 확인하며 응대하는 시간 낭비.</p></div></div>
+      <div class="prob"><div class="ic">🌏</div><div><h3>해외 솔루션의 벽</h3><p>CargoWise는 비싸고 영어뿐. 한국 세무·관세·세금계산서 미지원.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-kicker">Features</div>
+    <h2 class="sec-title">SeaFlow가 다르게 하는 것</h2>
+    <p class="sec-sub">AI 자동화와 완전한 한국화를 하나로. 현장이 바로 쓰는 포워딩 ERP.</p>
+    <div class="feat-grid">
+      <div class="feat"><div class="ic">🤖</div><h3>AI 서류 자동 입력<span class="tag">핵심</span></h3><p>화주가 이메일·엑셀·PDF·이미지 무엇으로 보내든 AI가 읽고 항목을 자동으로 채웁니다. 건당 10분이 30초로.</p></div>
+      <div class="feat"><div class="ic">📡</div><h3>선사 API 자동 연동</h3><p>HMM·Maersk 등 선사 API로 스케줄과 운임을 자동 수신. 일일이 선사 사이트를 돌 필요가 없습니다.</p></div>
+      <div class="feat"><div class="ic">🚢</div><h3>실시간 화물 추적</h3><p>컨테이너 위치가 자동 갱신되고, 지연이 생기면 화주에게 카카오 알림톡이 자동 발송됩니다.</p></div>
+      <div class="feat"><div class="ic">🧾</div><h3>한국 세무 완비</h3><p>전자세금계산서·관세사 EDI·원화 정산이 기본 탑재. 별도 프로그램이 필요 없습니다.</p></div>
+      <div class="feat"><div class="ic">🔗</div><h3>화주 전용 포털</h3><p>화주가 직접 로그인해 자기 화물을 실시간 조회. 문의 전화가 사라지고 신뢰가 올라갑니다.</p></div>
+      <div class="feat"><div class="ic">💬</div><h3>100% 한국어</h3><p>현장 직원이 교육 없이 바로 쓰는 익숙한 한국어 인터페이스. 도입 첫날부터 생산성.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="compare-sec" id="compare">
+  <div class="wrap">
+    <div class="sec-kicker">Why SeaFlow</div>
+    <h2 class="sec-title">기존 프로그램과 비교하세요</h2>
+    <div class="ctable">
+      <table>
+        <tr><th>기능</th><th>윈사비스·양재</th><th>CargoWise</th><th class="us">SeaFlow</th></tr>
+        <tr><td>AI 자동 입력</td><td><span class="no">✕</span></td><td><span class="yes">○</span></td><td class="us"><span class="yes">◎</span></td></tr>
+        <tr><td>선사 API 연동</td><td><span class="no">✕</span></td><td><span class="yes">○</span></td><td class="us"><span class="yes">◎</span></td></tr>
+        <tr><td>실시간 트래킹</td><td><span class="no">✕</span></td><td><span class="yes">○</span></td><td class="us"><span class="yes">◎</span></td></tr>
+        <tr><td>한국어 지원</td><td><span class="yes">○</span></td><td><span class="no">✕</span></td><td class="us"><span class="yes">◎</span></td></tr>
+        <tr><td>한국 세무·관세</td><td><span class="yes">○</span></td><td><span class="no">✕</span></td><td class="us"><span class="yes">◎</span></td></tr>
+        <tr><td>합리적 가격</td><td><span class="yes">○</span></td><td><span class="no">✕</span></td><td class="us"><span class="yes">◎</span></td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="sec-kicker">Pricing</div>
+    <h2 class="sec-title">합리적인 월 구독</h2>
+    <p class="sec-sub">계정 수에 맞게 선택하세요. 첫 3개월 무료 체험 제공.</p>
+    <div class="price-grid">
+      <div class="price">
+        <div class="name">스타터</div>
+        <div class="seats">1~3명 · 소규모 포워더</div>
+        <div class="amt"><small>월 </small>15<small>만원</small></div>
+        <div class="per">연간 결제 시 2개월 할인</div>
+        <ul><li>수출입 건 관리</li><li>AI 서류 자동 입력</li><li>실시간 트래킹</li><li>한국 세무 연동</li></ul>
+        <a class="btn btn-primary" href="#contact">시작하기</a>
+      </div>
+      <div class="price hl">
+        <div class="pop">가장 인기</div>
+        <div class="name">스탠다드</div>
+        <div class="seats">4~10명 · 성장기 포워더</div>
+        <div class="amt"><small>월 </small>35<small>만원</small></div>
+        <div class="per">연간 결제 시 2개월 할인</div>
+        <ul><li>스타터 모든 기능</li><li>선사 API 연동</li><li>화주 전용 포털</li><li>카카오 알림톡 자동발송</li><li>우선 기술지원</li></ul>
+        <a class="btn btn-gold" href="#contact">시작하기</a>
+      </div>
+      <div class="price">
+        <div class="name">프로</div>
+        <div class="seats">11명~ · 중견 포워더</div>
+        <div class="amt"><small>월 </small>70<small>만원</small></div>
+        <div class="per">연간 결제 시 2개월 할인</div>
+        <ul><li>스탠다드 모든 기능</li><li>무제한 AI 파싱</li><li>전담 매니저</li><li>맞춤 기능 개발</li><li>API 제공</li></ul>
+        <a class="btn btn-primary" href="#contact">문의하기</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-sec" id="contact">
+  <div class="wrap">
+    <h2>오늘 바로 시작하세요</h2>
+    <p>3개월 무료 체험으로 SeaFlow의 차이를 직접 경험해보세요.</p>
+    <a class="btn btn-gold" href="mailto:hello@seaflow.kr" style="font-size:16px;padding:15px 32px;">🚀 무료 체험 신청하기</a>
+    <div style="margin-top:20px;font-size:14px;color:rgba(255,255,255,0.8);">또는 hello@seaflow.kr 로 문의하세요</div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-in">
+    <div class="logo" style="font-size:18px;"><div class="mk" style="width:28px;height:28px;font-size:15px;">🌊</div> SeaFlow</div>
+    <div>© 2025 IM AMERICA GROUP CORP · 한국형 AI 포워딩 ERP</div>
+  </div>
+</footer>
+
+</body>
+</html>

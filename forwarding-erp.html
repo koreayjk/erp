@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SeaFlow · 포워딩 ERP</title>
+<style>
+  :root {
+    --navy: #0B2545; --navy-light: #13315C; --steel: #134074;
+    --sky: #3A7CA5; --sky-light: #5FA8D3; --ice: #EEF4F8; --line: #D8E1E8;
+    --paper: #FBFCFD; --ink: #1A2733; --ink-soft: #5A6B7A;
+    --ok: #2E8B57; --ok-bg: #E5F3EC; --warn: #C77B30; --warn-bg: #FBF0E2;
+    --danger: #C0392B; --danger-bg: #FBE9E7; --gold: #B8862F;
+    --radius: 10px; --shadow: 0 1px 3px rgba(11,37,69,0.08), 0 4px 16px rgba(11,37,69,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif; background: var(--ice); color: var(--ink); font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .app { display: flex; min-height: 100vh; }
+  .sidebar { width: 230px; background: linear-gradient(180deg, var(--navy), var(--navy-light)); color: #fff; flex-shrink: 0; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
+  .brand { padding: 22px 22px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .brand-logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; letter-spacing: -0.4px; }
+  .brand-mark { width: 30px; height: 30px; background: linear-gradient(135deg, var(--sky-light), var(--sky)); border-radius: 8px; display: grid; place-items: center; font-size: 16px; }
+  .brand-sub { font-size: 11px; color: var(--sky-light); margin-top: 4px; letter-spacing: 0.5px; font-weight: 500; padding-left: 2px;}
+  nav { padding: 14px 12px; flex: 1; }
+  .nav-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.4); padding: 14px 12px 6px; font-weight: 600; }
+  .nav-item { display: flex; align-items: center; gap: 11px; padding: 9px 12px; border-radius: 8px; color: rgba(255,255,255,0.78); cursor: pointer; font-size: 13.5px; font-weight: 500; transition: all 0.15s; margin-bottom: 2px; }
+  .nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .nav-item.active { background: var(--sky); color: #fff; font-weight: 600; }
+  .nav-ico { width: 18px; text-align: center; font-size: 15px; }
+  .sidebar-foot { padding: 14px 22px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: rgba(255,255,255,0.45); }
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .topbar { background: #fff; border-bottom: 1px solid var(--line); padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+  .topbar h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .company-pill { font-size: 12px; color: var(--ink-soft); background: var(--ice); padding: 6px 12px; border-radius: 20px; font-weight: 500; }
+  .user-chip { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--sky), var(--steel)); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+  .content { padding: 26px 28px; flex: 1; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: 1px solid transparent; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
+  .btn-primary { background: var(--sky); color: #fff; }
+  .btn-primary:hover { background: var(--steel); }
+  .btn-ghost { background: #fff; color: var(--ink); border-color: var(--line); }
+  .btn-ghost:hover { border-color: var(--sky); color: var(--sky); }
+  .btn-ai { background: linear-gradient(135deg, var(--gold), #9a6f24); color:#fff; }
+  .btn-ai:hover { filter: brightness(1.08); }
+  .btn-sm { padding: 6px 11px; font-size: 12px; }
+  .btn-danger-ghost { background:#fff; color: var(--danger); border-color: var(--danger-bg); }
+  .btn-danger-ghost:hover { background: var(--danger-bg); }
+  .btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+  .stat::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--sky); }
+  .stat.ok::before { background: var(--ok); } .stat.warn::before { background: var(--warn); } .stat.gold::before { background: var(--gold); }
+  .stat-label { font-size: 12px; color: var(--ink-soft); font-weight: 500; margin-bottom: 8px; }
+  .stat-value { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+  .stat-value small { font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+  .stat-foot { font-size: 11.5px; color: var(--ink-soft); margin-top: 6px; }
+  .stat-foot .up { color: var(--ok); font-weight: 600; }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 22px; overflow: hidden; }
+  .panel-head { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+  .panel-title { font-size: 15px; font-weight: 700; display:flex; align-items:center; gap:8px; }
+  .panel-title .tag { font-size:11px; font-weight:600; color: var(--sky); background: var(--ice); padding: 2px 9px; border-radius: 12px; }
+  .panel-body { padding: 4px 0; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-soft); font-weight: 600; padding: 11px 20px; border-bottom: 1px solid var(--line); background: var(--paper); }
+  td { padding: 13px 20px; border-bottom: 1px solid #EFF3F6; font-size: 13.5px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background 0.12s; } tbody tr:hover { background: var(--paper); }
+  .mono { font-family: 'SF Mono', 'Consolas', monospace; font-size: 12.5px; font-weight: 600; letter-spacing: -0.2px; }
+  .cell-strong { font-weight: 700; } .cell-sub { font-size: 12px; color: var(--ink-soft); }
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+  .badge::before { content:''; width:6px; height:6px; border-radius:50%; background: currentColor; }
+  .b-booking { background: var(--ice); color: var(--steel); } .b-sailing { background: #E7F0F8; color: var(--sky); }
+  .b-transit { background: var(--warn-bg); color: var(--warn); } .b-arrived { background: var(--ok-bg); color: var(--ok); } .b-delay { background: var(--danger-bg); color: var(--danger); }
+  .badge-static::before { display:none; }
+  .pill-exp { background: #E7F0F8; color: var(--sky); padding: 2px 9px; border-radius: 6px; font-size:11px; font-weight:700; }
+  .pill-imp { background: #F3EBF7; color: #7030A0; padding: 2px 9px; border-radius: 6px; font-size:11px; font-weight:700; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(11,37,69,0.45); display: none; align-items: flex-start; justify-content: center; z-index: 100; padding: 40px 20px; overflow-y: auto; backdrop-filter: blur(2px); }
+  .modal-bg.show { display: flex; }
+  .modal { background: #fff; border-radius: 14px; width: 100%; max-width: 640px; box-shadow: 0 20px 60px rgba(11,37,69,0.3); animation: pop 0.2s ease; }
+  .modal.wide { max-width: 860px; }
+  @keyframes pop { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-head { padding: 20px 24px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+  .modal-head h3 { font-size: 17px; font-weight: 700; }
+  .modal-x { cursor: pointer; font-size: 22px; color: var(--ink-soft); line-height: 1; border:none; background:none; }
+  .modal-x:hover { color: var(--ink); }
+  .modal-body { padding: 22px 24px; }
+  .modal-foot { padding: 16px 24px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 10px; background: var(--paper); border-radius: 0 0 14px 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.full { grid-column: 1 / -1; }
+  .field label { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+  .field label .req { color: var(--danger); }
+  .field input, .field select, .field textarea { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 13.5px; font-family: inherit; color: var(--ink); background: #fff; transition: border 0.15s; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--sky); box-shadow: 0 0 0 3px rgba(95,168,211,0.15); }
+  .field.ai-filled input, .field.ai-filled select, .field.ai-filled textarea { border-color: var(--gold); background: #FDF8EE; }
+  .form-section-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--sky); margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--ice); grid-column: 1 / -1; }
+  .form-section-label:first-child { margin-top: 0; }
+  .empty { text-align: center; padding: 50px 20px; color: var(--ink-soft); }
+  .empty-ico { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+  .empty h4 { font-size: 15px; color: var(--ink); margin-bottom: 6px; font-weight: 600; }
+  .empty p { font-size: 13px; margin-bottom: 16px; }
+  .ai-drop { margin: 0 20px 14px; border: 2px dashed var(--sky-light); border-radius: 10px; background: linear-gradient(135deg, #F4F9FC, #EAF3FA); padding: 16px 18px; display: flex; align-items: center; gap: 14px; }
+  .ai-drop-ico { font-size: 26px; }
+  .ai-drop-txt { flex: 1; }
+  .ai-drop-txt b { font-size: 13.5px; }
+  .ai-drop-txt p { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .ai-tag { font-size:10px; font-weight:700; background: var(--gold); color:#fff; padding:2px 7px; border-radius:10px; vertical-align: middle; margin-left: 6px;}
+  .toast { position: fixed; bottom: 26px; right: 26px; z-index: 200; background: var(--navy); color: #fff; padding: 13px 20px; border-radius: 10px; font-size: 13.5px; font-weight: 500; box-shadow: 0 8px 30px rgba(11,37,69,0.35); display: flex; align-items: center; gap: 10px; transform: translateY(80px); opacity: 0; transition: all 0.3s; max-width: 380px; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast .t-ico { color: var(--sky-light); font-size: 16px; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
+  .detail-cell { background: #fff; padding: 12px 16px; }
+  .detail-cell.full { grid-column: 1 / -1; }
+  .detail-cell .k { font-size: 11.5px; color: var(--ink-soft); font-weight: 500; margin-bottom: 3px; }
+  .detail-cell .v { font-size: 14px; font-weight: 600; }
+  .track-flow { display:flex; align-items:center; gap:0; margin: 18px 0 4px; }
+  .track-step { flex:1; text-align:center; position:relative; }
+  .track-step::after { content:''; position:absolute; top:11px; left:50%; width:100%; height:2px; background: var(--line); z-index:0; }
+  .track-step:last-child::after { display:none; }
+  .track-dot { width:24px; height:24px; border-radius:50%; background:#fff; border:2px solid var(--line); margin:0 auto 6px; position:relative; z-index:1; display:grid; place-items:center; font-size:11px; color:var(--ink-soft); }
+  .track-step.done .track-dot { background: var(--ok); border-color: var(--ok); color:#fff; }
+  .track-step.done::after { background: var(--ok); }
+  .track-step.current .track-dot { background: var(--sky); border-color: var(--sky); color:#fff; box-shadow:0 0 0 4px rgba(95,168,211,0.2); }
+  .track-label { font-size:11px; color: var(--ink-soft); font-weight:600; }
+  .track-step.done .track-label, .track-step.current .track-label { color: var(--ink); }
+  .filter-bar { display:flex; gap:8px; padding: 12px 20px; border-bottom:1px solid var(--line); align-items:center; flex-wrap:wrap; }
+  .filter-bar input, .filter-bar select { padding:7px 11px; border:1px solid var(--line); border-radius:7px; font-size:12.5px; font-family:inherit; }
+  .filter-bar input { flex:1; min-width: 160px; }
+  .seg { display:inline-flex; background:var(--ice); border-radius:8px; padding:3px; gap:2px; }
+  .seg button { border:none; background:none; padding:6px 14px; border-radius:6px; font-size:12.5px; font-weight:600; color:var(--ink-soft); cursor:pointer; font-family:inherit; }
+  .seg button.on { background:#fff; color:var(--sky); box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+  .row-link { color: var(--sky); font-weight:700; cursor:pointer; }
+  .row-link:hover { text-decoration: underline; }
+  .ai-stage { display:flex; flex-direction:column; gap:14px; }
+  .ai-textarea { width:100%; min-height:200px; padding:14px; border:1px solid var(--line); border-radius:10px; font-family:'SF Mono','Consolas',monospace; font-size:12.5px; line-height:1.6; resize:vertical; }
+  .ai-textarea:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(184,134,47,0.15); }
+  .ai-samples { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .ai-sample-chip { font-size:11.5px; padding:5px 11px; border:1px solid var(--line); border-radius:16px; background:#fff; cursor:pointer; color:var(--ink-soft); font-weight:600; }
+  .ai-sample-chip:hover { border-color:var(--gold); color:var(--gold); }
+  .ai-loading { display:flex; flex-direction:column; align-items:center; gap:14px; padding:40px 20px; }
+  .ai-spinner { width:44px; height:44px; border:4px solid var(--ice); border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ai-loading-text { font-weight:600; color:var(--ink); } .ai-loading-sub { font-size:12px; color:var(--ink-soft); text-align:center; }
+  .ai-result-banner { background:var(--ok-bg); border:1px solid #BFE3CE; border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+  .ai-result-banner .ico { font-size:20px; }
+  .ai-result-banner b { color:var(--ok); }
+  @media (max-width: 900px) { .sidebar { display: none; } .stat-grid { grid-template-columns: repeat(2,1fr); } .form-grid { grid-template-columns: 1fr; } .detail-grid { grid-template-columns: 1fr; } }
+  /* drag & drop */
+  .drop-zone { border:2px dashed var(--sky-light); border-radius:12px; background:linear-gradient(135deg,#F4F9FC,#EAF3FA); padding:28px 20px; text-align:center; cursor:pointer; transition:all 0.18s; }
+  .drop-zone:hover, .drop-zone.dragover { border-color:var(--gold); background:#FDF8EE; }
+  .drop-zone.dragover { transform:scale(1.01); }
+  .drop-ico { font-size:38px; margin-bottom:8px; }
+  .drop-zone h4 { font-size:14px; font-weight:700; margin-bottom:4px; }
+  .drop-zone p { font-size:12px; color:var(--ink-soft); }
+  .drop-types { display:flex; gap:6px; justify-content:center; margin-top:12px; flex-wrap:wrap; }
+  .drop-type { font-size:10.5px; font-weight:700; background:#fff; border:1px solid var(--line); color:var(--ink-soft); padding:3px 9px; border-radius:10px; }
+  .file-chip { display:inline-flex; align-items:center; gap:8px; background:var(--ice); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:12.5px; font-weight:600; margin-top:10px; }
+  .file-chip .fx { cursor:pointer; color:var(--ink-soft); font-weight:700; }
+  .or-divider { display:flex; align-items:center; gap:12px; margin:16px 0; color:var(--ink-soft); font-size:12px; }
+  .or-divider::before, .or-divider::after { content:''; flex:1; height:1px; background:var(--line); }
+  /* inbox */
+  .inbox-item { display:flex; align-items:center; gap:14px; padding:14px 20px; border-bottom:1px solid #EFF3F6; cursor:pointer; transition:background 0.12s; }
+  .inbox-item:hover { background:var(--paper); }
+  .inbox-avatar { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--sky-light),var(--sky)); color:#fff; display:grid; place-items:center; font-weight:700; flex-shrink:0; }
+  .inbox-main { flex:1; min-width:0; }
+  .inbox-from { font-weight:700; font-size:13.5px; }
+  .inbox-subj { font-size:12.5px; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .inbox-meta { text-align:right; flex-shrink:0; }
+  .inbox-time { font-size:11px; color:var(--ink-soft); }
+  .inbox-attach { font-size:11px; color:var(--sky); font-weight:600; margin-top:2px; }
+  .inbox-new { width:8px; height:8px; border-radius:50%; background:var(--sky); flex-shrink:0; }
+  /* login */
+  #loginScreen { position:fixed; inset:0; z-index:500; background:linear-gradient(135deg,#0B2545,#134074); display:flex; align-items:center; justify-content:center; }
+  .login-card { background:#fff; border-radius:18px; width:100%; max-width:400px; padding:38px 34px; box-shadow:0 24px 70px rgba(0,0,0,0.4); }
+  .login-brand { display:flex; align-items:center; gap:11px; justify-content:center; margin-bottom:6px; }
+  .login-brand .mk { width:42px; height:42px; background:linear-gradient(135deg,var(--sky-light),var(--sky)); border-radius:10px; display:grid; place-items:center; font-size:22px; }
+  .login-brand .nm { font-size:26px; font-weight:800; color:var(--navy); letter-spacing:-0.5px; }
+  .login-sub { text-align:center; font-size:12.5px; color:var(--ink-soft); margin-bottom:26px; }
+  .login-field { margin-bottom:14px; }
+  .login-field label { display:block; font-size:12.5px; font-weight:600; margin-bottom:6px; color:var(--ink); }
+  .login-field input { width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:9px; font-size:14px; font-family:inherit; }
+  .login-field input:focus { outline:none; border-color:var(--sky); box-shadow:0 0 0 3px rgba(95,168,211,0.15); }
+  .login-btn { width:100%; padding:12px; background:var(--sky); color:#fff; border:none; border-radius:9px; font-size:14.5px; font-weight:700; cursor:pointer; font-family:inherit; margin-top:8px; transition:background 0.15s; }
+  .login-btn:hover { background:var(--steel); }
+  .login-alt { text-align:center; margin-top:16px; font-size:12.5px; color:var(--ink-soft); }
+  .login-alt a { color:var(--sky); font-weight:600; cursor:pointer; text-decoration:none; }
+  .login-demo { margin-top:18px; padding-top:16px; border-top:1px solid var(--line); text-align:center; }
+  .login-demo button { background:var(--ice); border:1px solid var(--line); color:var(--steel); padding:9px 16px; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .login-demo button:hover { border-color:var(--sky); }
+  .login-google { width:100%; display:flex; align-items:center; justify-content:center; gap:10px; padding:11px; background:#fff; border:1.5px solid var(--line); border-radius:9px; font-size:14px; font-weight:600; color:var(--ink); cursor:pointer; font-family:inherit; transition:all 0.15s; margin-bottom:4px; }
+  .login-google:hover { border-color:var(--sky); background:#FAFCFD; box-shadow:0 2px 8px rgba(11,37,69,0.06); }
+  .login-divider { display:flex; align-items:center; gap:12px; margin:16px 0 14px; color:var(--soft); font-size:12px; }
+  .login-divider::before, .login-divider::after { content:''; flex:1; height:1px; background:var(--line); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
+</head>
+<body>
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-brand"><svg width="42" height="42" viewBox="0 0 72 72"><defs><linearGradient id="llg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5FA8D3"/><stop offset="1" stop-color="#3A7CA5"/></linearGradient></defs><rect width="72" height="72" rx="18" fill="url(#llg)"/><path d="M16 46 Q26 32 36 46 T56 46" stroke="#fff" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M16 34 Q26 20 36 34 T56 34" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.55"/></svg><div class="nm">SeaFlow</div></div>
+    <div class="login-sub">한국형 AI 포워딩 ERP</div>
+    <div id="loginForm">
+      <button class="login-google" id="googleBtn"><svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 01-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.02-3.7H.96v2.34A9 9 0 009 18z"/><path fill="#FBBC05" d="M3.98 10.72a5.4 5.4 0 010-3.44V4.94H.96a9 9 0 000 8.12l3.02-2.34z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58A9 9 0 00.96 4.94L3.98 7.28C4.68 5.16 6.66 3.58 9 3.58z"/></svg> Google 계정으로 시작</button>
+      <div class="login-divider"><span>또는 이메일로</span></div>
+      <div class="login-field"><label>회사 이메일</label><input type="email" id="loginEmail" placeholder="name@company.com" value="demo@seaflow.kr"></div>
+      <div class="login-field"><label>비밀번호</label><input type="password" id="loginPw" placeholder="••••••••" value="demo1234"></div>
+      <button class="login-btn" id="loginBtn">로그인</button>
+      <div class="login-alt">계정이 없으신가요? <a id="toSignup">회원가입</a></div>
+    </div>
+    <div id="signupForm" style="display:none;">
+      <button class="login-google" id="googleBtn2"><svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 01-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.02-3.7H.96v2.34A9 9 0 009 18z"/><path fill="#FBBC05" d="M3.98 10.72a5.4 5.4 0 010-3.44V4.94H.96a9 9 0 000 8.12l3.02-2.34z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58A9 9 0 00.96 4.94L3.98 7.28C4.68 5.16 6.66 3.58 9 3.58z"/></svg> Google 계정으로 가입</button>
+      <div class="login-divider"><span>또는 직접 입력</span></div>
+      <div class="login-field"><label>회사명</label><input type="text" id="suCompany" placeholder="예: 데모 포워딩"></div>
+      <div class="login-field"><label>담당자 이름</label><input type="text" id="suName" placeholder="예: 홍길동"></div>
+      <div class="login-field"><label>회사 이메일</label><input type="email" id="suEmail" placeholder="name@company.com"></div>
+      <div class="login-field"><label>비밀번호</label><input type="password" id="suPw" placeholder="8자 이상"></div>
+      <button class="login-btn" id="signupBtn">가입하고 시작하기</button>
+      <div class="login-alt">이미 계정이 있으신가요? <a id="toLogin">로그인</a></div>
+    </div>
+    <div class="login-demo"><button id="demoBtn">🚀 데모 둘러보기 (가입 없이)</button></div>
+  </div>
+</div>
+<div class="app" id="appRoot" style="display:none;">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg width="32" height="32" viewBox="0 0 72 72" style="flex-shrink:0;"><defs><linearGradient id="slg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5FA8D3"/><stop offset="1" stop-color="#3A7CA5"/></linearGradient></defs><rect width="72" height="72" rx="18" fill="url(#slg)"/><path d="M16 46 Q26 32 36 46 T56 46" stroke="#fff" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M16 34 Q26 20 36 34 T56 34" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.55"/></svg>
+        <span>SeaFlow</span>
+      </div>
+      <div class="brand-sub">한국형 AI 포워딩 ERP</div>
+    </div>
+    <nav>
+      <div class="nav-label">운영</div>
+      <div class="nav-item active" data-view="dashboard"><span class="nav-ico">📊</span> 대시보드</div>
+      <div class="nav-item" data-view="assistant"><span class="nav-ico">✨</span> AI 비서</div>
+      <div class="nav-item" data-view="export"><span class="nav-ico">📦</span> 수출 관리</div>
+      <div class="nav-item" data-view="import"><span class="nav-ico">📥</span> 수입 관리</div>
+      <div class="nav-item" data-view="inbox"><span class="nav-ico">📬</span> 메일 자동수신</div>
+      <div class="nav-item" data-view="tracking"><span class="nav-ico">🚢</span> 실시간 트래킹</div>
+      <div class="nav-label">정산</div>
+      <div class="nav-item" data-view="settlement"><span class="nav-ico">💰</span> 운임·정산</div>
+      <div class="nav-label">기준정보</div>
+      <div class="nav-item" data-view="partners"><span class="nav-ico">👥</span> 거래처 관리</div>
+      <div class="nav-item" data-view="portal"><span class="nav-ico">🔗</span> 화주 포털</div>
+      <div class="nav-item" data-view="settings"><span class="nav-ico">⚙️</span> 설정</div>
+    </nav>
+    <div class="sidebar-foot">IM AMERICA GROUP CORP<br><span style="opacity:0.7">v0.2 · AI 파싱 탑재</span></div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <h1 id="pageTitle">대시보드</h1>
+      <div class="topbar-right"><span class="company-pill">🏢 데모 포워딩</span><div class="user-chip">M</div></div>
+    </header>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+<div class="toast" id="toast"><span class="t-ico">✓</span><span id="toastMsg"></span></div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modalBox"></div></div>
+
+<script>
+/* ====================================================
+   SeaFlow 데이터 저장소
+   ★ Supabase를 쓰려면 아래 두 줄에 키를 넣으세요.
+     비워두면 자동으로 데모(메모리) 모드로 작동합니다.
+   ==================================================== */
+const SUPABASE_URL = "";   // 예: "https://abcdefgh.supabase.co"
+const SUPABASE_KEY = "";   // 예: "eyJhbG..."  (anon public key)
+
+let sb = null;
+const CLOUD = !!(SUPABASE_URL && SUPABASE_KEY && window.supabase);
+if(CLOUD){ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
+
+const DB = {
+  shipments: [
+    { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'HMM', booking:'HDMU2501887', bl:'HDMUBSC2501887', container:'HMMU1234567', incoterms:'FOB', commodity:'자동차 부품', qty:'1 x 40HC', status:'transit', etd:'2025-05-28', eta:'2025-06-03', revenue:4200000, cost:3350000, memo:'' },
+    { id:'EXP-2502', type:'export', mode:'sea', shipper:'서울화학', consignee:'GUANGZHOU IMPORT LTD', pol:'인천(KRINC)', pod:'광저우(CNCAN)', carrier:'고려해운', booking:'KMTC25A0445', bl:'KMTCSEL2502', container:'KMTU8845120', incoterms:'CIF', commodity:'화학 원료', qty:'2 x 20GP', status:'arrived', etd:'2025-05-20', eta:'2025-05-27', revenue:5800000, cost:4600000, memo:'' },
+    { id:'EXP-2503', type:'export', mode:'sea', shipper:'한빛전자', consignee:'LA ELECTRONICS INC.', pol:'부산(KRPUS)', pod:'로스앤젤레스(USLAX)', carrier:'Maersk', booking:'MAEU25778120', bl:'', container:'', incoterms:'FOB', commodity:'전자제품', qty:'1 x 40HC', status:'booking', etd:'2025-06-15', eta:'2025-07-01', revenue:7100000, cost:5900000, memo:'B/L 발행 대기' },
+  ],
+  imports: [
+    { id:'IMP-2511', type:'import', mode:'sea', shipper:'SHANGHAI MFG CO.', consignee:'(주)코리아유통', pol:'상하이(CNSHA)', pod:'부산(KRPUS)', carrier:'ONE', booking:'ONEY2511002', bl:'ONEYSHA2511', container:'ONEU5521340', incoterms:'CIF', commodity:'생활용품', qty:'1 x 40HC', status:'transit', etd:'2025-05-30', eta:'2025-06-05', revenue:3400000, cost:2700000, memo:'' },
+  ],
+  partners: [
+    { id:'P01', kind:'shipper', name:'대한정밀(주)', bizno:'128-81-44021', manager:'김상호 부장', phone:'010-2233-1100', email:'shkim@daehan.co.kr', addr:'경기도 안산시 단원구', memo:'주력 화주 · 월 4~6건' },
+    { id:'P02', kind:'shipper', name:'서울화학', bizno:'214-86-77123', manager:'이정민 과장', phone:'010-8842-3321', email:'jm.lee@seoulchem.com', addr:'서울시 금천구', memo:'위험물 취급 주의' },
+    { id:'P03', kind:'carrier', name:'HMM', bizno:'-', manager:'영업팀', phone:'1800-0006', email:'-', addr:'서울시 종로구', memo:'Open API 연동 가능' },
+    { id:'P04', kind:'customs', name:'우리관세사무소', bizno:'201-90-11234', manager:'박관세 관세사', phone:'051-441-2200', email:'woori@customs.kr', addr:'부산시 중구', memo:'부산항 통관 전담' },
+  ]
+};
+const STATUS_MAP = { booking:{label:'부킹',cls:'b-booking'}, sailing:{label:'선적완료',cls:'b-sailing'}, transit:{label:'운송중',cls:'b-transit'}, arrived:{label:'입항',cls:'b-arrived'}, delay:{label:'지연',cls:'b-delay'} };
+const TRACK_STEPS = ['booking','sailing','transit','arrived'];
+const KIND_LABEL = { shipper:'화주', carrier:'선사', customs:'관세사', trucker:'운송사' };
+
+const $ = (s, el=document) => el.querySelector(s);
+const won = n => '₩' + (n||0).toLocaleString('ko-KR');
+let toastTimer;
+function toast(msg){ $('#toastMsg').textContent = msg; $('#toast').classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(()=> $('#toast').classList.remove('show'), 2800); }
+function openModal(html, wide){ $('#modalBox').className = 'modal'+(wide?' wide':''); $('#modalBox').innerHTML = html; $('#modalBg').classList.add('show'); }
+function closeModal(){ $('#modalBg').classList.remove('show'); }
+$('#modalBg').addEventListener('click', e => { if(e.target.id==='modalBg') closeModal(); });
+
+const TITLES = { dashboard:'대시보드', assistant:'AI 비서', export:'수출 관리', import:'수입 관리', inbox:'메일 자동수신', tracking:'실시간 트래킹', settlement:'운임·정산', partners:'거래처 관리', portal:'화주 포털', settings:'설정' };
+let current = 'dashboard';
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click', ()=>{ document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); item.classList.add('active'); current = item.dataset.view; $('#pageTitle').textContent = TITLES[current]; render(); });
+});
+
+function render(){
+  const c = $('#content');
+  if(current==='dashboard') c.innerHTML = viewDashboard();
+  else if(current==='assistant') c.innerHTML = viewAssistant();
+  else if(current==='export') c.innerHTML = viewShipmentList('export');
+  else if(current==='import') c.innerHTML = viewShipmentList('import');
+  else if(current==='inbox') c.innerHTML = viewInbox();
+  else if(current==='tracking') c.innerHTML = viewTracking();
+  else if(current==='settlement') c.innerHTML = viewSettlement();
+  else if(current==='partners') c.innerHTML = viewPartners();
+  else if(current==='portal') c.innerHTML = viewPortal();
+  else if(current==='settings') c.innerHTML = viewSettings();
+  bindActions();
+}
+
+function viewAssistant(){
+  return `
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-head">
+      <div class="panel-title">✨ AI 비서 <span class="tag" style="color:#fff;background:var(--gold)">Flexport급 기능</span></div>
+    </div>
+    <div class="panel-body" style="padding:18px 20px;">
+      <p style="font-size:13.5px;color:var(--ink-soft);margin-bottom:14px;">우리 회사 데이터에 대해 그냥 평소 말투로 물어보세요. AI가 분석해서 바로 답해드립니다.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+        <span class="ai-sample-chip" data-ask="이번 달 손익이 가장 좋은 노선은 어디야?">💰 손익 좋은 노선</span>
+        <span class="ai-sample-chip" data-ask="지금 지연되거나 주의가 필요한 화물 알려줘">⚠️ 주의 화물</span>
+        <span class="ai-sample-chip" data-ask="선사별로 우리가 얼마나 거래하고 있는지 정리해줘">🚢 선사별 현황</span>
+        <span class="ai-sample-chip" data-ask="이번 달 전체 매출과 영업이익을 요약해줘">📊 이달 요약</span>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <input type="text" id="askInput" placeholder="예: 대한정밀 화물 진행 상황이 어때?" style="flex:1;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;">
+        <button class="btn btn-ai" id="askBtn">✨ 물어보기</button>
+      </div>
+    </div>
+  </div>
+  <div id="askResult"></div>`;
+}
+
+async function runAssistant(question){
+  const box = $('#askResult');
+  box.innerHTML = `<div class="panel"><div class="panel-body"><div class="ai-loading"><div class="ai-spinner"></div><div class="ai-loading-text">데이터를 분석하고 있습니다...</div><div class="ai-loading-sub">"${question}"</div></div></div></div>`;
+  const data = {
+    수출: DB.shipments.map(s=>({번호:s.id,화주:s.shipper,수하인:s.consignee,노선:`${s.pol}→${s.pod}`,선사:s.carrier,상태:STATUS_MAP[s.status].label,품목:s.commodity,수량:s.qty,매출:s.revenue,원가:s.cost,이익:s.revenue-s.cost,ETD:s.etd,ETA:s.eta})),
+    수입: DB.imports.map(s=>({번호:s.id,화주:s.shipper,수하인:s.consignee,노선:`${s.pol}→${s.pod}`,선사:s.carrier,상태:STATUS_MAP[s.status].label,품목:s.commodity,수량:s.qty,매출:s.revenue,원가:s.cost,이익:s.revenue-s.cost,ETD:s.etd,ETA:s.eta})),
+  };
+  const prompt = `당신은 한국 포워딩 회사의 데이터 분석 AI 비서입니다. 아래는 우리 회사의 현재 수출입 화물 데이터(JSON)입니다.
+
+${JSON.stringify(data, null, 1)}
+
+사용자 질문: "${question}"
+
+이 데이터를 바탕으로 한국어로 친절하고 명확하게 답하세요.
+- 숫자는 원화로 표기 (예: 850만원, ₩8,500,000)
+- 핵심을 먼저 말하고, 필요하면 간단한 표나 목록으로 정리
+- 데이터에 없는 내용은 추측하지 말고 "현재 데이터로는 알 수 없다"고 답하세요
+- HTML 태그 없이 일반 텍스트로 답하되, 줄바꿈과 '•' 기호로 읽기 쉽게 구성`;
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ model:"claude-sonnet-4-6", max_tokens:1000, messages:[{role:"user",content:prompt}] })
+    });
+    const d = await res.json();
+    const answer = d.content.filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+    box.innerHTML = `<div class="panel"><div class="panel-head"><div class="panel-title">✨ AI 분석 결과</div></div><div class="panel-body" style="padding:20px;"><div style="background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:8px;padding:18px;font-size:14px;line-height:1.8;white-space:pre-wrap;color:var(--ink);">${answer.replace(/</g,'&lt;')}</div><div style="margin-top:12px;font-size:11.5px;color:var(--ink-soft);">💡 질문: "${question}"</div></div></div>`;
+  } catch(err){
+    box.innerHTML = `<div class="panel"><div class="panel-body" style="padding:30px;text-align:center;color:var(--ink-soft)">⚠️ 분석 중 문제가 발생했어요. 다시 시도해주세요.</div></div>`;
+  }
+}
+
+function viewDashboard(){
+  const all = [...DB.shipments, ...DB.imports];
+  const active = all.filter(s=>s.status!=='arrived').length;
+  const monthRev = all.reduce((a,s)=>a+s.revenue,0);
+  const monthProfit = all.reduce((a,s)=>a+(s.revenue-s.cost),0);
+  const delayed = all.filter(s=>s.status==='delay').length;
+  const recent = all.slice().reverse().slice(0,5);
+  return `
+  <div class="stat-grid">
+    <div class="stat"><div class="stat-label">진행중 건</div><div class="stat-value">${active}<small> 건</small></div><div class="stat-foot">전체 ${all.length}건 중 운송 진행</div></div>
+    <div class="stat gold"><div class="stat-label">이번 달 매출</div><div class="stat-value" style="font-size:22px">${won(monthRev)}</div><div class="stat-foot"><span class="up">▲ 12%</span> 전월 대비</div></div>
+    <div class="stat ok"><div class="stat-label">이번 달 영업이익</div><div class="stat-value" style="font-size:22px">${won(monthProfit)}</div><div class="stat-foot">이익률 ${Math.round(monthProfit/monthRev*100)}%</div></div>
+    <div class="stat ${delayed?'warn':''}"><div class="stat-label">지연 경보</div><div class="stat-value">${delayed}<small> 건</small></div><div class="stat-foot">${delayed?'⚠ 확인 필요':'정상 운영중'}</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">최근 선적 현황 <span class="tag">실시간</span></div><button class="btn btn-ghost btn-sm" data-go="export">전체 보기 →</button></div>
+    <div class="panel-body"><table>
+      <thead><tr><th>건 번호</th><th>구분</th><th>화주 / 수하인</th><th>노선</th><th>선사</th><th>상태</th><th>ETA</th></tr></thead>
+      <tbody>${recent.map(s=>`<tr><td class="mono">${s.id}</td><td><span class="pill-${s.type==='export'?'exp':'imp'}">${s.type==='export'?'수출':'수입'}</span></td><td><div class="cell-strong">${s.type==='export'?s.shipper:s.consignee}</div><div class="cell-sub">${s.type==='export'?s.consignee:s.shipper}</div></td><td class="cell-sub">${s.pol} → ${s.pod}</td><td>${s.carrier}</td><td><span class="badge ${STATUS_MAP[s.status].cls}">${STATUS_MAP[s.status].label}</span></td><td class="cell-sub">${s.eta}</td></tr>`).join('')}</tbody>
+    </table></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">⚡ 빠른 작업</div></div>
+    <div class="panel-body" style="padding:18px 20px; display:flex; gap:12px; flex-wrap:wrap;">
+      <button class="btn btn-ai" data-go="assistant">✨ AI 비서에게 물어보기</button>
+      <button class="btn btn-ai" data-aiparse="export">🤖 AI로 서류 자동 등록</button>
+      <button class="btn btn-primary" data-new="export">+ 수출 건 등록</button>
+      <button class="btn btn-ghost" data-new="import">+ 수입 건 등록</button>
+      <button class="btn btn-ghost" data-go="partners">+ 거래처 추가</button>
+    </div>
+  </div>`;
+}
+
+function viewShipmentList(type){
+  const list = type==='export' ? DB.shipments : DB.imports;
+  const label = type==='export' ? '수출' : '수입';
+  return `
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">${label} 건 목록 <span class="tag">${list.length}건</span></div>
+      <div style="display:flex;gap:8px"><button class="btn btn-ai btn-sm" data-aiparse="${type}">🤖 AI 자동 등록</button><button class="btn btn-primary btn-sm" data-new="${type}">+ 직접 등록</button></div></div>
+    <div class="ai-drop">
+      <div class="ai-drop-ico">🤖</div>
+      <div class="ai-drop-txt"><b>AI 서류 자동 입력 <span class="ai-tag">작동중</span></b><p>화주가 보낸 S/R·인보이스 내용을 붙여넣으면 AI가 항목을 자동으로 채워줍니다. 양식이 달라도 OK!</p></div>
+      <button class="btn btn-ai btn-sm" data-aiparse="${type}">지금 사용</button>
+    </div>
+    <div class="filter-bar">
+      <input type="text" placeholder="🔍 화주명, 건번호, B/L로 검색" id="searchBox" data-type="${type}">
+      <select id="statusFilter" data-type="${type}"><option value="">전체 상태</option><option value="booking">부킹</option><option value="sailing">선적완료</option><option value="transit">운송중</option><option value="arrived">입항</option><option value="delay">지연</option></select>
+    </div>
+    <div class="panel-body"><table>
+      <thead><tr><th>건 번호</th><th>화주 / 수하인</th><th>노선</th><th>선사 / B/L</th><th>수량</th><th>상태</th><th>손익</th><th></th></tr></thead>
+      <tbody id="shipRows">${renderShipRows(list, type)}</tbody>
+    </table></div>
+  </div>`;
+}
+function renderShipRows(list, type){
+  if(!list.length) return `<tr><td colspan="8"><div class="empty"><div class="empty-ico">📭</div><h4>등록된 건이 없습니다</h4><p>AI 자동 등록 또는 직접 등록으로 시작하세요.</p><button class="btn btn-ai" data-aiparse="${type}">🤖 AI 자동 등록</button></div></td></tr>`;
+  return list.map(s=>{
+    const profit = s.revenue - s.cost;
+    return `<tr><td class="mono">${s.id}</td><td><div class="cell-strong">${s.type==='export'?s.shipper:s.consignee}</div><div class="cell-sub">${s.type==='export'?s.consignee:s.shipper}</div></td><td class="cell-sub">${s.pol}<br>→ ${s.pod}</td><td>${s.carrier}<br><span class="cell-sub mono">${s.bl||'B/L 대기'}</span></td><td class="cell-sub">${s.qty}</td><td><span class="badge ${STATUS_MAP[s.status].cls}">${STATUS_MAP[s.status].label}</span></td><td><span style="font-weight:700;color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span><br><span class="cell-sub">매출 ${won(s.revenue)}</span></td><td><span class="row-link" data-detail="${s.id}" data-type="${type}">상세 →</span></td></tr>`;
+  }).join('');
+}
+
+function openMail(id){
+  const m = INBOX.find(x=>x.id===id);
+  if(!m) return;
+  openModal(`
+    <div class="modal-head">
+      <h3>📧 화주 메일</h3>
+      <button class="modal-x" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:14px;">
+        <div class="inbox-avatar" style="width:42px;height:42px">${m.from.charAt(0)}</div>
+        <div>
+          <div style="font-weight:700">${m.from} <span style="font-size:12px;color:var(--ink-soft);font-weight:500">&lt;${m.email}&gt;</span></div>
+          <div style="font-size:13px;color:var(--ink-soft)">${m.subj}</div>
+        </div>
+        <div style="margin-left:auto;font-size:11px;color:var(--ink-soft)">${m.time}</div>
+      </div>
+      ${m.attach?`<div class="file-chip" style="margin:0 0 14px">📎 ${m.attach} <span style="color:var(--ok);font-weight:600;margin-left:4px">· AI가 읽을 수 있음</span></div>`:''}
+      <div style="white-space:pre-wrap;font-size:13px;line-height:1.7;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px;color:var(--ink);font-family:'SF Mono','Consolas',monospace;max-height:280px;overflow:auto;">${m.body}</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">닫기</button>
+      <button class="btn btn-ai" data-mailparse="${m.id}">🤖 이 메일로 건 자동 등록</button>
+    </div>`, true);
+  $('[data-mailparse]').onclick = ()=> {
+    const type = (m.body.includes('Consignee')&&m.body.includes('Buyer')) ? 'import' : 'export';
+    // 화주가 보낸 선적의뢰는 보통 수출 건
+    aiParseModal('export', m.body);
+  };
+}
+
+function viewPortal(){
+  const shippers = DB.partners.filter(p=>p.kind==='shipper');
+  const sel = window._portalShipper || (shippers[0] && shippers[0].name) || '';
+  const myShips = [...DB.shipments, ...DB.imports].filter(s=>s.shipper===sel || s.consignee===sel);
+  return `
+  <div class="ai-drop" style="border-color:var(--sky); margin:0 0 20px;">
+    <div class="ai-drop-ico">🔗</div>
+    <div class="ai-drop-txt">
+      <b>화주 전용 조회 포털 <span class="ai-tag" style="background:var(--sky)">영업 무기</span></b>
+      <p>화주에게 전용 링크를 주면, 화주가 직접 로그인해서 자기 화물 현황을 실시간으로 확인합니다. "우리 화물 어디쯤이에요?" 전화가 사라집니다. 아래는 화주가 보는 화면 미리보기입니다.</p>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">화주 화면 미리보기</div>
+      <select id="portalSel" style="padding:7px 11px;border:1px solid var(--line);border-radius:7px;font-size:12.5px;font-family:inherit;">
+        ${shippers.map(p=>`<option value="${p.name}" ${p.name===sel?'selected':''}>${p.name}</option>`).join('')}
+      </select>
+    </div>
+    <div class="panel-body" style="padding:20px;">
+      <div style="background:linear-gradient(135deg,#0B2545,#13315C);border-radius:12px;padding:24px;color:#fff;margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:12px;opacity:0.7;">화주 포털 · SeaFlow</div><div style="font-size:20px;font-weight:800;margin-top:4px;">${sel}</div></div>
+          <div style="text-align:right;"><div style="font-size:12px;opacity:0.7;">진행중 화물</div><div style="font-size:28px;font-weight:800;">${myShips.filter(s=>s.status!=='arrived').length}건</div></div>
+        </div>
+      </div>
+      ${myShips.length ? myShips.map(s=>{
+        const idx = TRACK_STEPS.indexOf(s.status==='delay'?'transit':s.status);
+        return `<div style="border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
+            <div><span class="cell-strong">${s.commodity}</span> <span class="cell-sub">· ${s.qty}</span></div>
+            <span class="badge ${STATUS_MAP[s.status].cls}">${STATUS_MAP[s.status].label}</span>
+          </div>
+          <div class="cell-sub" style="margin-bottom:8px;">${s.id} · ${s.pol} → ${s.pod} · ${s.carrier}</div>
+          <div class="track-flow" style="margin:10px 0 4px;">${TRACK_STEPS.map((step,i)=>`<div class="track-step ${i<idx?'done':i===idx?'current':''}"><div class="track-dot" style="width:20px;height:20px;font-size:10px;">${i<idx?'✓':i+1}</div><div class="track-label" style="font-size:10px;">${STATUS_MAP[step].label}</div></div>`).join('')}</div>
+          <div style="text-align:right;font-size:11px;color:var(--ink-soft);margin-top:6px;">입항예정 ${s.eta}</div>
+        </div>`;
+      }).join('') : '<div class="empty"><div class="empty-ico">📦</div><h4>이 화주의 화물이 없습니다</h4></div>'}
+      <div style="text-align:center;margin-top:16px;">
+        <button class="btn btn-ghost btn-sm" data-portallink="1">🔗 화주에게 보낼 링크 복사</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function viewInbox(){
+  return `
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">메일 자동수신함 <span class="tag">Gmail 연동</span></div>
+      <button class="btn btn-ghost btn-sm" data-mailsync="1">🔄 메일 가져오기</button>
+    </div>
+    <div class="ai-drop" style="border-color:var(--gold); background:linear-gradient(135deg,#FDF8EE,#FBF3E2)">
+      <div class="ai-drop-ico">📬</div>
+      <div class="ai-drop-txt">
+        <b>화주 메일 자동 수신 → AI 분석</b>
+        <p>전용 주소(<b>booking@우리회사.seaflow.kr</b>)로 화주가 메일을 보내면 자동으로 수신되고, 클릭 한 번으로 AI가 첨부 서류까지 분석해 건을 등록합니다. (실제 연동은 서버 설정 후 작동)</p>
+      </div>
+    </div>
+    <div class="panel-body" id="inboxBody">${renderInbox()}</div>
+  </div>`;
+}
+const INBOX = [
+  { id:'M1', from:'김상호 (대한정밀)', email:'shkim@daehan.co.kr', subj:'[선적의뢰] 오사카向 자동차 부품 1x40HC', time:'10분 전', attach:'S/R_20250612.pdf', isNew:true, body:`안녕하세요, 대한정밀 김상호 부장입니다.
+아래 건 선적 부탁드립니다.
+
+수출자: 대한정밀(주)
+수입자(Consignee): OSAKA MACHINERY CO., LTD
+선적항: 부산항 / 도착항: 일본 오사카
+품목: 자동차 엔진 부품
+수량: 40피트 1대 (40HC x 1)
+인코텀즈: FOB 부산
+선적 희망일: 6월 20일경
+선사는 HMM으로 부탁드려요.
+견적가는 420만원으로 협의된 건입니다.` },
+  { id:'M2', from:'이정민 (서울화학)', email:'jm.lee@seoulchem.com', subj:'Shipping Request - Hai Phong', time:'1시간 전', attach:'SR_seoulchem.xlsx', isNew:true, body:`S/R No.\t2025-0612
+Shipper\t서울화학
+Consignee\tHANOI CHEMICAL TRADING
+POL\tInchon, Korea
+POD\tHai Phong, Vietnam
+Commodity\t산업용 화학원료 (비위험)
+Q'ty\t20GP x 2
+Incoterms\tCIF
+Carrier\tSM Line
+ETD\t2025-06-25
+Freight\tKRW 5,600,000` },
+  { id:'M3', from:'Berlin Electronics', email:'order@berlin-elec.de', subj:'PO + Commercial Invoice attached', time:'3시간 전', attach:'invoice_2025.pdf', isNew:false, body:`COMMERCIAL INVOICE
+Seller: 한빛전자
+Buyer: BERLIN ELECTRONICS GMBH
+Port of Loading: Busan, Korea
+Port of Discharge: Hamburg, Germany
+Description: LED Display Modules
+Quantity: 1 x 40' High Cube
+Terms: CIF Hamburg
+Carrier: HMM
+Total: USD 52,000` },
+];
+function renderInbox(){
+  return INBOX.map(m=>`
+    <div class="inbox-item" data-mail="${m.id}">
+      ${m.isNew?'<div class="inbox-new"></div>':'<div style="width:8px"></div>'}
+      <div class="inbox-avatar">${m.from.charAt(0)}</div>
+      <div class="inbox-main">
+        <div class="inbox-from">${m.from}</div>
+        <div class="inbox-subj">${m.subj}</div>
+      </div>
+      <div class="inbox-meta">
+        <div class="inbox-time">${m.time}</div>
+        ${m.attach?`<div class="inbox-attach">📎 ${m.attach}</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function viewTracking(){
+  const all = [...DB.shipments, ...DB.imports].filter(s=>s.bl);
+  return `
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">실시간 컨테이너 트래킹 <span class="tag">선사 API 연동</span></div><button class="btn btn-ghost btn-sm" data-refresh="1">🔄 새로고침</button></div>
+    <div class="ai-drop" style="border-color:var(--ok); background:linear-gradient(135deg,#F1F9F4,#E8F5EE)">
+      <div class="ai-drop-ico">📡</div><div class="ai-drop-txt"><b>선사 Open API 자동 연동</b><p>HMM·Maersk·ONE 등 선사 API로 컨테이너 위치가 자동 업데이트됩니다. 지연 발생 시 화주에게 카카오 알림톡 자동 발송. (개발 예정)</p></div>
+    </div>
+    <div class="panel-body" style="padding:8px 20px 20px;">
+      ${all.map(s=>{ const idx = TRACK_STEPS.indexOf(s.status==='delay'?'transit':s.status); return `
+        <div style="border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-top:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;"><div><span class="mono" style="font-weight:700">${s.container||'컨테이너 미배정'}</span><span class="cell-sub" style="margin-left:10px">${s.id} · ${s.carrier}</span></div><span class="badge ${STATUS_MAP[s.status].cls}">${STATUS_MAP[s.status].label}</span></div>
+          <div class="track-flow">${TRACK_STEPS.map((step,i)=>`<div class="track-step ${i<idx?'done':i===idx?'current':''}"><div class="track-dot">${i<idx?'✓':i+1}</div><div class="track-label">${STATUS_MAP[step].label}</div></div>`).join('')}</div>
+          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--ink-soft); margin-top:6px;"><span>${s.pol} 출항 ${s.etd}</span><span>${s.pod} 입항예정 ${s.eta}</span></div>
+          <div style="margin-top:10px;text-align:right;"><button class="btn btn-ghost btn-sm" data-kakao="${s.id}" data-type="${s.type}">💬 화주에게 알림톡 발송</button></div>
+        </div>`; }).join('') || '<div class="empty"><div class="empty-ico">🚢</div><h4>트래킹할 컨테이너가 없습니다</h4></div>'}
+    </div>
+  </div>`;
+}
+
+function viewSettlement(){
+  const all = [...DB.shipments, ...DB.imports];
+  const totRev = all.reduce((a,s)=>a+s.revenue,0);
+  const totCost = all.reduce((a,s)=>a+s.cost,0);
+  return `
+  <div class="stat-grid">
+    <div class="stat gold"><div class="stat-label">총 매출</div><div class="stat-value" style="font-size:21px">${won(totRev)}</div></div>
+    <div class="stat"><div class="stat-label">총 원가</div><div class="stat-value" style="font-size:21px">${won(totCost)}</div></div>
+    <div class="stat ok"><div class="stat-label">영업이익</div><div class="stat-value" style="font-size:21px">${won(totRev-totCost)}</div></div>
+    <div class="stat"><div class="stat-label">미발행 세금계산서</div><div class="stat-value">${all.length}<small> 건</small></div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">건별 손익 · 세금계산서 <span class="tag">홈택스 연동 예정</span></div></div>
+    <div class="panel-body"><table>
+      <thead><tr><th>건 번호</th><th>거래처</th><th>매출</th><th>원가</th><th>이익</th><th>이익률</th><th>세금계산서</th></tr></thead>
+      <tbody>${all.map(s=>{ const p = s.revenue-s.cost; const rate = Math.round(p/s.revenue*100); return `<tr><td class="mono">${s.id}</td><td class="cell-strong">${s.type==='export'?s.shipper:s.consignee}</td><td>${won(s.revenue)}</td><td class="cell-sub">${won(s.cost)}</td><td style="font-weight:700;color:${p>=0?'var(--ok)':'var(--danger)'}">${won(p)}</td><td><span class="cell-sub">${rate}%</span></td><td><button class="btn btn-ghost btn-sm" data-tax="${s.id}">발행</button></td></tr>`; }).join('')}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function viewPartners(){
+  return `
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">거래처 관리 <span class="tag">${DB.partners.length}곳</span></div><button class="btn btn-primary btn-sm" data-newpartner="1">+ 거래처 추가</button></div>
+    <div class="filter-bar"><div class="seg" id="kindSeg"><button class="on" data-kind="">전체</button><button data-kind="shipper">화주</button><button data-kind="carrier">선사</button><button data-kind="customs">관세사</button><button data-kind="trucker">운송사</button></div></div>
+    <div class="panel-body"><table>
+      <thead><tr><th>구분</th><th>상호</th><th>사업자번호</th><th>담당자</th><th>연락처</th><th>메모</th><th></th></tr></thead>
+      <tbody id="partnerRows">${renderPartnerRows('')}</tbody>
+    </table></div>
+  </div>`;
+}
+function renderPartnerRows(kind){
+  const list = kind ? DB.partners.filter(p=>p.kind===kind) : DB.partners;
+  if(!list.length) return `<tr><td colspan="7"><div class="empty"><div class="empty-ico">👥</div><h4>거래처가 없습니다</h4></div></td></tr>`;
+  return list.map(p=>`<tr><td><span class="badge badge-static ${p.kind==='shipper'?'b-sailing':p.kind==='carrier'?'b-booking':'b-arrived'}">${KIND_LABEL[p.kind]}</span></td><td class="cell-strong">${p.name}</td><td class="cell-sub mono">${p.bizno}</td><td>${p.manager}</td><td class="cell-sub">${p.phone}</td><td class="cell-sub">${p.memo||'-'}</td><td><span class="row-link" data-delpartner="${p.id}" style="color:var(--danger)">삭제</span></td></tr>`).join('');
+}
+
+function viewSettings(){
+  return `
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">데이터 저장 ${CLOUD?'<span class="tag" style="color:var(--ok);background:var(--ok-bg)">☁️ 클라우드 연결됨</span>':'<span class="tag" style="color:var(--warn);background:var(--warn-bg)">💾 데모 모드</span>'}</div></div>
+    <div class="panel-body" style="padding:18px 20px;">
+      ${CLOUD
+        ? '<p style="font-size:13.5px;color:var(--ink)">✅ Supabase 클라우드에 연결되어 있습니다. 입력한 데이터가 영구 저장되며, 다른 직원·기기에서도 같은 데이터를 볼 수 있습니다.</p>'
+        : '<p style="font-size:13.5px;color:var(--ink-soft)">현재 데모 모드입니다. 입력한 데이터는 새로고침하면 사라집니다. <b>영구 저장</b>을 원하면 Supabase 연결 가이드를 따라 키를 입력하세요. (코드 상단 SUPABASE_URL, SUPABASE_KEY)</p>'}
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">회사 정보</div></div>
+    <div class="panel-body" style="padding:20px;"><div class="detail-grid">
+      <div class="detail-cell"><div class="k">상호</div><div class="v">데모 포워딩</div></div>
+      <div class="detail-cell"><div class="k">운영사</div><div class="v">IM AMERICA GROUP CORP</div></div>
+      <div class="detail-cell"><div class="k">플랜</div><div class="v">스타터 (1~3명) · 월 15만원</div></div>
+      <div class="detail-cell"><div class="k">버전</div><div class="v">v0.2 · AI 파싱 탑재</div></div>
+    </div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">선사 API 연동 <span class="tag">개발 예정</span></div></div>
+    <div class="panel-body"><table>
+      <thead><tr><th>선사</th><th>API 상태</th><th>제공 데이터</th><th></th></tr></thead>
+      <tbody>
+        <tr><td class="cell-strong">HMM</td><td><span class="badge b-arrived">연동 가능</span></td><td class="cell-sub">스케줄·트래킹·운임</td><td><button class="btn btn-ghost btn-sm" data-connect="HMM">연결</button></td></tr>
+        <tr><td class="cell-strong">Maersk</td><td><span class="badge b-arrived">연동 가능</span></td><td class="cell-sub">스케줄·트래킹</td><td><button class="btn btn-ghost btn-sm" data-connect="Maersk">연결</button></td></tr>
+        <tr><td class="cell-strong">ONE</td><td><span class="badge b-booking">준비중</span></td><td class="cell-sub">트래킹</td><td><button class="btn btn-ghost btn-sm" disabled>연결</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>`;
+}
+
+const SAMPLE_DOCS = {
+  email: `안녕하세요, 대한정밀 김상호 부장입니다.
+아래 건 선적 부탁드립니다.
+
+수출자: 대한정밀(주)
+수입자(Consignee): OSAKA MACHINERY CO., LTD
+선적항: 부산항
+도착항: 일본 오사카
+품목: 자동차 엔진 부품
+수량: 40피트 1대 (40HC x 1)
+인코텀즈: FOB 부산
+선적 희망일: 6월 20일경
+선사는 HMM으로 부탁드려요.
+견적가는 420만원으로 협의된 건입니다.
+
+감사합니다.`,
+  excel: `S/R No.\t2025-0612
+Shipper\t서울화학
+Consignee\tHANOI CHEMICAL TRADING
+POL\tInchon, Korea
+POD\tHai Phong, Vietnam
+Commodity\t산업용 화학원료 (비위험)
+Q'ty\t20GP x 2
+Incoterms\tCIF
+Carrier\tSM Line
+ETD\t2025-06-25
+Freight\tKRW 5,600,000`,
+  invoice: `COMMERCIAL INVOICE
+Seller: 한빛전자
+Buyer: BERLIN ELECTRONICS GMBH
+Port of Loading: Busan, Korea
+Port of Discharge: Hamburg, Germany
+Description: LED Display Modules
+Quantity: 1 x 40' High Cube
+Terms: CIF Hamburg
+Carrier: HMM
+Total: USD 52,000`
+};
+
+function aiParseModal(type, prefillText){
+  const label = type==='export'?'수출':'수입';
+  openModal(`
+    <div class="modal-head">
+      <h3>🤖 AI 서류 자동 등록 <span style="font-size:11px;font-weight:700;background:var(--gold);color:#fff;padding:2px 8px;border-radius:10px;margin-left:6px;vertical-align:middle">${label}</span></h3>
+      <button class="modal-x" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="ai-stage">
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-ico">📂</div>
+          <h4>파일을 끌어다 놓으세요</h4>
+          <p>또는 클릭해서 파일 선택 · 화주가 보낸 어떤 양식이든 OK</p>
+          <div class="drop-types">
+            <span class="drop-type">📊 엑셀 xlsx</span>
+            <span class="drop-type">📄 PDF</span>
+            <span class="drop-type">📝 워드 docx</span>
+            <span class="drop-type">🖼️ 이미지 jpg/png</span>
+          </div>
+          <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.pdf,.docx,.png,.jpg,.jpeg" style="display:none">
+          <div id="fileChipWrap"></div>
+        </div>
+        <div class="or-divider">또는 내용을 직접 붙여넣기</div>
+        <div>
+          <div class="ai-samples" style="margin-bottom:8px">
+            <span style="font-size:11px;color:var(--ink-soft)">예시:</span>
+            <span class="ai-sample-chip" data-sample="email">📧 이메일 S/R</span>
+            <span class="ai-sample-chip" data-sample="excel">📊 엑셀 표</span>
+            <span class="ai-sample-chip" data-sample="invoice">📄 영문 인보이스</span>
+          </div>
+          <textarea class="ai-textarea" id="aiInput" placeholder="여기에 화주 서류 내용을 붙여넣으세요...">${prefillText||''}</textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">취소</button>
+      <button class="btn btn-ai" id="aiRunBtn">✨ AI로 분석하기</button>
+    </div>`, true);
+  document.querySelectorAll('.ai-sample-chip').forEach(chip=>{ chip.onclick = ()=> { $('#aiInput').value = SAMPLE_DOCS[chip.dataset.sample]; }; });
+  $('#aiRunBtn').onclick = ()=> runAiParse(type);
+  setupDropZone();
+}
+
+// ---- 드래그앤드롭 + 파일→텍스트 ----
+function setupDropZone(){
+  const dz = $('#dropZone'), fi = $('#fileInput');
+  if(!dz) return;
+  dz.onclick = ()=> fi.click();
+  fi.onchange = ()=> { if(fi.files[0]) handleFile(fi.files[0]); };
+  ['dragenter','dragover'].forEach(ev=> dz.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); dz.classList.add('dragover'); }));
+  ['dragleave','drop'].forEach(ev=> dz.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); dz.classList.remove('dragover'); }));
+  dz.addEventListener('drop', e=>{ const f = e.dataTransfer.files[0]; if(f) handleFile(f); });
+}
+
+async function handleFile(file){
+  const wrap = $('#fileChipWrap');
+  wrap.innerHTML = `<div class="file-chip">📎 ${file.name} <span style="color:var(--ink-soft);font-weight:500">· 읽는 중...</span></div>`;
+  try {
+    const ext = file.name.split('.').pop().toLowerCase();
+    let text = '';
+    if(ext==='xlsx' || ext==='xls' || ext==='csv'){
+      text = await readExcel(file);
+    } else if(ext==='pdf'){
+      text = await readPDF(file);
+    } else if(ext==='docx'){
+      text = await readDocx(file);
+    } else if(['png','jpg','jpeg'].includes(ext)){
+      // 이미지는 AI 비전으로 직접 분석
+      wrap.innerHTML = `<div class="file-chip">🖼️ ${file.name} <span style="color:var(--ok);font-weight:600">· 준비됨</span></div>`;
+      window._pendingImage = await fileToBase64(file);
+      window._pendingImageType = file.type;
+      $('#aiInput').value = '[이미지 파일이 첨부되었습니다: ' + file.name + ']\n분석하기 버튼을 누르면 AI가 이미지를 읽습니다.';
+      return;
+    } else {
+      text = await file.text();
+    }
+    $('#aiInput').value = text;
+    window._pendingImage = null;
+    wrap.innerHTML = `<div class="file-chip">📎 ${file.name} <span style="color:var(--ok);font-weight:600">· 추출 완료 (${text.length}자)</span></div>`;
+    toast('📄 파일에서 내용을 추출했어요. 분석하기를 누르세요.');
+  } catch(err){
+    wrap.innerHTML = `<div class="file-chip" style="border-color:var(--danger);color:var(--danger)">⚠ ${file.name} · 읽기 실패</div>`;
+    toast('⚠ 파일을 읽지 못했어요. 내용을 직접 붙여넣어 주세요.');
+  }
+}
+
+function readExcel(file){
+  return new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = e=>{
+      try {
+        const wb = XLSX.read(e.target.result, {type:'array'});
+        let out = '';
+        wb.SheetNames.forEach(name=>{
+          const sheet = wb.Sheets[name];
+          out += `[시트: ${name}]\n` + XLSX.utils.sheet_to_csv(sheet) + '\n\n';
+        });
+        res(out.trim());
+      } catch(err){ rej(err); }
+    };
+    r.onerror = rej;
+    r.readAsArrayBuffer(file);
+  });
+}
+async function readPDF(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data:buf}).promise;
+  let text = '';
+  for(let i=1; i<=pdf.numPages; i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it=>it.str).join(' ') + '\n';
+  }
+  return text.trim();
+}
+function readDocx(file){
+  return new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = e=> mammoth.extractRawText({arrayBuffer:e.target.result}).then(result=> res(result.value)).catch(rej);
+    r.onerror = rej;
+    r.readAsArrayBuffer(file);
+  });
+}
+function fileToBase64(file){
+  return new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = ()=> res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+async function runAiParse(type){
+  const text = $('#aiInput').value.trim();
+  const hasImage = !!window._pendingImage;
+  if(!text && !hasImage){ toast('⚠ 파일을 올리거나 내용을 붙여넣어 주세요.'); return; }
+  $('#modalBox').querySelector('.modal-body').innerHTML = `
+    <div class="ai-loading">
+      <div class="ai-spinner"></div>
+      <div class="ai-loading-text">AI가 서류를 분석하고 있습니다...</div>
+      <div class="ai-loading-sub">${hasImage?'이미지에서 선적 정보를 읽는 중':'화주 양식에서 선적 정보를 추출하는 중'}</div>
+    </div>`;
+  $('#aiRunBtn').style.display = 'none';
+  const instruction = `당신은 한국 포워딩(국제물류) 회사의 서류 입력 도우미입니다.
+${hasImage?'첨부된 이미지(화주 서류)를 읽고':'아래 화주가 보낸 선적 관련 서류(이메일/S/R/인보이스 등)에서'} 포워딩 ERP에 입력할 항목을 추출하세요. 한국 포워딩 실무 기준으로 판단합니다.
+${hasImage?'':`\n서류 내용:\n"""\n${text}\n"""\n`}
+다음 JSON 형식으로만 응답하세요. 설명/마크다운/코드펜스 없이 순수 JSON만 출력합니다.
+찾을 수 없는 항목은 빈 문자열("")로 둡니다.
+- shipper: 수출자/송하인 (회사명)
+- consignee: 수입자/수하인 (회사명, 영문이면 영문 그대로)
+- pol: 선적항 (가능하면 "도시명(UNLOCODE)" 형식, 예: "부산(KRPUS)". 모르면 도시명만)
+- pod: 도착항 (같은 형식)
+- carrier: 선사명 (HMM, Maersk, ONE, 고려해운, SM Line 등)
+- commodity: 품목/품명 (한글로 간결하게)
+- qty: 수량/컨테이너 (예: "1 x 40HC", "2 x 20GP")
+- incoterms: 인코텀즈 (FOB, CIF, CFR, EXW, DDP, DAP 중 하나)
+- etd: 출항예정일 (YYYY-MM-DD 형식으로 변환. 연도 없으면 2025 가정. 추정 불가하면 "")
+- revenue: 매출/운임 금액 (숫자만, 원화 기준. USD 등 외화면 빈 문자열)
+- memo: 기타 특이사항을 짧게 (없으면 "")`;
+  let messageContent;
+  if(hasImage){
+    messageContent = [
+      { type:'image', source:{ type:'base64', media_type: window._pendingImageType||'image/jpeg', data: window._pendingImage } },
+      { type:'text', text: instruction }
+    ];
+  } else {
+    messageContent = instruction;
+  }
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, messages: [{ role: "user", content: messageContent }] })
+    });
+    const data = await res.json();
+    let raw = data.content.filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+    raw = raw.replace(/```json/gi,'').replace(/```/g,'').trim();
+    const parsed = JSON.parse(raw);
+    window._pendingImage = null;
+    showAiReview(type, parsed);
+  } catch(err){
+    $('#modalBox').querySelector('.modal-body').innerHTML = `
+      <div class="ai-loading">
+        <div style="font-size:40px">⚠️</div>
+        <div class="ai-loading-text">분석 중 문제가 발생했어요</div>
+        <div class="ai-loading-sub">다시 시도하거나 직접 입력해주세요.<br>${(err.message||'').slice(0,80)}</div>
+        <button class="btn btn-ghost" onclick="closeModal()">닫기</button>
+      </div>`;
+  }
+}
+
+function showAiReview(type, d){
+  const shippers = DB.partners.filter(p=>p.kind==='shipper');
+  const f = (v)=> (v===undefined||v===null)?'':v;
+  $('#modalBox').querySelector('.modal-body').innerHTML = `
+    <div class="ai-result-banner">
+      <span class="ico">✨</span>
+      <div><b>AI 분석 완료!</b> <span style="font-size:12.5px;color:var(--ink-soft)">노란색 칸이 AI가 채운 항목입니다. 확인·수정 후 등록하세요.</span></div>
+    </div>
+    <form id="shipForm">
+      <div class="form-grid">
+        <div class="form-section-label">기본 정보</div>
+        <div class="field ${d.shipper?'ai-filled':''}"><label>화주 (Shipper) <span class="req">*</span></label><input list="shipperList" name="shipper" value="${f(d.shipper)}" required><datalist id="shipperList">${shippers.map(s=>`<option value="${s.name}">`).join('')}</datalist></div>
+        <div class="field ${d.consignee?'ai-filled':''}"><label>수하인 (Consignee) <span class="req">*</span></label><input name="consignee" value="${f(d.consignee)}" required></div>
+        <div class="field"><label>운송 모드</label><select name="mode"><option value="sea">해상 (Sea)</option><option value="air">항공 (Air)</option></select></div>
+        <div class="field ${d.incoterms?'ai-filled':''}"><label>인코텀즈</label><select name="incoterms">${['FOB','CIF','CFR','EXW','DDP','DAP'].map(t=>`<option ${d.incoterms===t?'selected':''}>${t}</option>`).join('')}</select></div>
+        <div class="form-section-label">노선 · 선적</div>
+        <div class="field ${d.pol?'ai-filled':''}"><label>선적항 (POL) <span class="req">*</span></label><input name="pol" value="${f(d.pol)}" required></div>
+        <div class="field ${d.pod?'ai-filled':''}"><label>도착항 (POD) <span class="req">*</span></label><input name="pod" value="${f(d.pod)}" required></div>
+        <div class="field ${d.carrier?'ai-filled':''}"><label>선사 (Carrier)</label><input name="carrier" value="${f(d.carrier)}"></div>
+        <div class="field"><label>부킹 번호</label><input name="booking" placeholder="발행 후 입력"></div>
+        <div class="field"><label>B/L 번호</label><input name="bl" placeholder="발행 후 입력"></div>
+        <div class="field"><label>컨테이너 번호</label><input name="container" placeholder="배정 후 입력"></div>
+        <div class="field ${d.commodity?'ai-filled':''}"><label>품명</label><input name="commodity" value="${f(d.commodity)}"></div>
+        <div class="field ${d.qty?'ai-filled':''}"><label>수량 / 컨테이너</label><input name="qty" value="${f(d.qty)}"></div>
+        <div class="field ${d.etd?'ai-filled':''}"><label>출항예정 (ETD)</label><input type="date" name="etd" value="${f(d.etd)}"></div>
+        <div class="field"><label>입항예정 (ETA)</label><input type="date" name="eta"></div>
+        <div class="form-section-label">운임 · 정산</div>
+        <div class="field ${d.revenue?'ai-filled':''}"><label>매출 (₩)</label><input type="number" name="revenue" value="${f(d.revenue)}"></div>
+        <div class="field"><label>원가 (₩)</label><input type="number" name="cost" placeholder="직접 입력"></div>
+        <div class="field full ${d.memo?'ai-filled':''}"><label>메모</label><textarea name="memo" rows="2">${f(d.memo)}</textarea></div>
+      </div>
+    </form>`;
+  const foot = $('#modalBox').querySelector('.modal-foot');
+  foot.innerHTML = `<button class="btn btn-ghost" onclick="closeModal()">취소</button><button class="btn btn-primary" data-saveship="${type}">✓ 확인 후 등록</button>`;
+  bindActions();
+  toast('✨ AI가 서류를 분석했어요! 내용을 확인해주세요.');
+}
+
+function shipmentForm(type){
+  const label = type==='export'?'수출':'수입';
+  const shippers = DB.partners.filter(p=>p.kind==='shipper');
+  return `
+    <div class="modal-head"><h3>📦 ${label} 건 등록</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-body"><form id="shipForm"><div class="form-grid">
+      <div class="form-section-label">기본 정보</div>
+      <div class="field"><label>화주 (Shipper) <span class="req">*</span></label><input list="shipperList" name="shipper" placeholder="화주명" required><datalist id="shipperList">${shippers.map(s=>`<option value="${s.name}">`).join('')}</datalist></div>
+      <div class="field"><label>수하인 (Consignee) <span class="req">*</span></label><input name="consignee" placeholder="예: TOKYO TRADING CO." required></div>
+      <div class="field"><label>운송 모드</label><select name="mode"><option value="sea">해상 (Sea)</option><option value="air">항공 (Air)</option></select></div>
+      <div class="field"><label>인코텀즈</label><select name="incoterms"><option>FOB</option><option>CIF</option><option>CFR</option><option>EXW</option><option>DDP</option><option>DAP</option></select></div>
+      <div class="form-section-label">노선 · 선적</div>
+      <div class="field"><label>선적항 (POL) <span class="req">*</span></label><input name="pol" placeholder="예: 부산(KRPUS)" required></div>
+      <div class="field"><label>도착항 (POD) <span class="req">*</span></label><input name="pod" placeholder="예: 도쿄(JPTYO)" required></div>
+      <div class="field"><label>선사</label><input list="carrierList" name="carrier" placeholder="예: HMM"><datalist id="carrierList"><option value="HMM"><option value="Maersk"><option value="ONE"><option value="고려해운"><option value="MSC"><option value="SM Line"></datalist></div>
+      <div class="field"><label>부킹 번호</label><input name="booking"></div>
+      <div class="field"><label>B/L 번호</label><input name="bl"></div>
+      <div class="field"><label>컨테이너 번호</label><input name="container"></div>
+      <div class="field"><label>품명</label><input name="commodity"></div>
+      <div class="field"><label>수량 / 컨테이너</label><input name="qty" placeholder="예: 1 x 40HC"></div>
+      <div class="field"><label>출항예정 (ETD)</label><input type="date" name="etd"></div>
+      <div class="field"><label>입항예정 (ETA)</label><input type="date" name="eta"></div>
+      <div class="form-section-label">운임 · 정산</div>
+      <div class="field"><label>매출 (₩)</label><input type="number" name="revenue"></div>
+      <div class="field"><label>원가 (₩)</label><input type="number" name="cost"></div>
+      <div class="field full"><label>메모</label><textarea name="memo" rows="2"></textarea></div>
+    </div></form></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">취소</button><button class="btn btn-primary" data-saveship="${type}">건 등록</button></div>`;
+}
+
+function partnerForm(){
+  return `
+    <div class="modal-head"><h3>👥 거래처 추가</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-body"><form id="partnerForm"><div class="form-grid">
+      <div class="field"><label>구분 <span class="req">*</span></label><select name="kind"><option value="shipper">화주</option><option value="carrier">선사</option><option value="customs">관세사</option><option value="trucker">운송사</option></select></div>
+      <div class="field"><label>상호 <span class="req">*</span></label><input name="name" placeholder="예: 대한정밀(주)" required></div>
+      <div class="field"><label>사업자등록번호</label><input name="bizno" placeholder="000-00-00000"></div>
+      <div class="field"><label>담당자</label><input name="manager" placeholder="예: 김상호 부장"></div>
+      <div class="field"><label>연락처</label><input name="phone" placeholder="010-0000-0000"></div>
+      <div class="field"><label>이메일</label><input name="email" type="email"></div>
+      <div class="field full"><label>주소</label><input name="addr"></div>
+      <div class="field full"><label>메모</label><textarea name="memo" rows="2"></textarea></div>
+    </div></form></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">취소</button><button class="btn btn-primary" data-savepartner="1">거래처 저장</button></div>`;
+}
+
+function shipmentDetail(id, type){
+  const list = type==='export'?DB.shipments:DB.imports;
+  const s = list.find(x=>x.id===id); if(!s) return;
+  const profit = s.revenue-s.cost;
+  const idx = TRACK_STEPS.indexOf(s.status==='delay'?'transit':s.status);
+  openModal(`
+    <div class="modal-head"><h3>${s.id} · ${s.type==='export'?'수출':'수입'} 상세</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <div class="track-flow" style="margin-top:0">${TRACK_STEPS.map((step,i)=>`<div class="track-step ${i<idx?'done':i===idx?'current':''}"><div class="track-dot">${i<idx?'✓':i+1}</div><div class="track-label">${STATUS_MAP[step].label}</div></div>`).join('')}</div>
+      <div class="detail-grid" style="margin-top:18px">
+        <div class="detail-cell"><div class="k">화주 (Shipper)</div><div class="v">${s.shipper}</div></div>
+        <div class="detail-cell"><div class="k">수하인 (Consignee)</div><div class="v">${s.consignee}</div></div>
+        <div class="detail-cell"><div class="k">선적항 → 도착항</div><div class="v">${s.pol} → ${s.pod}</div></div>
+        <div class="detail-cell"><div class="k">선사 / 인코텀즈</div><div class="v">${s.carrier} / ${s.incoterms}</div></div>
+        <div class="detail-cell"><div class="k">부킹 번호</div><div class="v mono">${s.booking||'-'}</div></div>
+        <div class="detail-cell"><div class="k">B/L 번호</div><div class="v mono">${s.bl||'발행 대기'}</div></div>
+        <div class="detail-cell"><div class="k">컨테이너</div><div class="v mono">${s.container||'-'}</div></div>
+        <div class="detail-cell"><div class="k">품명 / 수량</div><div class="v">${s.commodity} · ${s.qty}</div></div>
+        <div class="detail-cell"><div class="k">ETD / ETA</div><div class="v">${s.etd} → ${s.eta}</div></div>
+        <div class="detail-cell"><div class="k">손익</div><div class="v" style="color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)} <span style="font-size:11px;color:var(--ink-soft)">(매출 ${won(s.revenue)})</span></div></div>
+        ${s.memo?`<div class="detail-cell full"><div class="k">메모</div><div class="v" style="font-weight:500">${s.memo}</div></div>`:''}
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-danger-ghost" data-delship="${s.id}" data-type="${type}">삭제</button><button class="btn btn-ghost" data-doc="invoice" data-shipid="${s.id}" data-type="${type}">📄 인보이스</button><button class="btn btn-ghost" data-doc="bl" data-shipid="${s.id}" data-type="${type}">📋 B/L 출력</button><button class="btn btn-ghost" onclick="closeModal()">닫기</button></div>`);
+  bindActions();
+}
+
+/* ====== B/L · 인보이스 출력 ====== */
+function printDoc(kind, id, type){
+  const list = type==='export'?DB.shipments:DB.imports;
+  const s = list.find(x=>x.id===id); if(!s) return;
+  const today = new Date().toLocaleDateString('ko-KR');
+  let html;
+  if(kind==='bl'){
+    html = `
+    <div style="font-family:Arial,sans-serif;color:#111;max-width:780px;margin:0 auto;padding:30px;font-size:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px double #111;padding-bottom:12px;margin-bottom:0;">
+        <div><div style="font-size:22px;font-weight:800;letter-spacing:1px;">BILL OF LADING</div><div style="font-size:11px;color:#555;margin-top:2px;">FOR COMBINED TRANSPORT / PORT TO PORT SHIPMENT</div></div>
+        <div style="text-align:right;"><div style="font-weight:800;font-size:16px;color:#0B2545;">🌊 SeaFlow</div><div style="font-size:10px;color:#777;">데모 포워딩 · Forwarding Agent</div></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+        <tr>
+          <td style="border:1px solid #111;padding:8px;width:50%;vertical-align:top;"><div style="font-size:9px;color:#666;font-weight:700;">SHIPPER / EXPORTER</div><div style="font-weight:700;margin-top:3px;">${s.shipper}</div></td>
+          <td style="border:1px solid #111;padding:8px;vertical-align:top;"><div style="font-size:9px;color:#666;font-weight:700;">B/L NO.</div><div style="font-weight:700;font-family:monospace;margin-top:3px;">${s.bl||'DRAFT - 발행 대기'}</div><div style="font-size:9px;color:#666;font-weight:700;margin-top:8px;">BOOKING NO.</div><div style="font-family:monospace;margin-top:2px;">${s.booking||'-'}</div></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #111;padding:8px;vertical-align:top;"><div style="font-size:9px;color:#666;font-weight:700;">CONSIGNEE</div><div style="font-weight:700;margin-top:3px;">${s.consignee}</div></td>
+          <td style="border:1px solid #111;padding:8px;vertical-align:top;"><div style="font-size:9px;color:#666;font-weight:700;">CARRIER</div><div style="font-weight:700;margin-top:3px;">${s.carrier}</div><div style="font-size:9px;color:#666;font-weight:700;margin-top:8px;">INCOTERMS</div><div style="margin-top:2px;">${s.incoterms}</div></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #111;padding:8px;vertical-align:top;"><div style="font-size:9px;color:#666;font-weight:700;">NOTIFY PARTY</div><div style="margin-top:3px;">SAME AS CONSIGNEE</div></td>
+          <td style="border:1px solid #111;padding:8px;vertical-align:top;"><div style="font-size:9px;color:#666;font-weight:700;">PLACE OF RECEIPT</div><div style="margin-top:3px;">${s.pol}</div></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #111;padding:8px;"><div style="font-size:9px;color:#666;font-weight:700;">PORT OF LOADING</div><div style="font-weight:700;margin-top:3px;">${s.pol}</div></td>
+          <td style="border:1px solid #111;padding:8px;"><div style="font-size:9px;color:#666;font-weight:700;">PORT OF DISCHARGE</div><div style="font-weight:700;margin-top:3px;">${s.pod}</div></td>
+        </tr>
+      </table>
+      <table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-top:-1px;">
+        <tr style="background:#f0f0f0;"><th style="border:1px solid #111;padding:6px;font-size:9px;">MARKS & NO. / CONTAINER NO.</th><th style="border:1px solid #111;padding:6px;font-size:9px;">DESCRIPTION OF GOODS</th><th style="border:1px solid #111;padding:6px;font-size:9px;">QUANTITY</th></tr>
+        <tr style="height:90px;"><td style="border:1px solid #111;padding:8px;vertical-align:top;font-family:monospace;">${s.container||'CONTAINER N/A'}</td><td style="border:1px solid #111;padding:8px;vertical-align:top;">${s.commodity}</td><td style="border:1px solid #111;padding:8px;vertical-align:top;text-align:center;">${s.qty}</td></tr>
+      </table>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:-1px;">
+        <tr><td style="border:1px solid #111;padding:8px;width:50%;"><div style="font-size:9px;color:#666;font-weight:700;">ETD (출항예정)</div><div style="margin-top:2px;">${s.etd}</div></td><td style="border:1px solid #111;padding:8px;"><div style="font-size:9px;color:#666;font-weight:700;">ETA (입항예정)</div><div style="margin-top:2px;">${s.eta}</div></td></tr>
+      </table>
+      <div style="margin-top:16px;display:flex;justify-content:space-between;font-size:10px;color:#555;">
+        <div>발행일: ${today}<br>발행지: 부산, 대한민국</div>
+        <div style="text-align:center;"><div style="margin-bottom:24px;font-weight:700;">SeaFlow Forwarding</div><div style="border-top:1px solid #111;padding-top:3px;width:140px;">Authorized Signature</div></div>
+      </div>
+      <div style="margin-top:14px;font-size:8.5px;color:#999;border-top:1px solid #ddd;padding-top:8px;">본 서류는 SeaFlow ERP 데모용으로 생성된 양식입니다. 실제 선하증권으로서의 법적 효력은 선사 발행본을 따릅니다.</div>
+    </div>`;
+  } else {
+    const won2 = n => '₩'+(n||0).toLocaleString('ko-KR');
+    html = `
+    <div style="font-family:Arial,sans-serif;color:#111;max-width:780px;margin:0 auto;padding:30px;font-size:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px double #111;padding-bottom:12px;">
+        <div><div style="font-size:22px;font-weight:800;letter-spacing:1px;">COMMERCIAL INVOICE</div><div style="font-size:11px;color:#555;margin-top:2px;">상업송장 · ${s.id}</div></div>
+        <div style="text-align:right;"><div style="font-weight:800;font-size:16px;color:#0B2545;">🌊 SeaFlow</div><div style="font-size:10px;color:#777;">데모 포워딩</div></div>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:14px;">
+        <div style="flex:1;"><div style="font-size:9px;color:#666;font-weight:700;">SHIPPER</div><div style="font-weight:700;">${s.shipper}</div></div>
+        <div style="flex:1;"><div style="font-size:9px;color:#666;font-weight:700;">CONSIGNEE</div><div style="font-weight:700;">${s.consignee}</div></div>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:11px;">
+        <div style="flex:1;">선적항: <b>${s.pol}</b></div><div style="flex:1;">도착항: <b>${s.pod}</b></div>
+        <div style="flex:1;">인코텀즈: <b>${s.incoterms}</b></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-top:16px;">
+        <tr style="background:#0B2545;color:#fff;"><th style="padding:8px;text-align:left;">DESCRIPTION</th><th style="padding:8px;">QTY</th><th style="padding:8px;text-align:right;">AMOUNT</th></tr>
+        <tr><td style="border-bottom:1px solid #ddd;padding:10px;">${s.commodity}</td><td style="border-bottom:1px solid #ddd;padding:10px;text-align:center;">${s.qty}</td><td style="border-bottom:1px solid #ddd;padding:10px;text-align:right;font-weight:700;">${won2(s.revenue)}</td></tr>
+        <tr><td colspan="2" style="padding:10px;text-align:right;font-weight:700;">TOTAL</td><td style="padding:10px;text-align:right;font-weight:800;font-size:14px;color:#0B2545;">${won2(s.revenue)}</td></tr>
+      </table>
+      <div style="margin-top:24px;display:flex;justify-content:space-between;font-size:10px;color:#555;">
+        <div>발행일: ${today}</div>
+        <div style="text-align:center;"><div style="margin-bottom:24px;font-weight:700;">SeaFlow Forwarding</div><div style="border-top:1px solid #111;padding-top:3px;width:140px;">Authorized Signature</div></div>
+      </div>
+    </div>`;
+  }
+  const w = window.open('', '_blank', 'width=900,height=1000');
+  w.document.write(`<html><head><title>${kind==='bl'?'B/L':'Invoice'} - ${s.id}</title><style>@media print{.noprint{display:none;}} body{margin:0;background:#f5f5f5;}</style></head><body>
+    <div class="noprint" style="position:sticky;top:0;background:#0B2545;padding:12px;text-align:center;">
+      <button onclick="window.print()" style="background:#3A7CA5;color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;">🖨️ 인쇄 / PDF 저장</button>
+    </div>
+    <div style="background:#fff;margin:20px auto;max-width:800px;box-shadow:0 4px 20px rgba(0,0,0,0.1);">${html}</div>
+  </body></html>`);
+  w.document.close();
+}
+
+function carrierApiModal(carrier){
+  const info = {
+    HMM: { portal:'apiportal.hmm21.com', data:'스케줄 조회, 컨테이너 트래킹, 부킹, 운임', note:'HMM은 공식 Open API Portal을 운영합니다. 개발자 등록 후 API 키를 발급받아 연동합니다.' },
+    Maersk: { portal:'developer.maersk.com', data:'스케줄, 트래킹, 부킹, B/L', note:'Maersk는 글로벌에서 가장 완성도 높은 API를 제공합니다.' },
+  };
+  const c = info[carrier] || info.HMM;
+  openModal(`
+    <div class="modal-head"><h3>🔌 ${carrier} API 연동</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <div class="detail-grid">
+        <div class="detail-cell full"><div class="k">API 포털</div><div class="v mono">${c.portal}</div></div>
+        <div class="detail-cell full"><div class="k">제공 데이터</div><div class="v" style="font-weight:500;font-size:13px;">${c.data}</div></div>
+      </div>
+      <div style="margin-top:16px;">
+        <div class="login-field"><label>API Key (선사에서 발급)</label><input type="text" placeholder="발급받은 API 키를 입력" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit;"></div>
+        <div class="login-field" style="margin-top:10px;"><label>API Secret</label><input type="password" placeholder="••••••••" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit;"></div>
+      </div>
+      <div class="ai-result-banner" style="margin-top:16px;background:var(--ice);border-color:var(--line);">
+        <span class="ico">💡</span>
+        <div style="font-size:12.5px;color:var(--ink-soft);">${c.note}</div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">취소</button><button class="btn btn-primary" data-saveapi="${carrier}">연동 저장</button></div>`);
+  $('[data-saveapi]').onclick = ()=>{ closeModal(); toast(`🔌 ${carrier} API 키가 저장되었습니다. (실제 연동은 키 발급 후 작동)`); };
+}
+
+function kakaoModal(id, type){
+  const list = type==='export'?DB.shipments:DB.imports;
+  const s = list.find(x=>x.id===id); if(!s) return;
+  const customer = type==='export'?s.shipper:s.consignee;
+  const stLabel = STATUS_MAP[s.status].label;
+  const msg = `[SeaFlow 화물 알림]\n\n${customer} 담당자님,\n의뢰하신 화물의 현재 상태를 안내드립니다.\n\n▸ 화물번호: ${s.id}\n▸ 품목: ${s.commodity}\n▸ 노선: ${s.pol} → ${s.pod}\n▸ 현재 상태: ${stLabel}\n▸ 입항예정: ${s.eta}\n\n자세한 현황은 화주 포털에서 확인하실 수 있습니다.\n감사합니다.`;
+  openModal(`
+    <div class="modal-head"><h3>💬 카카오 알림톡 발송</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <div class="ai-result-banner" style="background:#FEF7E0;border-color:#F5DFA0;">
+        <span class="ico">💬</span>
+        <div><b style="color:#A6822A;">자동 발송 미리보기</b> <span style="font-size:12.5px;color:var(--ink-soft)">화물 상태가 바뀌면 이 메시지가 화주에게 자동으로 발송됩니다.</span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;">
+        <div class="user-chip" style="background:#FEE500;color:#3C1E1E;">K</div>
+        <div><div style="font-weight:700;font-size:13.5px;">${customer}</div><div style="font-size:11.5px;color:var(--ink-soft);">카카오 알림톡 · 수신 동의됨</div></div>
+      </div>
+      <div style="background:#B2C7DA;border-radius:14px;padding:16px;">
+        <div style="background:#fff;border-radius:10px;padding:14px;font-size:12.5px;line-height:1.7;white-space:pre-wrap;color:var(--ink);">${msg}</div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">취소</button><button class="btn btn-primary" data-sendkakao="1">💬 발송하기</button></div>`);
+  $('[data-sendkakao]').onclick = ()=>{ closeModal(); toast(`💬 ${customer}에게 알림톡을 발송했어요. (실제 발송은 카카오 비즈니스 연동 후 작동)`); };
+}
+
+function bindActions(){
+  document.querySelectorAll('[data-go]').forEach(b=> b.onclick = ()=>{ const v=b.dataset.go; document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.view===v)); current=v; $('#pageTitle').textContent=TITLES[v]; render(); });
+  document.querySelectorAll('[data-new]').forEach(b=> b.onclick = ()=>{ openModal(shipmentForm(b.dataset.new)); bindActions(); });
+  document.querySelectorAll('[data-aiparse]').forEach(b=> b.onclick = ()=> aiParseModal(b.dataset.aiparse));
+  document.querySelectorAll('[data-mail]').forEach(b=> b.onclick = ()=> openMail(b.dataset.mail));
+  document.querySelectorAll('[data-mailsync]').forEach(b=> b.onclick = ()=> toast('📬 새 메일 2건을 가져왔어요. (실제 연동은 서버 설정 후 자동 수신)'));
+  const psel = $('#portalSel'); if(psel) psel.onchange = ()=>{ window._portalShipper = psel.value; render(); };
+  const askBtn = $('#askBtn'); if(askBtn){ askBtn.onclick = ()=>{ const q=$('#askInput').value.trim(); if(q) runAssistant(q); else toast('질문을 입력해주세요'); }; }
+  const askInput = $('#askInput'); if(askInput){ askInput.onkeydown = e=>{ if(e.key==='Enter'){ const q=askInput.value.trim(); if(q) runAssistant(q); } }; }
+  document.querySelectorAll('[data-ask]').forEach(c=> c.onclick = ()=>{ $('#askInput').value = c.dataset.ask; runAssistant(c.dataset.ask); });
+  document.querySelectorAll('[data-portallink]').forEach(b=> b.onclick = ()=> toast('🔗 화주 전용 링크가 복사되었습니다. (실제 발급은 배포 후 작동)'));
+  document.querySelectorAll('[data-newpartner]').forEach(b=> b.onclick = ()=>{ openModal(partnerForm()); bindActions(); });
+  document.querySelectorAll('[data-saveship]').forEach(b=> b.onclick = ()=> saveShipment(b.dataset.saveship));
+  document.querySelectorAll('[data-savepartner]').forEach(b=> b.onclick = savePartner);
+  document.querySelectorAll('[data-detail]').forEach(b=> b.onclick = ()=> shipmentDetail(b.dataset.detail, b.dataset.type));
+  document.querySelectorAll('[data-delship]').forEach(b=> b.onclick = ()=> delShipment(b.dataset.delship, b.dataset.type));
+  document.querySelectorAll('[data-doc]').forEach(b=> b.onclick = ()=> printDoc(b.dataset.doc, b.dataset.shipid, b.dataset.type));
+  document.querySelectorAll('[data-kakao]').forEach(b=> b.onclick = ()=> kakaoModal(b.dataset.kakao, b.dataset.type));
+  document.querySelectorAll('[data-delpartner]').forEach(b=> b.onclick = ()=> delPartner(b.dataset.delpartner));
+  const sb=$('#searchBox'); if(sb) sb.oninput = filterShip;
+  const sf=$('#statusFilter'); if(sf) sf.onchange = filterShip;
+  document.querySelectorAll('#kindSeg button').forEach(btn=> btn.onclick = ()=>{ document.querySelectorAll('#kindSeg button').forEach(x=>x.classList.remove('on')); btn.classList.add('on'); $('#partnerRows').innerHTML = renderPartnerRows(btn.dataset.kind); bindActions(); });
+  document.querySelectorAll('[data-refresh]').forEach(b=> b.onclick = ()=> toast('📡 선사 API 연동 후 실시간 갱신됩니다.'));
+  document.querySelectorAll('[data-tax]').forEach(b=> b.onclick = ()=> toast('🧾 홈택스 전자세금계산서 연동 예정입니다.'));
+  document.querySelectorAll('[data-connect]').forEach(b=> b.onclick = ()=> carrierApiModal(b.dataset.connect));
+}
+
+function filterShip(){
+  const type = $('#searchBox').dataset.type;
+  const q = $('#searchBox').value.toLowerCase();
+  const st = $('#statusFilter').value;
+  const list = (type==='export'?DB.shipments:DB.imports).filter(s=>{ const hit=(s.shipper+s.consignee+s.id+s.bl+s.carrier).toLowerCase().includes(q); return hit && (!st||s.status===st); });
+  $('#shipRows').innerHTML = renderShipRows(list, type); bindActions();
+}
+
+let seqExp = 2504, seqImp = 2512;
+function saveShipment(type){
+  const f = $('#shipForm');
+  if(!f.shipper.value || !f.consignee.value || !f.pol.value || !f.pod.value){ toast('⚠ 필수 항목(*)을 입력해주세요.'); return; }
+  const id = type==='export' ? `EXP-${seqExp++}` : `IMP-${seqImp++}`;
+  const obj = { id, type, mode:f.mode.value, shipper:f.shipper.value, consignee:f.consignee.value, pol:f.pol.value, pod:f.pod.value, carrier:f.carrier.value||'-', booking:f.booking.value, bl:f.bl.value, container:f.container.value, incoterms:f.incoterms.value, commodity:f.commodity.value||'-', qty:f.qty.value||'-', status: f.bl.value?'sailing':'booking', etd:f.etd.value||'-', eta:f.eta.value||'-', revenue:Number(f.revenue.value)||0, cost:Number(f.cost.value)||0, memo:f.memo.value };
+  (type==='export'?DB.shipments:DB.imports).push(obj);
+  cloudUpsertShip(obj);
+  closeModal(); toast(`✓ ${id} 건이 등록되었습니다.${CLOUD?' (클라우드 저장됨)':''}`); render();
+}
+function delShipment(id, type){ const arr=type==='export'?DB.shipments:DB.imports; const i=arr.findIndex(s=>s.id===id); if(i>-1){ arr.splice(i,1); cloudDeleteShip(id); closeModal(); toast(`🗑 ${id} 건 삭제됨`); render(); } }
+function savePartner(){
+  const f = $('#partnerForm');
+  if(!f.name.value){ toast('⚠ 상호를 입력해주세요.'); return; }
+  const id='P'+(DB.partners.length+1).toString().padStart(2,'0');
+  const obj = { id, kind:f.kind.value, name:f.name.value, bizno:f.bizno.value||'-', manager:f.manager.value||'-', phone:f.phone.value||'-', email:f.email.value||'-', addr:f.addr.value||'-', memo:f.memo.value };
+  DB.partners.push(obj); cloudUpsertPartner(obj);
+  closeModal(); toast(`✓ ${f.name.value} 거래처 추가됨`); render();
+}
+function delPartner(id){ const i=DB.partners.findIndex(p=>p.id===id); if(i>-1){ DB.partners.splice(i,1); cloudDeletePartner(id); toast('🗑 거래처 삭제됨'); render(); } }
+
+/* ====== 클라우드 동기화 ====== */
+async function cloudLoad(){
+  if(!CLOUD) return;
+  try {
+    const { data: ships } = await sb.from('shipments').select('*').order('created_at',{ascending:true});
+    const { data: parts } = await sb.from('partners').select('*').order('created_at',{ascending:true});
+    if(ships){ DB.shipments = ships.filter(s=>s.type==='export'); DB.imports = ships.filter(s=>s.type==='import'); }
+    if(parts && parts.length){ DB.partners = parts; }
+    // 클라우드가 비어있으면 시드 데이터를 한 번 올림
+    if(ships && ships.length===0){
+      for(const s of [...DB.shipments, ...DB.imports]) await sb.from('shipments').insert(s);
+    }
+    if(parts && parts.length===0){
+      for(const p of DB.partners) await sb.from('partners').insert(p);
+    }
+  } catch(e){ console.warn('cloud load fail', e); }
+}
+async function cloudUpsertShip(obj){ if(CLOUD){ try{ await sb.from('shipments').upsert(obj); }catch(e){console.warn(e);} } }
+async function cloudDeleteShip(id){ if(CLOUD){ try{ await sb.from('shipments').delete().eq('id',id); }catch(e){console.warn(e);} } }
+async function cloudUpsertPartner(obj){ if(CLOUD){ try{ await sb.from('partners').upsert(obj); }catch(e){console.warn(e);} } }
+async function cloudDeletePartner(id){ if(CLOUD){ try{ await sb.from('partners').delete().eq('id',id); }catch(e){console.warn(e);} } }
+
+/* ====== 로그인 ====== */
+function enterApp(companyName){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appRoot').style.display='flex';
+  if(companyName){
+    const pill = document.querySelector('.company-pill');
+    if(pill) pill.innerHTML = '🏢 '+companyName;
+    const chip = document.querySelector('.user-chip');
+    if(chip) chip.textContent = companyName.charAt(0);
+  }
+  init();
+}
+document.getElementById('loginBtn').onclick = ()=>{
+  const em = document.getElementById('loginEmail').value;
+  if(!em){ alert('이메일을 입력하세요'); return; }
+  enterApp('데모 포워딩');
+};
+document.getElementById('demoBtn').onclick = ()=> enterApp('데모 포워딩');
+document.getElementById('signupBtn').onclick = ()=>{
+  const c = document.getElementById('suCompany').value, e=document.getElementById('suEmail').value;
+  if(!c||!e){ alert('회사명과 이메일을 입력하세요'); return; }
+  enterApp(c);
+};
+document.getElementById('toSignup').onclick = ()=>{ document.getElementById('loginForm').style.display='none'; document.getElementById('signupForm').style.display='block'; };
+document.getElementById('toLogin').onclick = ()=>{ document.getElementById('signupForm').style.display='none'; document.getElementById('loginForm').style.display='block'; };
+
+/* ====== 구글 로그인 ====== */
+async function googleLogin(){
+  if(CLOUD && sb){
+    try {
+      const { error } = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.href }
+      });
+      if(error) throw error;
+      // 성공 시 구글 페이지로 리디렉션됨 → 돌아오면 세션이 생김
+    } catch(err){
+      alert('구글 로그인 중 문제가 발생했어요: ' + (err.message||''));
+    }
+  } else {
+    // Supabase 미연결(데모 모드): 안내 후 데모로 진입
+    alert('구글 로그인은 Supabase 연결 후 작동합니다.\n지금은 데모 모드로 둘러보기로 들어갑니다.');
+    enterApp('데모 포워딩');
+  }
+}
+document.getElementById('googleBtn').onclick = googleLogin;
+document.getElementById('googleBtn2').onclick = googleLogin;
+
+/* 클라우드 모드일 때, 구글 로그인 후 돌아오면 자동으로 앱 진입 */
+async function checkGoogleSession(){
+  if(CLOUD && sb){
+    try {
+      const { data } = await sb.auth.getSession();
+      if(data && data.session){
+        const user = data.session.user;
+        const name = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || user.email || '내 회사';
+        enterApp(name);
+      }
+    } catch(e){ /* 세션 없음 - 로그인 화면 유지 */ }
+  }
+}
+checkGoogleSession();
+
+/* ====== 시작 ====== */
+async function init(){
+  if(CLOUD){
+    $('#content').innerHTML = '<div style="text-align:center;padding:80px;color:var(--ink-soft)">☁️ 클라우드에서 데이터를 불러오는 중...</div>';
+    await cloudLoad();
+  }
+  const pill = document.querySelector('.company-pill');
+  if(pill && CLOUD) pill.innerHTML = '☁️ 클라우드 연결됨';
+  render();
+}
+// init은 로그인 후 enterApp에서 호출됩니다.
+</script>
+</body>
+</html>
