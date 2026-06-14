@@ -197,6 +197,59 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  /* ===== 항적 추적 (unovt 통합) ===== */
+  .vt-stage{display:flex;min-height:540px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;}
+  .vt-panel{width:340px;flex:0 0 340px;background:#F8FAFC;border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden;}
+  .vt-map{flex:1;min-width:0;background:#DCE6EC;}
+  .vt-search{display:flex;gap:8px;padding:14px;border-bottom:1px solid var(--line);}
+  .vt-search input{flex:1;border:1.5px solid var(--line);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'IBM Plex Mono',monospace;}
+  .vt-search input:focus{outline:none;border-color:var(--sky);}
+  .vt-search button{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;}
+  .vt-search button:hover{background:var(--steel);}
+  .vt-body{flex:1;overflow-y:auto;padding:14px;}
+  .vt-empty{text-align:center;color:var(--ink-soft);font-size:13px;padding:40px 16px;line-height:1.6;}
+  .vt-shead .resolved{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.04em;color:var(--ink-soft);background:#EAF2F8;border-radius:20px;padding:3px 10px;margin-bottom:10px;}
+  .vt-shead .resolved .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);}
+  .vt-shead .resolved.fb .dot{background:var(--gold);}
+  .vt-scac{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:#fff;background:var(--navy);border-radius:5px;padding:2px 8px;margin-right:8px;}
+  .vt-mbl{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink);}
+  .vt-od{display:flex;align-items:center;gap:8px;margin:14px 0;}
+  .vt-od .pt .role{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;}
+  .vt-od .pt .nm{font-size:14px;font-weight:700;color:var(--ink);margin-top:2px;}
+  .vt-od .conn{flex:1;height:1px;background:repeating-linear-gradient(90deg,var(--line),var(--line) 4px,transparent 4px,transparent 8px);}
+  .vt-smeta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0;}
+  .vt-smeta .it{font-size:12px;color:var(--ink);}
+  .vt-smeta .it b{display:block;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:2px;font-weight:600;}
+  .vt-cnts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .vt-cnt{font-family:'IBM Plex Mono',monospace;font-size:10.5px;background:#EEF3F7;border:1px solid var(--line);border-radius:5px;padding:3px 7px;color:var(--ink-soft);}
+  .vt-curbar{display:flex;align-items:center;gap:10px;background:#F1F6FA;border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin:14px 0;}
+  .vt-curbar .txt b{font-size:12.5px;color:var(--ink);}
+  .vt-curbar .txt .ts{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-soft);margin-top:2px;}
+  .vt-tl{margin-top:8px;}
+  .vt-ev{display:grid;grid-template-columns:64px 18px 1fr;gap:4px;}
+  .vt-ev .t{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--ink-soft);text-align:right;padding:11px 8px 0 0;line-height:1.4;}
+  .vt-ev .t .d{color:#5B6B7A;font-weight:600;}
+  .vt-ev .rail{display:flex;flex-direction:column;align-items:center;}
+  .vt-ev .node{width:11px;height:11px;border-radius:50%;border:2px solid var(--line);background:#fff;margin-top:12px;}
+  .vt-ev .rail::after{content:'';flex:1;width:2px;background:var(--line);margin:2px 0;}
+  .vt-ev:last-child .rail::after{display:none;}
+  .vt-ev.done .node{background:var(--sky);border-color:var(--sky);}
+  .vt-ev.done.last .node{background:var(--ok);border-color:var(--ok);box-shadow:0 0 0 3px rgba(46,139,87,.18);}
+  .vt-ev .body{padding:9px 0 12px;}
+  .vt-ev .body .ti{font-size:12.5px;font-weight:600;color:var(--ink);}
+  .vt-ev .body .ti .en{font-weight:400;font-size:10px;color:var(--ink-soft);margin-left:6px;}
+  .vt-ev .body .pl{font-size:11px;color:var(--ink-soft);margin-top:1px;}
+  .vt-ev .body .vs{display:inline-block;margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-soft);}
+  .vt-ev.future .ti,.vt-ev.future .pl{color:#92A0AC;}
+  .leaflet-tooltip.plbl{background:#fff;border:1px solid var(--line);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:2px 6px;box-shadow:0 1px 4px rgba(0,0,0,.1);}
+  .leaflet-tooltip.shiplbl{background:var(--navy);border:1px solid var(--navy);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:9.5px;padding:2px 6px;}
+  .vt-jump{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .vt-jump .chip{font-family:'IBM Plex Mono',monospace;font-size:10.5px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:5px 9px;cursor:pointer;color:var(--ink);}
+  .vt-jump .chip:hover{border-color:var(--sky);background:#F4FAFE;}
+</style>
 </head>
 <body>
 <div id="loginScreen">
@@ -243,6 +296,7 @@
       <div class="nav-item" data-view="tracking"><span class="nav-ico">🚢</span> 실시간 트래킹</div>
       <div class="nav-label">정산</div>
       <div class="nav-item" data-view="settlement"><span class="nav-ico">💰</span> 운임·정산</div>
+      <div class="nav-item" data-view="receivable"><span class="nav-ico">🧾</span> 미수금 관리</div>
       <div class="nav-label">기준정보</div>
       <div class="nav-item" data-view="partners"><span class="nav-ico">👥</span> 거래처 관리</div>
       <div class="nav-item" data-view="portal"><span class="nav-ico">🔗</span> 화주 포털</div>
@@ -287,12 +341,12 @@ if(CLOUD){ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
 
 const DB = {
   shipments: [
-    { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'HMM', booking:'HDMU2501887', bl:'HDMUBSC2501887', container:'HMMU1234567', incoterms:'FOB', commodity:'자동차 부품', qty:'1 x 40HC', status:'transit', etd:'2025-05-28', eta:'2025-06-03', revenue:4200000, cost:3350000, memo:'' },
-    { id:'EXP-2502', type:'export', mode:'sea', shipper:'서울화학', consignee:'GUANGZHOU IMPORT LTD', pol:'인천(KRINC)', pod:'광저우(CNCAN)', carrier:'고려해운', booking:'KMTC25A0445', bl:'KMTCSEL2502', container:'KMTU8845120', incoterms:'CIF', commodity:'화학 원료', qty:'2 x 20GP', status:'arrived', etd:'2025-05-20', eta:'2025-05-27', revenue:5800000, cost:4600000, memo:'' },
-    { id:'EXP-2503', type:'export', mode:'sea', shipper:'한빛전자', consignee:'LA ELECTRONICS INC.', pol:'부산(KRPUS)', pod:'로스앤젤레스(USLAX)', carrier:'Maersk', booking:'MAEU25778120', bl:'', container:'', incoterms:'FOB', commodity:'전자제품', qty:'1 x 40HC', status:'booking', etd:'2025-06-15', eta:'2025-07-01', revenue:7100000, cost:5900000, memo:'B/L 발행 대기' },
+    { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'HMM', booking:'HDMU2501887', bl:'HDMUBSC2501887', container:'HMMU1234567', incoterms:'FOB', commodity:'자동차 부품', qty:'1 x 40HC', status:'transit', etd:'2025-05-28', eta:'2025-06-03', revenue:4200000, cost:3350000, paid:true, blReleased:true, memo:'' },
+    { id:'EXP-2502', type:'export', mode:'sea', shipper:'서울화학', consignee:'GUANGZHOU IMPORT LTD', pol:'인천(KRINC)', pod:'광저우(CNCAN)', carrier:'고려해운', booking:'KMTC25A0445', bl:'KMTCSEL2502', container:'KMTU8845120', incoterms:'CIF', commodity:'화학 원료', qty:'2 x 20GP', status:'arrived', etd:'2025-05-20', eta:'2025-05-27', revenue:5800000, cost:4600000, paid:false, blReleased:false, memo:'운임 미입금 - B/L 보류중' },
+    { id:'EXP-2503', type:'export', mode:'sea', shipper:'한빛전자', consignee:'LA ELECTRONICS INC.', pol:'부산(KRPUS)', pod:'로스앤젤레스(USLAX)', carrier:'Maersk', booking:'MAEU25778120', bl:'', container:'', incoterms:'FOB', commodity:'전자제품', qty:'1 x 40HC', status:'booking', etd:'2025-06-15', eta:'2025-07-01', revenue:7100000, cost:5900000, paid:false, blReleased:false, memo:'B/L 발행 대기' },
   ],
   imports: [
-    { id:'IMP-2511', type:'import', mode:'sea', shipper:'SHANGHAI MFG CO.', consignee:'(주)코리아유통', pol:'상하이(CNSHA)', pod:'부산(KRPUS)', carrier:'ONE', booking:'ONEY2511002', bl:'ONEYSHA2511', container:'ONEU5521340', incoterms:'CIF', commodity:'생활용품', qty:'1 x 40HC', status:'transit', etd:'2025-05-30', eta:'2025-06-05', revenue:3400000, cost:2700000, memo:'' },
+    { id:'IMP-2511', type:'import', mode:'sea', shipper:'SHANGHAI MFG CO.', consignee:'(주)코리아유통', pol:'상하이(CNSHA)', pod:'부산(KRPUS)', carrier:'ONE', booking:'ONEY2511002', bl:'ONEYSHA2511', container:'ONEU5521340', incoterms:'CIF', commodity:'생활용품', qty:'1 x 40HC', status:'transit', etd:'2025-05-30', eta:'2025-06-05', revenue:3400000, cost:2700000, paid:true, blReleased:true, memo:'' },
   ],
   partners: [
     { id:'P01', kind:'shipper', name:'대한정밀(주)', bizno:'128-81-44021', manager:'김상호 부장', phone:'010-2233-1100', email:'shkim@daehan.co.kr', addr:'경기도 안산시 단원구', memo:'주력 화주 · 월 4~6건' },
@@ -313,7 +367,7 @@ function openModal(html, wide){ $('#modalBox').className = 'modal'+(wide?' wide'
 function closeModal(){ $('#modalBg').classList.remove('show'); }
 $('#modalBg').addEventListener('click', e => { if(e.target.id==='modalBg') closeModal(); });
 
-const TITLES = { dashboard:'대시보드', assistant:'AI 비서', export:'수출 관리', import:'수입 관리', inbox:'메일 자동수신', tracking:'실시간 트래킹', settlement:'운임·정산', partners:'거래처 관리', portal:'화주 포털', settings:'설정' };
+const TITLES = { dashboard:'대시보드', assistant:'AI 비서', export:'수출 관리', import:'수입 관리', inbox:'메일 자동수신', tracking:'실시간 트래킹', settlement:'운임·정산', receivable:'미수금 관리', partners:'거래처 관리', portal:'화주 포털', settings:'설정' };
 let current = 'dashboard';
 document.querySelectorAll('.nav-item').forEach(item=>{
   item.addEventListener('click', ()=>{ document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); item.classList.add('active'); current = item.dataset.view; $('#pageTitle').textContent = TITLES[current]; render(); });
@@ -328,10 +382,12 @@ function render(){
   else if(current==='inbox') c.innerHTML = viewInbox();
   else if(current==='tracking') c.innerHTML = viewTracking();
   else if(current==='settlement') c.innerHTML = viewSettlement();
+  else if(current==='receivable') c.innerHTML = viewReceivable();
   else if(current==='partners') c.innerHTML = viewPartners();
   else if(current==='portal') c.innerHTML = viewPortal();
   else if(current==='settings') c.innerHTML = viewSettings();
   bindActions();
+  if(current==='tracking') initVoyageTracker();
 }
 
 function viewAssistant(){
@@ -398,13 +454,14 @@ function viewDashboard(){
   const monthRev = all.reduce((a,s)=>a+s.revenue,0);
   const monthProfit = all.reduce((a,s)=>a+(s.revenue-s.cost),0);
   const delayed = all.filter(s=>s.status==='delay').length;
+  const riskUnpaid = all.filter(s=>!s.paid && s.blReleased).length;
   const recent = all.slice().reverse().slice(0,5);
   return `
   <div class="stat-grid">
     <div class="stat"><div class="stat-label">진행중 건</div><div class="stat-value">${active}<small> 건</small></div><div class="stat-foot">전체 ${all.length}건 중 운송 진행</div></div>
     <div class="stat gold"><div class="stat-label">이번 달 매출</div><div class="stat-value" style="font-size:22px">${won(monthRev)}</div><div class="stat-foot"><span class="up">▲ 12%</span> 전월 대비</div></div>
     <div class="stat ok"><div class="stat-label">이번 달 영업이익</div><div class="stat-value" style="font-size:22px">${won(monthProfit)}</div><div class="stat-foot">이익률 ${Math.round(monthProfit/monthRev*100)}%</div></div>
-    <div class="stat ${delayed?'warn':''}"><div class="stat-label">지연 경보</div><div class="stat-value">${delayed}<small> 건</small></div><div class="stat-foot">${delayed?'⚠ 확인 필요':'정상 운영중'}</div></div>
+    <div class="stat ${(delayed||riskUnpaid)?'warn':''}"><div class="stat-label">주의 경보</div><div class="stat-value">${delayed+riskUnpaid}<small> 건</small></div><div class="stat-foot">${riskUnpaid?`⚠ 미수금 위험 ${riskUnpaid}건`:(delayed?'⚠ 지연 확인 필요':'정상 운영중')}</div></div>
   </div>
   <div class="panel">
     <div class="panel-head"><div class="panel-title">최근 선적 현황 <span class="tag">실시간</span></div><button class="btn btn-ghost btn-sm" data-go="export">전체 보기 →</button></div>
@@ -600,22 +657,26 @@ function renderInbox(){
 }
 
 function viewTracking(){
-  const all = [...DB.shipments, ...DB.imports].filter(s=>s.bl);
+  const all = [...DB.shipments, ...DB.imports].filter(s=>s.booking);
   return `
-  <div class="panel">
-    <div class="panel-head"><div class="panel-title">실시간 컨테이너 트래킹 <span class="tag">선사 API 연동</span></div><button class="btn btn-ghost btn-sm" data-refresh="1">🔄 새로고침</button></div>
-    <div class="ai-drop" style="border-color:var(--ok); background:linear-gradient(135deg,#F1F9F4,#E8F5EE)">
-      <div class="ai-drop-ico">📡</div><div class="ai-drop-txt"><b>선사 Open API 자동 연동</b><p>HMM·Maersk·ONE 등 선사 API로 컨테이너 위치가 자동 업데이트됩니다. 지연 발생 시 화주에게 카카오 알림톡 자동 발송. (개발 예정)</p></div>
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-head"><div class="panel-title">실시간 항적 추적 <span class="tag">AIS 기반 지도</span></div></div>
+    <div class="panel-body" style="padding:14px 18px;">
+      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:4px;">부킹·MBL·컨테이너 번호로 선박 위치와 항로를 지도에서 확인합니다. 아래 화물의 부킹번호를 클릭하면 바로 추적됩니다.</p>
+      ${all.length?`<div class="vt-jump">${all.map(s=>`<span class="chip" data-vtjump="${s.booking}">${s.id} · ${s.booking}</span>`).join('')}</div>`:''}
     </div>
-    <div class="panel-body" style="padding:8px 20px 20px;">
-      ${all.map(s=>{ const idx = TRACK_STEPS.indexOf(s.status==='delay'?'transit':s.status); return `
-        <div style="border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-top:14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;"><div><span class="mono" style="font-weight:700">${s.container||'컨테이너 미배정'}</span><span class="cell-sub" style="margin-left:10px">${s.id} · ${s.carrier}</span></div><span class="badge ${STATUS_MAP[s.status].cls}">${STATUS_MAP[s.status].label}</span></div>
-          <div class="track-flow">${TRACK_STEPS.map((step,i)=>`<div class="track-step ${i<idx?'done':i===idx?'current':''}"><div class="track-dot">${i<idx?'✓':i+1}</div><div class="track-label">${STATUS_MAP[step].label}</div></div>`).join('')}</div>
-          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--ink-soft); margin-top:6px;"><span>${s.pol} 출항 ${s.etd}</span><span>${s.pod} 입항예정 ${s.eta}</span></div>
-          <div style="margin-top:10px;text-align:right;"><button class="btn btn-ghost btn-sm" data-kakao="${s.id}" data-type="${s.type}">💬 화주에게 알림톡 발송</button></div>
-        </div>`; }).join('') || '<div class="empty"><div class="empty-ico">🚢</div><h4>트래킹할 컨테이너가 없습니다</h4></div>'}
+  </div>
+  <div class="vt-stage">
+    <div class="vt-panel">
+      <div class="vt-search">
+        <input id="vtRef" placeholder="부킹 · MBL · 컨테이너 번호" autocomplete="off" spellcheck="false"/>
+        <button id="vtGo">조회</button>
+      </div>
+      <div class="vt-body">
+        <div id="vtHead"></div><div id="vtCur"></div><div class="vt-tl" id="vtTl"></div>
+      </div>
     </div>
+    <div class="vt-map" id="vtMap"></div>
   </div>`;
 }
 
@@ -635,6 +696,51 @@ function viewSettlement(){
     <div class="panel-body"><table>
       <thead><tr><th>건 번호</th><th>거래처</th><th>매출</th><th>원가</th><th>이익</th><th>이익률</th><th>세금계산서</th></tr></thead>
       <tbody>${all.map(s=>{ const p = s.revenue-s.cost; const rate = Math.round(p/s.revenue*100); return `<tr><td class="mono">${s.id}</td><td class="cell-strong">${s.type==='export'?s.shipper:s.consignee}</td><td>${won(s.revenue)}</td><td class="cell-sub">${won(s.cost)}</td><td style="font-weight:700;color:${p>=0?'var(--ok)':'var(--danger)'}">${won(p)}</td><td><span class="cell-sub">${rate}%</span></td><td><button class="btn btn-ghost btn-sm" data-tax="${s.id}">발행</button></td></tr>`; }).join('')}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function viewReceivable(){
+  const all = [...DB.shipments, ...DB.imports];
+  const unpaid = all.filter(s=>!s.paid);
+  const unpaidTotal = unpaid.reduce((a,s)=>a+s.revenue,0);
+  const paidTotal = all.filter(s=>s.paid).reduce((a,s)=>a+s.revenue,0);
+  const riskCount = all.filter(s=>!s.paid && s.blReleased).length; // B/L 줬는데 미입금 = 위험
+  return `
+  <div class="stat-grid">
+    <div class="stat ${unpaidTotal?'warn':''}"><div class="stat-label">미수금 (운임 미입금)</div><div class="stat-value" style="font-size:21px">${won(unpaidTotal)}</div><div class="stat-foot">${unpaid.length}건 미입금</div></div>
+    <div class="stat ok"><div class="stat-label">입금 완료</div><div class="stat-value" style="font-size:21px">${won(paidTotal)}</div></div>
+    <div class="stat ${riskCount?'':'ok'}" ${riskCount?'style="border-color:var(--danger)"':''}><div class="stat-label">⚠ 위험 (B/L 발급+미입금)</div><div class="stat-value">${riskCount}<small> 건</small></div><div class="stat-foot">${riskCount?'돈 떼일 위험 - 즉시 확인':'위험 건 없음'}</div></div>
+    <div class="stat"><div class="stat-label">전체 회수율</div><div class="stat-value">${all.length?Math.round(paidTotal/(paidTotal+unpaidTotal)*100):0}<small>%</small></div></div>
+  </div>
+  <div class="ai-drop" style="border-color:var(--gold); background:linear-gradient(135deg,#FDF8EE,#FBF3E2)">
+    <div class="ai-drop-ico">🧾</div>
+    <div class="ai-drop-txt">
+      <b>미수금 + B/L 발급 관리</b>
+      <p>운임을 받아야 B/L(물건 찾는 열쇠)을 내줍니다. 입금 확인 전에는 B/L이 자동으로 잠겨 돈 떼일 위험을 막습니다. 단골 화주는 여신(외상)으로 먼저 내줄 수 있습니다.</p>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">건별 입금 · B/L 발급 현황 <span class="tag">${all.length}건</span></div></div>
+    <div class="panel-body"><table>
+      <thead><tr><th>건 번호</th><th>화주</th><th>운임</th><th>입금 상태</th><th>B/L 발급</th><th>처리</th></tr></thead>
+      <tbody>${all.map(s=>{
+        const customer = s.type==='export'?s.shipper:s.consignee;
+        const payBadge = s.paid
+          ? '<span class="badge b-arrived">입금완료</span>'
+          : '<span class="badge b-delay">미입금</span>';
+        const blBadge = s.blReleased
+          ? '<span class="badge b-sailing badge-static">발급됨</span>'
+          : (s.bl ? '<span class="badge b-booking badge-static">발급가능</span>' : '<span class="badge badge-static" style="background:var(--ice);color:var(--ink-soft)">B/L 대기</span>');
+        const risk = !s.paid && s.blReleased;
+        // 처리 버튼: 미입금이면 입금처리, 입금됐는데 B/L 미발급이면 B/L발급
+        let action = '';
+        if(!s.paid){ action = `<button class="btn btn-primary btn-sm" data-markpaid="${s.id}" data-type="${s.type}">💰 입금 확인</button>`; }
+        else if(!s.blReleased && s.bl){ action = `<button class="btn btn-ai btn-sm" data-releasebl="${s.id}" data-type="${s.type}">🔓 B/L 발급</button>`; }
+        else if(!s.bl){ action = `<span class="cell-sub">선적 후 가능</span>`; }
+        else { action = `<span class="cell-sub" style="color:var(--ok)">✓ 완료</span>`; }
+        return `<tr ${risk?'style="background:#FDECEA"':''}><td class="mono">${s.id}</td><td class="cell-strong">${customer}${risk?' <span style="color:var(--danger);font-size:10px;font-weight:700">⚠위험</span>':''}</td><td style="font-weight:700">${won(s.revenue)}</td><td>${payBadge}</td><td>${blBadge}</td><td>${action}</td></tr>`;
+      }).join('')}</tbody>
     </table></div>
   </div>`;
 }
@@ -1008,10 +1114,48 @@ function shipmentDetail(id, type){
   bindActions();
 }
 
+/* ====== 미수금 · B/L 발급 처리 ====== */
+function findShip(id, type){ const arr = type==='export'?DB.shipments:DB.imports; return arr.find(s=>s.id===id); }
+function markPaid(id, type){
+  const s = findShip(id, type); if(!s) return;
+  s.paid = true;
+  cloudUpsertShip(s);
+  toast(`💰 ${id} 운임 입금 확인 완료! 이제 B/L을 발급할 수 있어요.`);
+  render();
+}
+function releaseBL(id, type){
+  const s = findShip(id, type); if(!s) return;
+  if(!s.paid){
+    // 미입금인데 발급 시도 → 경고 후 확인
+    openModal(`
+      <div class="modal-head"><h3>⚠️ 운임 미입금 상태</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+      <div class="modal-body">
+        <div class="ai-result-banner" style="background:#FBE9E7;border-color:#F5C6C0;">
+          <span class="ico">⚠️</span>
+          <div><b style="color:var(--danger)">아직 운임이 입금되지 않았습니다.</b><br><span style="font-size:12.5px;color:var(--ink-soft)">B/L을 발급하면 화주가 물건을 찾을 수 있어, 입금 전 발급은 돈을 떼일 위험이 있습니다.</span></div>
+        </div>
+        <p style="font-size:13.5px;color:var(--ink);">단골 화주에게 <b>여신(외상)</b>으로 먼저 발급하는 경우에만 진행하세요.</p>
+      </div>
+      <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">취소</button><button class="btn btn-danger-ghost" data-forcebl="${id}" data-type="${type}">여신으로 발급 강행</button></div>`);
+    $('[data-forcebl]').onclick = ()=>{ s.blReleased = true; cloudUpsertShip(s); closeModal(); toast(`🔓 ${id} B/L 여신 발급됨 (미수금 주의!)`); render(); };
+    return;
+  }
+  s.blReleased = true;
+  cloudUpsertShip(s);
+  toast(`🔓 ${id} B/L 발급 완료!`);
+  render();
+}
+
 /* ====== B/L · 인보이스 출력 ====== */
 function printDoc(kind, id, type){
   const list = type==='export'?DB.shipments:DB.imports;
   const s = list.find(x=>x.id===id); if(!s) return;
+  // B/L 출력 시 미입금이면 경고
+  if(kind==='bl' && !s.paid){
+    if(!confirm(`⚠️ ${s.shipper}\n\n이 건은 아직 운임이 입금되지 않았습니다.\nB/L을 출력·발급하면 화주가 물건을 찾을 수 있어 돈을 떼일 위험이 있습니다.\n\n그래도 출력하시겠습니까? (여신 거래인 경우에만)`)){
+      return;
+    }
+  }
   const today = new Date().toLocaleDateString('ko-KR');
   let html;
   if(kind==='bl'){
@@ -1164,6 +1308,8 @@ function bindActions(){
   document.querySelectorAll('#kindSeg button').forEach(btn=> btn.onclick = ()=>{ document.querySelectorAll('#kindSeg button').forEach(x=>x.classList.remove('on')); btn.classList.add('on'); $('#partnerRows').innerHTML = renderPartnerRows(btn.dataset.kind); bindActions(); });
   document.querySelectorAll('[data-refresh]').forEach(b=> b.onclick = ()=> toast('📡 선사 API 연동 후 실시간 갱신됩니다.'));
   document.querySelectorAll('[data-tax]').forEach(b=> b.onclick = ()=> toast('🧾 홈택스 전자세금계산서 연동 예정입니다.'));
+  document.querySelectorAll('[data-markpaid]').forEach(b=> b.onclick = ()=> markPaid(b.dataset.markpaid, b.dataset.type));
+  document.querySelectorAll('[data-releasebl]').forEach(b=> b.onclick = ()=> releaseBL(b.dataset.releasebl, b.dataset.type));
   document.querySelectorAll('[data-connect]').forEach(b=> b.onclick = ()=> carrierApiModal(b.dataset.connect));
 }
 
@@ -1180,7 +1326,7 @@ function saveShipment(type){
   const f = $('#shipForm');
   if(!f.shipper.value || !f.consignee.value || !f.pol.value || !f.pod.value){ toast('⚠ 필수 항목(*)을 입력해주세요.'); return; }
   const id = type==='export' ? `EXP-${seqExp++}` : `IMP-${seqImp++}`;
-  const obj = { id, type, mode:f.mode.value, shipper:f.shipper.value, consignee:f.consignee.value, pol:f.pol.value, pod:f.pod.value, carrier:f.carrier.value||'-', booking:f.booking.value, bl:f.bl.value, container:f.container.value, incoterms:f.incoterms.value, commodity:f.commodity.value||'-', qty:f.qty.value||'-', status: f.bl.value?'sailing':'booking', etd:f.etd.value||'-', eta:f.eta.value||'-', revenue:Number(f.revenue.value)||0, cost:Number(f.cost.value)||0, memo:f.memo.value };
+  const obj = { id, type, mode:f.mode.value, shipper:f.shipper.value, consignee:f.consignee.value, pol:f.pol.value, pod:f.pod.value, carrier:f.carrier.value||'-', booking:f.booking.value, bl:f.bl.value, container:f.container.value, incoterms:f.incoterms.value, commodity:f.commodity.value||'-', qty:f.qty.value||'-', status: f.bl.value?'sailing':'booking', etd:f.etd.value||'-', eta:f.eta.value||'-', revenue:Number(f.revenue.value)||0, cost:Number(f.cost.value)||0, paid:false, blReleased:false, memo:f.memo.value };
   (type==='export'?DB.shipments:DB.imports).push(obj);
   cloudUpsertShip(obj);
   closeModal(); toast(`✓ ${id} 건이 등록되었습니다.${CLOUD?' (클라우드 저장됨)':''}`); render();
@@ -1311,6 +1457,169 @@ async function init(){
   render();
 }
 // init은 로그인 후 enterApp에서 호출됩니다.
+
+/* ============================================================
+   항적 추적 (Voyage Tracker · unovt 통합)
+   - 부킹/MBL/컨테이너 번호로 선박 위치·항로를 지도에 표시
+   - 저장 샘플 없음. 선사 실시간 백엔드(LIVE_API)로 조회.
+   - 선사 Open API 키를 받으면 LIVE_API가 실제 데이터를 반환합니다.
+   ============================================================ */
+const VT_DATA = { shipments:{}, aliases:{} };  // 저장 데이터 (현재 비어있음 - 실시간 조회 위주)
+const VT_LIVE_API = "https://btkphqftlesknsngiruy.supabase.co/functions/v1/kmtc-track";
+const VT_EVMETA={IN_GATE:['게이트 인','Gate In'],LOADED:['본선 적재','Loaded'],VSL_DEP:['출항','Departure'],
+  VSL_ARR:['입항','Arrival'],TRANSSHIP:['환적','Transship'],DISCHARGE:['양하','Discharged'],
+  GATE_OUT:['게이트 아웃','Gate Out'],TRK_DEP:['트럭 출발','Truck Dep'],TRK_ARR:['트럭 도착','Truck Arr']};
+const VT_ROLE={origin:['출발','출'],transship:['환적','경'],destination:['도착','도']};
+
+let vtMap=null, vtLayer=null, vtCur=null, vtInited=false;
+
+function vtNorm(s){return (s||'').toUpperCase().replace(/[\s\-]/g,'');}
+function vtResolve(raw){
+  const ref=vtNorm(raw); if(!ref) return {error:'번호를 입력하세요.'};
+  const id=VT_DATA.aliases[ref]; if(!id) return {error:`'${raw}' 저장된 화물에 없습니다. 실시간 조회를 시도합니다.`};
+  const s=JSON.parse(JSON.stringify(VT_DATA.shipments[id])); s.queryRef=raw;
+  let via='CONTAINER', fb=false;
+  if(vtNorm(s.mbl)===ref) via='MBL';
+  else if(vtNorm(s.booking)===ref){ via='BOOKING'; if(s.bookingNeedsFallback){ via='BOOKING→MBL'; fb=true; } }
+  s.via=via; s.fb=fb; return {s};
+}
+function vtBearing(a,b){const f1=a[0]*Math.PI/180,f2=b[0]*Math.PI/180,dl=(b[1]-a[1])*Math.PI/180;
+  const y=Math.sin(dl)*Math.cos(f2),x=Math.cos(f1)*Math.sin(f2)-Math.sin(f1)*Math.cos(f2)*Math.cos(dl);
+  return (Math.atan2(y,x)*180/Math.PI+360)%360;}
+
+function initVoyageTracker(){
+  vtInited=false; vtMap=null; vtLayer=null; vtCur=null;
+  const mapEl = document.getElementById('vtMap');
+  if(!mapEl || typeof L==='undefined') return;
+  // 지도 생성
+  vtMap=L.map('vtMap',{zoomControl:true,attributionControl:false,worldCopyJump:true}).setView([18,90],3);
+  const SOURCES=[
+    {url:'https://{s}.basemap.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',opt:{subdomains:'abcd',maxZoom:18}},
+    {url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',opt:{subdomains:'abc',maxZoom:18}}
+  ];
+  let si=0,tl=null,fails=0;
+  function addTiles(){ if(tl)vtMap.removeLayer(tl); const s=SOURCES[si]; tl=L.tileLayer(s.url,s.opt).addTo(vtMap); fails=0;
+    tl.on('tileerror',()=>{fails++; if(fails>4&&si<SOURCES.length-1){si++;addTiles();}}); }
+  addTiles();
+  vtLayer=L.layerGroup().addTo(vtMap);
+  vtInited=true;
+  setTimeout(()=>vtMap.invalidateSize(),200);
+  // 바인딩
+  const go=document.getElementById('vtGo'), ref=document.getElementById('vtRef');
+  if(go) go.onclick=()=>vtShow(ref.value);
+  if(ref) ref.addEventListener('keydown',e=>{if(e.key==='Enter')vtShow(e.target.value);});
+  document.querySelectorAll('[data-vtjump]').forEach(c=>c.onclick=()=>{ ref.value=c.dataset.vtjump; vtShow(c.dataset.vtjump); });
+  document.getElementById('vtHead').innerHTML='<div class="vt-empty">조회할 번호를 입력하거나<br>위 화물의 부킹번호를 클릭하세요.<br><span style="font-size:11px;color:var(--ink-faint)">(부킹 · MBL · 컨테이너 번호)</span></div>';
+}
+
+function vtPinIcon(role){
+  const col=role==='transship'?'#F0A741':(role==='destination'?'#E0218A':'#1F6FEB');
+  const ltr=VT_ROLE[role]?VT_ROLE[role][1]:'';
+  return L.divIcon({className:'',iconSize:[26,34],iconAnchor:[13,34],html:
+    `<div style="position:relative"><svg width="26" height="34" viewBox="0 0 26 34"><path d="M13 0C5.8 0 0 5.8 0 13c0 9 13 21 13 21s13-12 13-21C26 5.8 20.2 0 13 0z" fill="${col}"/></svg><span style="position:absolute;top:6px;left:0;width:26px;text-align:center;color:#fff;font:700 11px sans-serif">${ltr}</span></div>`});
+}
+function vtArrowIcon(brg,col){return L.divIcon({className:'',iconSize:[14,14],iconAnchor:[7,7],
+  html:`<svg width="14" height="14" viewBox="0 0 14 14" style="transform:rotate(${brg}deg)"><path d="M7 1 L12 12 L7 9 L2 12 Z" fill="${col}"/></svg>`});}
+function vtShipIcon(brg){return L.divIcon({className:'',iconSize:[30,30],iconAnchor:[15,15],
+  html:`<svg width="30" height="30" viewBox="0 0 30 30" style="transform:rotate(${brg}deg);filter:drop-shadow(0 1px 3px rgba(0,0,0,.4))"><path d="M15 2 L21 16 L15 22 L9 16 Z" fill="#0B2545" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/><circle cx="15" cy="13" r="2" fill="#F0A741"/></svg>`});}
+
+function vtDrawSeg(pts,kind){
+  if(pts.length<2) return;
+  const col=kind==='traveled'?'#3A7CA5':'#A23CE6';
+  L.polyline(pts,{color:col,weight:kind==='traveled'?4:3,opacity:.9,dashArray:kind==='traveled'?null:'3 9',lineCap:'round'}).addTo(vtLayer);
+  const step=Math.max(2,Math.floor(pts.length/6));
+  for(let i=step;i<pts.length-1;i+=step){
+    const brg=vtBearing(pts[i-1],pts[i+1]||pts[i]);
+    L.marker(pts[i],{icon:vtArrowIcon(brg,'#E0218A'),interactive:false,zIndexOffset:200}).addTo(vtLayer);
+  }
+}
+function vtRender(){
+  if(!vtLayer) return;
+  vtLayer.clearLayers(); if(!vtCur) return;
+  const s=vtCur, ci=s.currentLegIdx, cv=s.currentVertex;
+  s.legs.forEach((lg,i)=>{ const p=lg.path;
+    if(i<ci) vtDrawSeg(p,'traveled');
+    else if(i>ci) vtDrawSeg(p,'remaining');
+    else{ vtDrawSeg(p.slice(0,cv+1),'traveled'); vtDrawSeg(p.slice(cv),'remaining'); } });
+  s.ports.forEach(pt=>{ L.marker([pt.lat,pt.lng],{icon:vtPinIcon(pt.role),zIndexOffset:500}).addTo(vtLayer)
+      .bindTooltip(pt.name.split(',')[0],{permanent:true,direction:'top',offset:[0,-30],className:'plbl'}); });
+  const path=s.legs[ci].path, pos=path[cv], ahead=path[Math.min(cv+1,path.length-1)];
+  const brg=vtBearing(pos,ahead), vessel=s.legs[ci].vessel+'/'+s.legs[ci].voyage;
+  L.marker(pos,{icon:vtShipIcon(brg),zIndexOffset:1000}).addTo(vtLayer)
+    .bindTooltip(`${vessel}`,{permanent:true,direction:'right',offset:[12,0],className:'shiplbl'});
+  const allp=[]; s.legs.forEach(l=>l.path.forEach(p=>allp.push(p)));
+  vtMap.fitBounds(L.latLngBounds(allp).pad(.18));
+}
+function vtDrawHead(){
+  const s=vtCur,o=s.ports[0],d=s.ports[s.ports.length-1];
+  document.getElementById('vtHead').innerHTML=`<div class="vt-shead">
+    <span class="resolved ${s.fb?'fb':''}"><span class="dot"></span>${s.fb?'부킹→MBL 폴백으로 확정':'조회 완료 · '+({CONTAINER:'컨테이너',MBL:'MBL',BOOKING:'부킹'}[s.via]||s.via)+' 기준'}</span>
+    <div><span class="vt-scac">${s.scac||s.carrier}</span><span class="vt-mbl">${s.mbl||''}</span></div>
+    <div class="vt-od">
+      <div class="pt"><div class="role">출발 Origin</div><div class="nm">${o.name.split(',')[0]}</div></div>
+      <div class="conn"></div>
+      <div class="pt" style="text-align:right"><div class="role">도착 Destination</div><div class="nm">${d.name.split(',')[0]}</div></div>
+    </div>
+    <div class="vt-smeta">
+      <div class="it"><b>선사</b>${s.carrier}</div>
+      <div class="it"><b>컨테이너</b>${(s.containers||[]).length}본</div>
+      <div class="it"><b>ETA</b><span class="mono">${s.eta||'-'}</span></div>
+      <div class="it"><b>조회번호</b><span class="mono">${s.queryRef}</span></div>
+    </div>
+    <div class="vt-cnts">${(s.containers||[]).map(c=>`<span class="vt-cnt">${c}</span>`).join('')}</div>
+  </div>`;
+}
+function vtDrawCur(){
+  const s=vtCur,lg=s.legs[s.currentLegIdx];
+  const arrived=(s.currentLegIdx===s.legs.length-1)&&(s.currentVertex>=lg.path.length-1);
+  const status=arrived?'<span style="color:var(--ok)">도착 · 정박</span>':'항해 중';
+  document.getElementById('vtCur').innerHTML=`<div class="vt-curbar">
+    <span style="font-size:18px">🚢</span>
+    <div class="txt"><b>${lg.vessel} ${lg.voyage}</b> ${status}
+      <div class="ts">현재 위치 · ${s.positionTs||''}</div></div></div>`;
+}
+function vtDrawTl(){
+  const s=vtCur; let lastDone=-1;
+  s.events.forEach((e,i)=>{if(!e.future) lastDone=i;});
+  document.getElementById('vtTl').innerHTML=s.events.map((e,i)=>{
+    const m=VT_EVMETA[e.type]||[e.type,''];
+    const cls=e.future?'future':(i===lastDone?'done last':'done');
+    const parts=(e.time||'').split(' '); const date=parts[0]||'', time=parts[1]||'';
+    return `<div class="vt-ev ${cls}">
+      <div class="t"><span class="d">${date.slice(5)}</span><br>${time} <span style="opacity:.7">${e.tz||''}</span></div>
+      <div class="rail"><div class="node"></div></div>
+      <div class="body"><div class="ti">${m[0]}<span class="en">${m[1]}</span></div>
+        <div class="pl">${e.place}</div>
+        ${e.vessel?`<span class="vs">⛴ ${e.vessel}</span>`:''}
+      </div></div>`;
+  }).join('');
+}
+async function vtShow(raw){
+  if(!vtInited){ initVoyageTracker(); }
+  const r=vtResolve(raw);
+  if(!r.error){ vtCur=r.s; vtDrawHead(); vtDrawCur(); vtDrawTl(); vtRender(); return; }
+  // 저장 데이터에 없으면 → 선사 실시간 백엔드 조회
+  if(VT_LIVE_API){
+    document.getElementById('vtHead').innerHTML=`<div class="vt-empty">⏳ '${raw}' 실시간 조회 중…</div>`;
+    document.getElementById('vtCur').innerHTML=''; document.getElementById('vtTl').innerHTML='';
+    try{
+      const resp=await fetch(`${VT_LIVE_API}?ref=${encodeURIComponent(vtNorm(raw))}`);
+      const data=await resp.json();
+      if(data && data.legs && !data.error){
+        data.via='BOOKING'; data.fb=false; data.queryRef=raw;
+        vtCur=data; vtDrawHead(); vtDrawCur(); vtDrawTl(); vtRender(); return;
+      }
+      vtShowError((data&&data.error)||`'${raw}' 추적 정보를 찾지 못했습니다. (선사 API 키 연동 시 실시간 조회됩니다)`);
+    }catch(e){ vtShowError('실시간 조회 실패 — 선사 Open API 키 연동이 필요합니다.'); }
+    return;
+  }
+  vtShowError(r.error);
+}
+function vtShowError(msg){
+  document.getElementById('vtHead').innerHTML=`<div class="vt-empty">${msg}</div>`;
+  document.getElementById('vtCur').innerHTML=''; document.getElementById('vtTl').innerHTML='';
+  vtLayer&&vtLayer.clearLayers(); vtCur=null;
+}
 </script>
 </body>
 </html>
