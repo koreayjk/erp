@@ -170,6 +170,24 @@
     .vf-docs { flex-direction: column; }
   }
   .menu-toggle { display: none; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--navy); padding: 0 4px; margin-right: 6px; align-items: center; }
+
+  /* 오늘 할 일 카드 */
+  .todo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .todo-card { display: flex; align-items: center; gap: 12px; border: 1px solid var(--line); border-radius: 11px; padding: 14px 16px; cursor: pointer; transition: 0.15s; background: #fff; }
+  .todo-card:hover { box-shadow: 0 4px 16px rgba(11,37,69,0.1); transform: translateY(-1px); border-color: var(--sky); }
+  .todo-ico { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .todo-body { flex: 1; min-width: 0; }
+  .todo-n { font-size: 22px; font-weight: 800; color: var(--ink); line-height: 1; }
+  .todo-n small { font-size: 12px; font-weight: 500; color: var(--ink-soft); }
+  .todo-label { font-size: 13px; font-weight: 700; color: var(--ink); margin-top: 3px; }
+  .todo-desc { font-size: 11px; color: var(--ink-soft); margin-top: 1px; }
+  .todo-arrow { color: var(--ink-soft); font-size: 16px; }
+  @media (max-width: 900px) { .todo-grid { grid-template-columns: 1fr; } }
+
+  /* 화주 선택 칩 */
+  .portal-chip { border: 1px solid var(--line); background: #fff; border-radius: 18px; padding: 6px 14px; font-size: 12.5px; cursor: pointer; color: var(--ink); font-family: inherit; white-space: nowrap; }
+  .portal-chip:hover { border-color: var(--sky); }
+  .portal-chip.on { background: var(--navy); color: #fff; border-color: var(--navy); }
   /* drag & drop */
   .drop-zone { border:2px dashed var(--sky-light); border-radius:12px; background:linear-gradient(135deg,#F4F9FC,#EAF3FA); padding:28px 20px; text-align:center; cursor:pointer; transition:all 0.18s; }
   .drop-zone:hover, .drop-zone.dragover { border-color:var(--gold); background:#FDF8EE; }
@@ -600,13 +618,49 @@ function viewDashboard(){
   const delayed = all.filter(s=>s.status==='delay').length;
   const riskUnpaid = all.filter(s=>!s.paid && s.blReleased).length;
   const recent = all.slice().reverse().slice(0,5);
+
+  // ===== 오늘 할 일 (액션 센터) =====
+  const needConfirm = all.filter(s=>s.confirmStatus==='pending');        // 컨펌 대기
+  const needBooking = all.filter(s=>s.status==='booking' && !s.booking); // 부킹 필요
+  const transiting = all.filter(s=>s.status==='transit'||s.status==='delay'); // 운송중
+  // 청구 그룹 계산 (미청구 / 미입금)
+  const billGroups = {};
+  all.forEach(s=>{ const c=s.type==='export'?s.shipper:s.consignee; const m=s.billingMonth||(s.etd||'').slice(0,7); const k=c+'|'+m; if(!billGroups[k])billGroups[k]={c,m,items:[],billed:false}; billGroups[k].items.push(s); if(s.billed)billGroups[k].billed=true; });
+  const groupArr = Object.values(billGroups);
+  const needBill = groupArr.filter(g=>!g.billed);
+  const needCollect = groupArr.filter(g=>g.billed && !g.items.every(i=>i.paid));
+  const pendingQuotes = (DB.quotes||[]).filter(q=>q.status!=='fixed');
+
+  const actions = [
+    { n:needConfirm.length, ico:'📋', label:'화주 컨펌 대기', color:'#B8862F', go:'export', desc:'화주 확인 받을 건' },
+    { n:pendingQuotes.length, ico:'💱', label:'견적 진행중', color:'#3A7CA5', go:'quote', desc:'선사 비교·발송할 견적' },
+    { n:needBooking.length, ico:'🚢', label:'부킹 필요', color:'#134074', go:'export', desc:'선사 예약할 건' },
+    { n:transiting.length, ico:'📦', label:'운송중', color:'#5FA8D3', go:'tracking', desc:'추적·알림 보낼 건' },
+    { n:needBill.length, ico:'🧾', label:'청구 대기', color:'#C0392B', go:'receivable', desc:'월말 청구할 화주' },
+    { n:needCollect.length, ico:'💰', label:'입금 대기', color:'#7A5C12', go:'receivable', desc:'수금 확인할 화주' },
+  ].filter(a=>a.n>0);
+
   return `
   <div class="stat-grid">
     <div class="stat"><div class="stat-label">진행중 건</div><div class="stat-value">${active}<small> 건</small></div><div class="stat-foot">전체 ${all.length}건 중 운송 진행</div></div>
     <div class="stat gold"><div class="stat-label">이번 달 매출</div><div class="stat-value" style="font-size:22px">${won(monthRev)}</div><div class="stat-foot"><span class="up">▲ 12%</span> 전월 대비</div></div>
-    <div class="stat ok"><div class="stat-label">이번 달 영업이익</div><div class="stat-value" style="font-size:22px">${won(monthProfit)}</div><div class="stat-foot">이익률 ${Math.round(monthProfit/monthRev*100)}%</div></div>
+    <div class="stat ok"><div class="stat-label">이번 달 영업이익</div><div class="stat-value" style="font-size:22px">${won(monthProfit)}</div><div class="stat-foot">이익률 ${monthRev?Math.round(monthProfit/monthRev*100):0}%</div></div>
     <div class="stat ${(delayed||riskUnpaid)?'warn':''}"><div class="stat-label">주의 경보</div><div class="stat-value">${delayed+riskUnpaid}<small> 건</small></div><div class="stat-foot">${riskUnpaid?`⚠ 미수금 위험 ${riskUnpaid}건`:(delayed?'⚠ 지연 확인 필요':'정상 운영중')}</div></div>
   </div>
+
+  <div class="panel" style="margin-bottom:18px;">
+    <div class="panel-head"><div class="panel-title">📌 오늘 할 일 <span class="tag">처리 대기 ${actions.reduce((a,b)=>a+b.n,0)}건</span></div></div>
+    <div class="panel-body" style="padding:16px 18px;">
+      ${actions.length ? `<div class="todo-grid">${actions.map(a=>`
+        <div class="todo-card" data-go="${a.go}">
+          <div class="todo-ico" style="background:${a.color}1a;color:${a.color}">${a.ico}</div>
+          <div class="todo-body"><div class="todo-n">${a.n}<small>건</small></div><div class="todo-label">${a.label}</div><div class="todo-desc">${a.desc}</div></div>
+          <div class="todo-arrow">→</div>
+        </div>`).join('')}</div>`
+      : '<div style="text-align:center;padding:30px;color:var(--ink-soft)"><div style="font-size:36px">✅</div><p>처리할 일이 없습니다. 모두 완료됐어요!</p></div>'}
+    </div>
+  </div>
+
   <div class="panel">
     <div class="panel-head"><div class="panel-title">최근 선적 현황 <span class="tag">실시간</span></div><button class="btn btn-ghost btn-sm" data-go="export">전체 보기 →</button></div>
     <div class="panel-body"><table>
@@ -619,9 +673,9 @@ function viewDashboard(){
     <div class="panel-body" style="padding:18px 20px; display:flex; gap:12px; flex-wrap:wrap;">
       <button class="btn btn-ai" data-go="assistant">✨ AI 비서에게 물어보기</button>
       <button class="btn btn-ai" data-aiparse="export">🤖 AI로 서류 자동 등록</button>
-      <button class="btn btn-primary" data-new="export">+ 수출 건 등록</button>
-      <button class="btn btn-ghost" data-new="import">+ 수입 건 등록</button>
-      <button class="btn btn-ghost" data-go="partners">+ 거래처 추가</button>
+      <button class="btn btn-primary" data-go="quote">💱 새 견적 작성</button>
+      <button class="btn btn-ghost" data-go="portal">📧 주간 화주 알림</button>
+      <button class="btn btn-ghost" data-new="export">+ 수출 건 등록</button>
     </div>
   </div>`;
 }
@@ -692,20 +746,55 @@ function viewPortal(){
   const shippers = DB.partners.filter(p=>p.kind==='shipper');
   const sel = window._portalShipper || (shippers[0] && shippers[0].name) || '';
   const myShips = [...DB.shipments, ...DB.imports].filter(s=>s.shipper===sel || s.consignee===sel);
+
+  // 주간 알림 대상: 운송중 화물 있는 화주
+  const transitByShipper = {};
+  [...DB.shipments, ...DB.imports].forEach(s=>{
+    if(s.status==='transit'||s.status==='delay'){
+      const c = s.type==='export'?s.shipper:s.consignee;
+      (transitByShipper[c] = transitByShipper[c]||[]).push(s);
+    }
+  });
+  const alertTargets = Object.entries(transitByShipper);
+
   return `
-  <div class="ai-drop" style="border-color:var(--sky); margin:0 0 20px;">
-    <div class="ai-drop-ico">🔗</div>
+  <div class="ai-drop" style="border-color:var(--sky); margin:0 0 18px;">
+    <div class="ai-drop-ico">📧</div>
     <div class="ai-drop-txt">
-      <b>화주 전용 조회 포털 <span class="ai-tag" style="background:var(--sky)">영업 무기</span></b>
-      <p>화주에게 전용 링크를 주면, 화주가 직접 로그인해서 자기 화물 현황을 실시간으로 확인합니다. "우리 화물 어디쯤이에요?" 전화가 사라집니다. 아래는 화주가 보는 화면 미리보기입니다.</p>
+      <b>화주 알림 — 우리가 먼저 보냅니다 <span class="ai-tag" style="background:var(--sky)">PUSH</span></b>
+      <p>화주는 바빠서 링크를 잘 안 봅니다. 하지만 이메일은 봅니다. 운송중인 화물이 있는 화주에게 주 1~2회 현황 메일을 보내세요. "우리 화물 어디?" 전화가 사라집니다.</p>
     </div>
   </div>
+
+  <div class="panel" style="margin-bottom:18px;">
+    <div class="panel-head"><div class="panel-title">📧 주간 화주 알림 <span class="tag">운송중 화물 보유 ${alertTargets.length}개 화주</span></div>
+      ${alertTargets.length?`<button class="btn btn-primary btn-sm" data-sendallalerts="1">📨 전체 발송 메일 한번에 생성</button>`:''}
+    </div>
+    <div class="panel-body" style="padding:14px 18px;">
+      ${alertTargets.length ? `
+      <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px;">아래 화주들은 현재 운송중인 화물이 있습니다. 각 화주에게 현황 메일을 보내거나, 전체를 한 번에 생성할 수 있습니다.</p>
+      <table>
+        <thead><tr><th>화주</th><th>운송중 화물</th><th>담당자</th><th>발송</th></tr></thead>
+        <tbody>${alertTargets.map(([name, ships])=>{
+          const p = DB.partners.find(x=>x.name===name)||{};
+          return `<tr>
+            <td class="cell-strong">${name}</td>
+            <td class="cell-sub">${ships.length}건 (${ships.map(s=>s.commodity).slice(0,2).join(', ')}${ships.length>2?' 외':''})</td>
+            <td class="cell-sub">${p.manager||'-'}${p.email?`<br>${p.email}`:''}</td>
+            <td><button class="btn btn-ai btn-sm" data-sendalert="${name}">📧 현황 메일</button></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>` : '<div style="text-align:center;padding:24px;color:var(--ink-soft)"><div style="font-size:32px">📭</div><p>현재 운송중인 화물이 없어 보낼 알림이 없습니다.</p></div>'}
+    </div>
+  </div>
+
   <div class="panel">
     <div class="panel-head">
-      <div class="panel-title">화주 화면 미리보기</div>
-      <select id="portalSel" style="padding:7px 11px;border:1px solid var(--line);border-radius:7px;font-size:12.5px;font-family:inherit;">
-        ${shippers.map(p=>`<option value="${p.name}" ${p.name===sel?'selected':''}>${p.name}</option>`).join('')}
-      </select>
+      <div class="panel-title">화주별 현황 · 전용 링크</div>
+      <input type="text" id="portalSearch" placeholder="🔍 화주 검색" style="padding:7px 11px;border:1px solid var(--line);border-radius:7px;font-size:12.5px;font-family:inherit;width:160px;">
+    </div>
+    <div class="filter-bar" style="gap:6px;" id="portalChips">
+      ${shippers.map(p=>`<button class="portal-chip ${p.name===sel?'on':''}" data-portalpick="${p.name}">${p.name}</button>`).join('')}
     </div>
     <div class="panel-body" style="padding:20px;">
       <div style="background:linear-gradient(135deg,#0B2545,#13315C);border-radius:12px;padding:24px;color:#fff;margin-bottom:18px;">
@@ -741,6 +830,64 @@ function viewPortal(){
       </div>
     </div>
   </div>`;
+}
+
+/* ============================================================
+   주간 화주 알림 (운송중 화물 현황 이메일)
+   - 화주는 링크 안 봐도 이메일은 봄 → PUSH 방식
+   ============================================================ */
+function buildAlertMail(name, ships){
+  const p = DB.partners.find(x=>x.name===name)||{};
+  const link = (typeof shipperPortalLink==='function') ? shipperPortalLink(name) : '';
+  const lines = ships.map(s=>{
+    const etaTxt = s.eta&&s.eta!=='-' ? `${s.eta} 도착예정` : '도착일 확인중';
+    const statusTxt = s.status==='delay' ? '⚠️ 지연' : '운송중';
+    return `· ${s.commodity} (${s.qty})\n   ${s.pol.split('(')[0]} → ${s.pod.split('(')[0]} · ${s.carrier} · ${statusTxt} · ${etaTxt}`;
+  }).join('\n\n');
+  const subj = `[${name}] 화물 운송 현황 안내 (운송중 ${ships.length}건)`;
+  const body = `${p.manager||name} 님 안녕하세요. SeaFlow Forwarding입니다.\n\n현재 운송중인 화물 현황을 안내드립니다.\n\n────────────────────\n${lines}\n────────────────────\n\n실시간 위치는 아래 링크에서 확인하실 수 있습니다.\n▶ ${link}\n\n문의사항은 회신 부탁드립니다. 감사합니다.\n\nSeaFlow Forwarding`;
+  return { email:p.email||'', subj, body };
+}
+
+function sendShipperAlert(name){
+  const ships = [...DB.shipments, ...DB.imports].filter(s=>{
+    const c = s.type==='export'?s.shipper:s.consignee;
+    return c===name && (s.status==='transit'||s.status==='delay');
+  });
+  if(!ships.length){ toast('운송중인 화물이 없습니다.'); return; }
+  const m = buildAlertMail(name, ships);
+  window.open(`mailto:${m.email}?subject=${encodeURIComponent(m.subj)}&body=${encodeURIComponent(m.body)}`, '_blank');
+  toast(`📧 ${name} 현황 메일 초안이 열렸습니다.`);
+}
+
+function sendAllAlerts(){
+  const byShipper = {};
+  [...DB.shipments, ...DB.imports].forEach(s=>{
+    if(s.status==='transit'||s.status==='delay'){
+      const c = s.type==='export'?s.shipper:s.consignee;
+      (byShipper[c]=byShipper[c]||[]).push(s);
+    }
+  });
+  const targets = Object.entries(byShipper);
+  if(!targets.length){ toast('보낼 알림이 없습니다.'); return; }
+  // 전체 발송 미리보기 모달
+  openModal(`
+    <div class="modal-head"><h3>📨 주간 화주 알림 일괄 발송</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px;">운송중 화물이 있는 <b>${targets.length}개 화주</b>에게 현황 메일을 준비했습니다. 각 화주별로 메일을 여세요. (한 번에 하나씩 열립니다)</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${targets.map(([name, ships])=>{
+          const p = DB.partners.find(x=>x.name===name)||{};
+          return `<div style="display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:8px;padding:11px 14px;">
+            <div><b style="font-size:13px">${name}</b> <span class="cell-sub">· 운송중 ${ships.length}건${p.email?` · ${p.email}`:' · 이메일 없음'}</span></div>
+            <button class="btn btn-ai btn-sm" data-sendalert="${name}">📧 메일 열기</button>
+          </div>`;
+        }).join('')}
+      </div>
+      <p style="font-size:11.5px;color:var(--ink-soft);margin-top:14px;line-height:1.6;">💡 완전 자동 발송(매주 정해진 시간에 시스템이 알아서)은 정식 출시 때 서버 기능으로 추가할 수 있습니다. 지금은 버튼으로 빠르게 메일을 생성합니다.</p>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">닫기</button></div>`, true);
+  bindActions();
 }
 
 function viewInbox(){
@@ -1690,6 +1837,20 @@ function bindActions(){
   document.querySelectorAll('[data-mail]').forEach(b=> b.onclick = ()=> openMail(b.dataset.mail));
   document.querySelectorAll('[data-mailsync]').forEach(b=> b.onclick = ()=> toast('📬 새 메일 2건을 가져왔어요. (실제 연동은 서버 설정 후 자동 수신)'));
   const psel = $('#portalSel'); if(psel) psel.onchange = ()=>{ window._portalShipper = psel.value; render(); };
+  // 화주 포털: 칩 선택
+  document.querySelectorAll('[data-portalpick]').forEach(b=> b.onclick = ()=>{ window._portalShipper = b.dataset.portalpick; render(); });
+  // 화주 포털: 검색 (칩 필터링)
+  const psearch = $('#portalSearch');
+  if(psearch) psearch.oninput = ()=>{
+    const q = psearch.value.toLowerCase();
+    document.querySelectorAll('#portalChips .portal-chip').forEach(chip=>{
+      chip.style.display = chip.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  };
+  // 주간 알림: 개별 발송
+  document.querySelectorAll('[data-sendalert]').forEach(b=> b.onclick = ()=> sendShipperAlert(b.dataset.sendalert));
+  // 주간 알림: 전체 발송
+  document.querySelectorAll('[data-sendallalerts]').forEach(b=> b.onclick = ()=> sendAllAlerts());
   const askBtn = $('#askBtn'); if(askBtn){ askBtn.onclick = ()=>{ const q=$('#askInput').value.trim(); if(q) runAssistant(q); else toast('질문을 입력해주세요'); }; }
   const askInput = $('#askInput'); if(askInput){ askInput.onkeydown = e=>{ if(e.key==='Enter'){ const q=askInput.value.trim(); if(q) runAssistant(q); } }; }
   document.querySelectorAll('[data-ask]').forEach(c=> c.onclick = ()=>{ $('#askInput').value = c.dataset.ask; runAssistant(c.dataset.ask); });
