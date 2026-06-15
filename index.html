@@ -1101,6 +1101,12 @@ function billView(customer, month){
   const [y,m] = month.split('-').map(Number);
   const issueDate = m ? `${y}-${String(m).padStart(2,'0')}-${new Date(y,m,0).getDate()}` : '';
   const dueDate = m ? `${m===12?y+1:y}-${String(m===12?1:m+1).padStart(2,'0')}-${new Date(m===12?y+1:y, m===12?1:m+1, 0).getDate()}` : '';
+  const invNo = `INV-${customer.replace(/[^가-힣A-Za-z0-9]/g,'').slice(0,4)}-${month.replace('-','')}`;
+  // 메일 정보 (PDF 첨부는 사용자가 드래그 — 본문·제목·수신자는 자동)
+  const mailSubject = `[청구서] ${customer} ${month}월분 운임 청구 (${invNo})`;
+  const itemLines = items.map(s=>`· ${s.id} ${s.commodity} (${s.pol.split('(')[0]}→${s.pod.split('(')[0]}) ${s.revenue.toLocaleString()}원`).join('\n');
+  const mailBody = `${ship.manager||customer} 님 안녕하세요. SeaFlow Forwarding입니다.\n\n${month}월분 운임 통합 청구서를 보내드립니다.\n(상세 내역은 첨부된 PDF를 확인해 주세요)\n\n────────────────────\n■ 청구번호: ${invNo}\n■ 청구 건수: ${items.length}건\n■ 청구 총액: ₩${total.toLocaleString()} (VAT 별도)\n■ 결제 기한: ${dueDate}까지\n────────────────────\n\n[청구 내역 요약]\n${itemLines}\n\n※ 첨부된 PDF 청구서를 확인 후 기한 내 입금 부탁드립니다.\n문의사항은 회신 주시면 됩니다. 감사합니다.\n\nSeaFlow Forwarding`;
+  const mailto = `mailto:${ship.email||''}?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`;
   const w = window.open('','_blank');
   w.document.write(`<html><head><title>통합 청구서 - ${customer} ${month}</title>
   <style>
@@ -1124,12 +1130,16 @@ function billView(customer, month){
     .total-box .amt{font-size:26px;font-weight:800;color:#0B2545;margin-top:4px;}
     .terms{margin-top:24px;background:#FFF8E8;border:1px solid #E8C57A;border-radius:8px;padding:14px 16px;font-size:12px;color:#7A5C12;line-height:1.7;}
     .foot{margin-top:26px;text-align:center;font-size:11px;color:#92A0AC;border-top:1px solid #eee;padding-top:14px;}
-    .btn{background:#0B2545;color:#fff;border:none;border-radius:8px;padding:11px 22px;font-size:14px;cursor:pointer;margin:18px 8px 0;}
+    .btn{background:#0B2545;color:#fff;border:none;border-radius:8px;padding:11px 22px;font-size:14px;cursor:pointer;margin:18px 6px 0;}
+    .mailbox{margin-top:14px;background:#EAF4FB;border:1px solid #A9CCE8;border-radius:10px;padding:16px 18px;}
+    .mailbox h4{margin:0 0 8px;color:#134074;font-size:14px;}
+    .mailbox p{margin:0;font-size:12px;color:#5B6B7A;line-height:1.6;}
+    .mailbox ol{margin:8px 0 0;padding-left:18px;font-size:12px;color:#5B6B7A;line-height:1.8;}
   </style></head><body>
   <div class="page">
     <div class="hd">
       <div><div class="ttl">청 구 서 (INVOICE)</div><div class="sub">${month} 월분 운임 통합 청구</div></div>
-      <div class="meta"><b>SeaFlow Forwarding</b><br>발행일 ${issueDate}<br>청구번호 INV-${customer.replace(/[^가-힣A-Za-z0-9]/g,'').slice(0,4)}-${month.replace('-','')}</div>
+      <div class="meta"><b>SeaFlow Forwarding</b><br>발행일 ${issueDate}<br>청구번호 ${invNo}</div>
     </div>
     <div class="to">청구 대상<br><b>${customer}</b> 귀하 ${ship.manager?`(담당: ${ship.manager})`:''}</div>
     <table>
@@ -1147,9 +1157,32 @@ function billView(customer, month){
     <div class="foot">본 청구서는 SeaFlow 시스템에서 자동 생성되었습니다.</div>
     <div class="noprint" style="text-align:center;">
       <button class="btn" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+      <button class="btn" style="background:#3A7CA5" onclick="sendInvoiceEmail()">📧 이메일로 보내기</button>
       <button class="btn" style="background:#5B6B7A" onclick="window.close()">닫기</button>
     </div>
-  </div></body></html>`);
+    <div class="mailbox noprint" id="mailGuide" style="display:none;">
+      <h4>📧 이메일 발송 안내</h4>
+      <p>아래 순서로 청구서 PDF를 첨부해 보내세요. 받는사람·제목·본문은 자동으로 채워집니다.</p>
+      <ol>
+        <li>방금 저장된 <b>청구서 PDF</b>를 준비하세요 (인쇄창에서 "PDF로 저장")</li>
+        <li>열린 메일 작성창에 그 <b>PDF 파일을 끌어다 첨부</b>하세요</li>
+        <li><b>보내기</b>를 누르면 끝!</li>
+      </ol>
+    </div>
+  </div>
+  <script>
+    function sendInvoiceEmail(){
+      // 1) PDF 저장용 인쇄창 먼저
+      window.print();
+      // 2) 메일 앱 열기 (수신자·제목·본문 자동)
+      setTimeout(function(){
+        window.location.href = ${JSON.stringify(mailto)};
+        var g = document.getElementById('mailGuide');
+        if(g) g.style.display = 'block';
+      }, 600);
+    }
+  <\/script>
+  </body></html>`);
   w.document.close();
 }
 
