@@ -384,12 +384,13 @@
       <div class="nav-item active" data-view="dashboard"><span class="nav-ico">📊</span> 대시보드</div>
       <div class="nav-item" data-view="assistant"><span class="nav-ico">✨</span> AI 비서</div>
       <div class="nav-item" data-view="export"><span class="nav-ico">📦</span> 수출 관리</div>
+      <div class="nav-item" data-view="quote"><span class="nav-ico">💱</span> 견적 관리</div>
       <div class="nav-item" data-view="import"><span class="nav-ico">📥</span> 수입 관리</div>
       <div class="nav-item" data-view="inbox"><span class="nav-ico">📬</span> 메일 자동수신</div>
       <div class="nav-item" data-view="tracking"><span class="nav-ico">🚢</span> 실시간 트래킹</div>
       <div class="nav-label">정산</div>
       <div class="nav-item" data-view="settlement"><span class="nav-ico">💰</span> 운임·정산</div>
-      <div class="nav-item" data-view="receivable"><span class="nav-ico">🧾</span> 미수금 관리</div>
+      <div class="nav-item" data-view="receivable"><span class="nav-ico">🧾</span> 월말 청구·미수금</div>
       <div class="nav-label">기준정보</div>
       <div class="nav-item" data-view="partners"><span class="nav-ico">👥</span> 거래처 관리</div>
       <div class="nav-item" data-view="portal"><span class="nav-ico">🔗</span> 화주 포털</div>
@@ -435,21 +436,25 @@ if(CLOUD){ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
 const DB = {
   shipments: [
     // ===== 대한정밀(주) — 자동차 부품 수출 (3건) =====
-    { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'HMM', booking:'HDMU2501887', bl:'HDMUBSC2501887', container:'HMMU1234567', incoterms:'FOB', commodity:'자동차 엔진 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-08', eta:'2025-06-14', revenue:4200000, cost:3350000, paid:true, blReleased:true, memo:'' },
-    { id:'EXP-2502', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'OSAKA AUTO PARTS', pol:'부산(KRPUS)', pod:'오사카(JPOSA)', carrier:'고려해운', booking:'KMTC25B1120', bl:'KMTCBSC2502', container:'KMTU3340125', incoterms:'CIF', commodity:'브레이크 패드', qty:'2 x 20GP', status:'arrived', etd:'2025-05-30', eta:'2025-06-05', revenue:3100000, cost:2400000, paid:true, blReleased:true, memo:'' },
-    { id:'EXP-2503', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'LA MOTORS INC.', pol:'부산(KRPUS)', pod:'로스앤젤레스(USLAX)', carrier:'Maersk', booking:'MAEU25778120', bl:'', container:'', incoterms:'FOB', commodity:'변속기 부품', qty:'1 x 40HC', status:'booking', etd:'2025-06-22', eta:'2025-07-09', revenue:7100000, cost:5900000, paid:false, blReleased:false, memo:'선적 예약 완료, B/L 발행 대기' },
+    { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'HMM', booking:'HDMU2501887', bl:'HDMUBSC2501887', container:'HMMU1234567', incoterms:'FOB', commodity:'자동차 엔진 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-08', eta:'2025-06-14', revenue:4200000, cost:3350000, paid:true, blReleased:true, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'' },
+    { id:'EXP-2502', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'OSAKA AUTO PARTS', pol:'부산(KRPUS)', pod:'오사카(JPOSA)', carrier:'고려해운', booking:'KMTC25B1120', bl:'KMTCBSC2502', container:'KMTU3340125', incoterms:'CIF', commodity:'브레이크 패드', qty:'2 x 20GP', status:'arrived', etd:'2025-05-30', eta:'2025-06-05', revenue:3100000, cost:2400000, paid:true, blReleased:true, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'' },
+    { id:'EXP-2503', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'LA MOTORS INC.', pol:'부산(KRPUS)', pod:'로스앤젤레스(USLAX)', carrier:'Maersk', booking:'MAEU25778120', bl:'', container:'', incoterms:'FOB', commodity:'변속기 부품', qty:'1 x 40HC', status:'booking', etd:'2025-06-22', eta:'2025-07-09', revenue:7100000, cost:5900000, paid:false, blReleased:false, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'선적 예약 완료, B/L 발행 대기' },
 
     // ===== 그린푸드(주) — 식품 수출 (3건) =====
-    { id:'EXP-2504', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HANOI FOOD IMPORT', pol:'부산(KRPUS)', pod:'하이퐁(VNHPH)', carrier:'SM상선', booking:'SMLM25C0331', bl:'SMLMBSC2504', container:'SMLU7782041', incoterms:'CIF', commodity:'김·건어물', qty:'1 x 20RF', status:'transit', etd:'2025-06-07', eta:'2025-06-13', revenue:2900000, cost:2200000, paid:true, blReleased:true, memo:'냉장 컨테이너' },
-    { id:'EXP-2505', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HK GOURMET LTD', pol:'부산(KRPUS)', pod:'홍콩(HKHKG)', carrier:'ONE', booking:'ONEY25D5540', bl:'ONEYBSC2505', container:'ONEU9921077', incoterms:'FOB', commodity:'인삼 가공식품', qty:'1 x 20GP', status:'transit', etd:'2025-06-10', eta:'2025-06-16', revenue:3600000, cost:2750000, paid:false, blReleased:true, memo:'30일 신용 거래' },
-    { id:'EXP-2506', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'SAIGON MART', pol:'인천(KRINC)', pod:'호치민(VNSGN)', carrier:'고려해운', booking:'KMTC25D2231', bl:'', container:'', incoterms:'CIF', commodity:'라면·스낵류', qty:'2 x 40HC', status:'booking', etd:'2025-06-25', eta:'2025-07-02', revenue:5200000, cost:4100000, paid:false, blReleased:false, memo:'부킹 확정, 선적 준비중' },
+    { id:'EXP-2504', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HANOI FOOD IMPORT', pol:'부산(KRPUS)', pod:'하이퐁(VNHPH)', carrier:'SM상선', booking:'SMLM25C0331', bl:'SMLMBSC2504', container:'SMLU7782041', incoterms:'CIF', commodity:'김·건어물', qty:'1 x 20RF', status:'transit', etd:'2025-06-07', eta:'2025-06-13', revenue:2900000, cost:2200000, paid:true, blReleased:true, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'냉장 컨테이너' },
+    { id:'EXP-2505', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HK GOURMET LTD', pol:'부산(KRPUS)', pod:'홍콩(HKHKG)', carrier:'ONE', booking:'ONEY25D5540', bl:'ONEYBSC2505', container:'ONEU9921077', incoterms:'FOB', commodity:'인삼 가공식품', qty:'1 x 20GP', status:'transit', etd:'2025-06-10', eta:'2025-06-16', revenue:3600000, cost:2750000, paid:false, blReleased:true, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'30일 신용 거래' },
+    { id:'EXP-2506', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'SAIGON MART', pol:'인천(KRINC)', pod:'호치민(VNSGN)', carrier:'고려해운', booking:'KMTC25D2231', bl:'', container:'', incoterms:'CIF', commodity:'라면·스낵류', qty:'2 x 40HC', status:'booking', etd:'2025-06-25', eta:'2025-07-02', revenue:5200000, cost:4100000, paid:false, blReleased:false, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'부킹 확정, 선적 준비중' },
 
     // ===== 한빛전자 — 전자제품 수출 (3건) =====
-    { id:'EXP-2507', type:'export', mode:'sea', shipper:'한빛전자', consignee:'NY ELECTRONICS', pol:'부산(KRPUS)', pod:'뉴욕(USNYC)', carrier:'Maersk', booking:'MAEU25E3390', bl:'MAEUBSC2507', container:'MRKU5567810', incoterms:'FOB', commodity:'LED 디스플레이', qty:'2 x 40HC', status:'transit', etd:'2025-06-05', eta:'2025-06-28', revenue:9800000, cost:7900000, paid:true, blReleased:true, memo:'고가 화물 · 적하보험 가입' },
-    { id:'EXP-2508', type:'export', mode:'sea', shipper:'한빛전자', consignee:'HAMBURG TECH GMBH', pol:'부산(KRPUS)', pod:'함부르크(DEHAM)', carrier:'HMM', booking:'HDMU25E7745', bl:'HDMUBSC2508', container:'HMMU8830012', incoterms:'CIF', commodity:'반도체 부품', qty:'1 x 20GP', status:'delay', etd:'2025-05-25', eta:'2025-06-20', revenue:6400000, cost:5100000, paid:false, blReleased:true, memo:'⚠️ 수에즈 운하 우회로 5일 지연' },
-    { id:'EXP-2509', type:'export', mode:'sea', shipper:'한빛전자', consignee:'LA ELECTRONICS INC.', pol:'부산(KRPUS)', pod:'롱비치(USLGB)', carrier:'ONE', booking:'ONEY25E1180', bl:'ONEYBSC2509', container:'ONEU2245518', incoterms:'FOB', commodity:'배터리 모듈', qty:'1 x 40HC', status:'arrived', etd:'2025-05-18', eta:'2025-06-10', revenue:8200000, cost:6600000, paid:true, blReleased:true, memo:'통관 완료' },
+    { id:'EXP-2507', type:'export', mode:'sea', shipper:'한빛전자', consignee:'NY ELECTRONICS', pol:'부산(KRPUS)', pod:'뉴욕(USNYC)', carrier:'Maersk', booking:'MAEU25E3390', bl:'MAEUBSC2507', container:'MRKU5567810', incoterms:'FOB', commodity:'LED 디스플레이', qty:'2 x 40HC', status:'transit', etd:'2025-06-05', eta:'2025-06-28', revenue:9800000, cost:7900000, paid:true, blReleased:true, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'고가 화물 · 적하보험 가입' },
+    { id:'EXP-2508', type:'export', mode:'sea', shipper:'한빛전자', consignee:'HAMBURG TECH GMBH', pol:'부산(KRPUS)', pod:'함부르크(DEHAM)', carrier:'HMM', booking:'HDMU25E7745', bl:'HDMUBSC2508', container:'HMMU8830012', incoterms:'CIF', commodity:'반도체 부품', qty:'1 x 20GP', status:'delay', etd:'2025-05-25', eta:'2025-06-20', revenue:6400000, cost:5100000, paid:false, blReleased:true, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'⚠️ 수에즈 운하 우회로 5일 지연' },
+    { id:'EXP-2509', type:'export', mode:'sea', shipper:'한빛전자', consignee:'LA ELECTRONICS INC.', pol:'부산(KRPUS)', pod:'롱비치(USLGB)', carrier:'ONE', booking:'ONEY25E1180', bl:'ONEYBSC2509', container:'ONEU2245518', incoterms:'FOB', commodity:'배터리 모듈', qty:'1 x 40HC', status:'arrived', etd:'2025-05-18', eta:'2025-06-10', revenue:8200000, cost:6600000, paid:true, blReleased:true, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'통관 완료' },
   ],
   imports: [],
+  quotes: [
+    { id:'QT-2501', shipper:'대한정밀(주)', commodity:'자동차 휠 부품', pol:'부산(KRPUS)', pod:'나고야(JPNGO)', qty:'1 x 40HC', etd:'2025-06-28', status:'sent', selectedCarrier:'', carriers:[ {name:'HMM', price:1900000}, {name:'고려해운', price:1820000} ] },
+    { id:'QT-2502', shipper:'그린푸드(주)', commodity:'냉동 수산물', pol:'부산(KRPUS)', pod:'싱가포르(SGSIN)', qty:'1 x 20RF', etd:'2025-07-02', status:'draft', selectedCarrier:'', carriers:[ {name:'ONE', price:2400000}, {name:'Maersk', price:2550000}, {name:'SM상선', price:2380000} ] },
+  ],
   partners: [
     { id:'P01', kind:'shipper', name:'대한정밀(주)', bizno:'128-81-44021', manager:'김상호 부장', phone:'010-2233-1100', email:'shkim@daehan.co.kr', addr:'경기도 안산시 단원구', memo:'주력 화주 · 월 4~6건 · 자동차 부품' },
     { id:'P02', kind:'shipper', name:'그린푸드(주)', bizno:'214-86-77123', manager:'이정민 과장', phone:'010-8842-3321', email:'jm.lee@greenfood.co.kr', addr:'서울시 금천구', memo:'식품 수출 · 냉장 컨테이너 자주 사용' },
@@ -470,7 +475,7 @@ function openModal(html, wide){ $('#modalBox').className = 'modal'+(wide?' wide'
 function closeModal(){ $('#modalBg').classList.remove('show'); }
 $('#modalBg').addEventListener('click', e => { if(e.target.id==='modalBg') closeModal(); });
 
-const TITLES = { dashboard:'대시보드', assistant:'AI 비서', export:'수출 관리', import:'수입 관리', inbox:'메일 자동수신', tracking:'실시간 트래킹', settlement:'운임·정산', receivable:'미수금 관리', partners:'거래처 관리', portal:'화주 포털', settings:'설정' };
+const TITLES = { dashboard:'대시보드', assistant:'AI 비서', export:'수출 관리', quote:'견적 관리', import:'수입 관리', inbox:'메일 자동수신', tracking:'실시간 트래킹', settlement:'운임·정산', receivable:'월말 청구·미수금', partners:'거래처 관리', portal:'화주 포털', settings:'설정' };
 let current = 'dashboard';
 document.querySelectorAll('.nav-item').forEach(item=>{
   item.addEventListener('click', ()=>{ document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); item.classList.add('active'); current = item.dataset.view; $('#pageTitle').textContent = TITLES[current]; render(); });
@@ -481,6 +486,7 @@ function render(){
   if(current==='dashboard') c.innerHTML = viewDashboard();
   else if(current==='assistant') c.innerHTML = viewAssistant();
   else if(current==='export') c.innerHTML = viewShipmentList('export');
+  else if(current==='quote') c.innerHTML = viewQuote();
   else if(current==='import') c.innerHTML = viewShipmentList('import');
   else if(current==='inbox') c.innerHTML = viewInbox();
   else if(current==='tracking') c.innerHTML = viewTracking();
@@ -815,48 +821,290 @@ function viewSettlement(){
 }
 
 function viewReceivable(){
+  // 월말 통합 청구: 화주별 + 청구월별로 그룹핑
   const all = [...DB.shipments, ...DB.imports];
-  const unpaid = all.filter(s=>!s.paid);
-  const unpaidTotal = unpaid.reduce((a,s)=>a+s.revenue,0);
-  const paidTotal = all.filter(s=>s.paid).reduce((a,s)=>a+s.revenue,0);
-  const riskCount = all.filter(s=>!s.paid && s.blReleased).length; // B/L 줬는데 미입금 = 위험
+  const shippers = [...new Set(all.map(s=>s.type==='export'?s.shipper:s.consignee))];
+
+  // 청구 그룹: { 화주|월 : { customer, month, items[], total, billed, paid } }
+  const groups = {};
+  all.forEach(s=>{
+    const customer = s.type==='export'?s.shipper:s.consignee;
+    const month = s.billingMonth || (s.etd||'').slice(0,7) || '미정';
+    const key = customer+'|'+month;
+    if(!groups[key]) groups[key] = { customer, month, items:[], total:0, billed:false };
+    groups[key].items.push(s);
+    groups[key].total += s.revenue;
+    if(s.billed) groups[key].billed = true;
+  });
+  const groupList = Object.values(groups).sort((a,b)=> b.month.localeCompare(a.month) || a.customer.localeCompare(b.customer));
+
+  // 통계: 미청구 / 청구완료(미입금=미수금) / 입금완료
+  const notBilled = groupList.filter(g=>!g.billed);
+  const billedUnpaid = groupList.filter(g=>g.billed && !g.items.every(i=>i.paid));
+  const fullyPaid = groupList.filter(g=>g.items.every(i=>i.paid));
+  const notBilledTotal = notBilled.reduce((a,g)=>a+g.total,0);
+  const unpaidTotal = billedUnpaid.reduce((a,g)=>a+g.items.filter(i=>!i.paid).reduce((x,i)=>x+i.revenue,0),0);
+
   return `
   <div class="stat-grid">
-    <div class="stat ${unpaidTotal?'warn':''}"><div class="stat-label">미수금 (운임 미입금)</div><div class="stat-value" style="font-size:21px">${won(unpaidTotal)}</div><div class="stat-foot">${unpaid.length}건 미입금</div></div>
-    <div class="stat ok"><div class="stat-label">입금 완료</div><div class="stat-value" style="font-size:21px">${won(paidTotal)}</div></div>
-    <div class="stat ${riskCount?'':'ok'}" ${riskCount?'style="border-color:var(--danger)"':''}><div class="stat-label">⚠ 위험 (B/L 발급+미입금)</div><div class="stat-value">${riskCount}<small> 건</small></div><div class="stat-foot">${riskCount?'돈 떼일 위험 - 즉시 확인':'위험 건 없음'}</div></div>
-    <div class="stat"><div class="stat-label">전체 회수율</div><div class="stat-value">${all.length?Math.round(paidTotal/(paidTotal+unpaidTotal)*100):0}<small>%</small></div></div>
+    <div class="stat ${notBilledTotal?'warn':''}"><div class="stat-label">미청구 (이번 달 누적)</div><div class="stat-value" style="font-size:21px">${won(notBilledTotal)}</div><div class="stat-foot">${notBilled.length}개 화주·월</div></div>
+    <div class="stat ${unpaidTotal?'':'ok'}" ${unpaidTotal?'style="border-color:var(--gold)"':''}><div class="stat-label">미수금 (청구완료·입금대기)</div><div class="stat-value" style="font-size:21px">${won(unpaidTotal)}</div><div class="stat-foot">${billedUnpaid.length}건 회수 대기</div></div>
+    <div class="stat ok"><div class="stat-label">입금 완료</div><div class="stat-value">${fullyPaid.length}<small> 건</small></div></div>
+    <div class="stat"><div class="stat-label">청구 그룹 합계</div><div class="stat-value">${groupList.length}<small> 건</small></div></div>
   </div>
   <div class="ai-drop" style="border-color:var(--gold); background:linear-gradient(135deg,#FDF8EE,#FBF3E2)">
     <div class="ai-drop-ico">🧾</div>
     <div class="ai-drop-txt">
-      <b>미수금 + B/L 발급 관리</b>
-      <p>운임을 받아야 B/L(물건 찾는 열쇠)을 내줍니다. 입금 확인 전에는 B/L이 자동으로 잠겨 돈 떼일 위험을 막습니다. 단골 화주는 여신(외상)으로 먼저 내줄 수 있습니다.</p>
+      <b>월말 통합 청구 (화주별 월 마감)</b>
+      <p>한 화주의 그 달 오더를 모두 모아 <b>월말에 한 번에 청구</b>합니다. 건별로 청구하지 않습니다. 화주는 청구서를 받고 <b>다음 달 말</b>에 결제합니다. (예: 6월분 → 6월말 청구 → 7월말 입금)</p>
     </div>
   </div>
   <div class="panel">
-    <div class="panel-head"><div class="panel-title">건별 입금 · B/L 발급 현황 <span class="tag">${all.length}건</span></div></div>
+    <div class="panel-head"><div class="panel-title">화주별 월 청구 현황 <span class="tag">${groupList.length}개 청구 그룹</span></div></div>
     <div class="panel-body"><table>
-      <thead><tr><th>건 번호</th><th>화주</th><th>운임</th><th>입금 상태</th><th>B/L 발급</th><th>처리</th></tr></thead>
-      <tbody>${all.map(s=>{
-        const customer = s.type==='export'?s.shipper:s.consignee;
-        const payBadge = s.paid
-          ? '<span class="badge b-arrived">입금완료</span>'
-          : '<span class="badge b-delay">미입금</span>';
-        const blBadge = s.blReleased
-          ? '<span class="badge b-sailing badge-static">발급됨</span>'
-          : (s.bl ? '<span class="badge b-booking badge-static">발급가능</span>' : '<span class="badge badge-static" style="background:var(--ice);color:var(--ink-soft)">B/L 대기</span>');
-        const risk = !s.paid && s.blReleased;
-        // 처리 버튼: 미입금이면 입금처리, 입금됐는데 B/L 미발급이면 B/L발급
-        let action = '';
-        if(!s.paid){ action = `<button class="btn btn-primary btn-sm" data-markpaid="${s.id}" data-type="${s.type}">💰 입금 확인</button>`; }
-        else if(!s.blReleased && s.bl){ action = `<button class="btn btn-ai btn-sm" data-releasebl="${s.id}" data-type="${s.type}">🔓 B/L 발급</button>`; }
-        else if(!s.bl){ action = `<span class="cell-sub">선적 후 가능</span>`; }
-        else { action = `<span class="cell-sub" style="color:var(--ok)">✓ 완료</span>`; }
-        return `<tr ${risk?'style="background:#FDECEA"':''}><td class="mono">${s.id}</td><td class="cell-strong">${customer}${risk?' <span style="color:var(--danger);font-size:10px;font-weight:700">⚠위험</span>':''}</td><td style="font-weight:700">${won(s.revenue)}</td><td>${payBadge}</td><td>${blBadge}</td><td>${action}</td></tr>`;
+      <thead><tr><th>청구월</th><th>화주</th><th>건수</th><th>청구 금액</th><th>청구 상태</th><th>입금</th><th>처리</th></tr></thead>
+      <tbody>${groupList.map(g=>{
+        const paidCount = g.items.filter(i=>i.paid).length;
+        const allPaid = paidCount===g.items.length;
+        const billBadge = g.billed
+          ? '<span class="badge b-arrived">청구완료</span>'
+          : '<span class="badge b-booking">미청구</span>';
+        const payBadge = !g.billed ? '<span class="cell-sub">-</span>'
+          : (allPaid ? '<span class="badge b-sailing badge-static">입금완료</span>'
+             : `<span class="badge b-delay">미입금 ${g.items.length-paidCount}건</span>`);
+        let action;
+        if(!g.billed){
+          action = `<button class="btn btn-primary btn-sm" data-billgroup="${g.customer}|${g.month}">🧾 청구서 발행</button>`;
+        } else if(!allPaid){
+          action = `<button class="btn btn-ai btn-sm" data-paygroup="${g.customer}|${g.month}">💰 입금 확인</button> <button class="btn btn-ghost btn-sm" data-billview="${g.customer}|${g.month}">📄 청구서</button>`;
+        } else {
+          action = `<button class="btn btn-ghost btn-sm" data-billview="${g.customer}|${g.month}">📄 청구서</button>`;
+        }
+        // 다음달 말 결제 예정일 계산
+        const [y,m] = g.month.split('-').map(Number);
+        const payDue = m ? `${m===12?y+1:y}-${String(m===12?1:m+1).padStart(2,'0')}월말` : '-';
+        return `<tr><td class="mono">${g.month}<br><span class="cell-sub">→ ${payDue} 결제</span></td><td class="cell-strong">${g.customer}</td><td class="cell-sub">${g.items.length}건</td><td style="font-weight:700">${won(g.total)}</td><td>${billBadge}</td><td>${payBadge}</td><td>${action}</td></tr>`;
       }).join('')}</tbody>
     </table></div>
   </div>`;
+}
+
+// 월말 통합 청구서 발행
+function billGroup(customer, month){
+  const all = [...DB.shipments, ...DB.imports];
+  const items = all.filter(s=>(s.type==='export'?s.shipper:s.consignee)===customer && (s.billingMonth||(s.etd||'').slice(0,7))===month);
+  if(!items.length) return;
+  items.forEach(s=>{ s.billed=true; cloudUpsertShip(s); });
+  render();
+  toast(`🧾 ${customer} ${month} 통합 청구서 발행 (${items.length}건). 다음 달 말 입금 예정.`);
+  setTimeout(()=>billView(customer, month), 300);
+}
+
+// 그룹 입금 확인
+function payGroup(customer, month){
+  const all = [...DB.shipments, ...DB.imports];
+  const items = all.filter(s=>(s.type==='export'?s.shipper:s.consignee)===customer && (s.billingMonth||(s.etd||'').slice(0,7))===month);
+  items.forEach(s=>{ s.paid=true; cloudUpsertShip(s); });
+  render();
+  toast(`💰 ${customer} ${month} 입금 확인 완료 (${items.length}건).`);
+}
+
+// 통합 청구서 PDF
+function billView(customer, month){
+  const all = [...DB.shipments, ...DB.imports];
+  const items = all.filter(s=>(s.type==='export'?s.shipper:s.consignee)===customer && (s.billingMonth||(s.etd||'').slice(0,7))===month);
+  if(!items.length) return;
+  const total = items.reduce((a,s)=>a+s.revenue,0);
+  const ship = DB.partners.find(p=>p.name===customer) || {};
+  const [y,m] = month.split('-').map(Number);
+  const issueDate = m ? `${y}-${String(m).padStart(2,'0')}-${new Date(y,m,0).getDate()}` : '';
+  const dueDate = m ? `${m===12?y+1:y}-${String(m===12?1:m+1).padStart(2,'0')}-${new Date(m===12?y+1:y, m===12?1:m+1, 0).getDate()}` : '';
+  const w = window.open('','_blank');
+  w.document.write(`<html><head><title>통합 청구서 - ${customer} ${month}</title>
+  <style>
+    @media print{.noprint{display:none;}}
+    body{font-family:'Malgun Gothic',sans-serif;margin:0;background:#f5f5f5;color:#1a2733;}
+    .page{max-width:780px;margin:20px auto;background:#fff;padding:44px 48px;box-shadow:0 2px 16px rgba(0,0,0,.1);}
+    .hd{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #0B2545;padding-bottom:18px;}
+    .hd .ttl{font-size:26px;font-weight:800;color:#0B2545;}
+    .hd .sub{font-size:12px;color:#5B6B7A;margin-top:4px;}
+    .hd .meta{text-align:right;font-size:12px;color:#5B6B7A;line-height:1.7;}
+    .hd .meta b{color:#0B2545;font-size:14px;}
+    .to{margin:20px 0;font-size:13px;}
+    .to b{font-size:16px;color:#0B2545;}
+    table{width:100%;border-collapse:collapse;margin-top:14px;}
+    th,td{border:1px solid #D8E0E6;padding:10px 12px;font-size:12px;text-align:left;}
+    th{background:#F1F6FA;color:#0B2545;font-weight:700;}
+    td.num{text-align:right;font-family:monospace;}
+    tfoot td{font-weight:700;background:#F8FAFC;font-size:13px;}
+    .total-box{margin-top:18px;text-align:right;}
+    .total-box .lbl{font-size:13px;color:#5B6B7A;}
+    .total-box .amt{font-size:26px;font-weight:800;color:#0B2545;margin-top:4px;}
+    .terms{margin-top:24px;background:#FFF8E8;border:1px solid #E8C57A;border-radius:8px;padding:14px 16px;font-size:12px;color:#7A5C12;line-height:1.7;}
+    .foot{margin-top:26px;text-align:center;font-size:11px;color:#92A0AC;border-top:1px solid #eee;padding-top:14px;}
+    .btn{background:#0B2545;color:#fff;border:none;border-radius:8px;padding:11px 22px;font-size:14px;cursor:pointer;margin:18px 8px 0;}
+  </style></head><body>
+  <div class="page">
+    <div class="hd">
+      <div><div class="ttl">청 구 서 (INVOICE)</div><div class="sub">${month} 월분 운임 통합 청구</div></div>
+      <div class="meta"><b>SeaFlow Forwarding</b><br>발행일 ${issueDate}<br>청구번호 INV-${customer.replace(/[^가-힣A-Za-z0-9]/g,'').slice(0,4)}-${month.replace('-','')}</div>
+    </div>
+    <div class="to">청구 대상<br><b>${customer}</b> 귀하 ${ship.manager?`(담당: ${ship.manager})`:''}</div>
+    <table>
+      <thead><tr><th>건 번호</th><th>품목</th><th>노선</th><th>수량</th><th>선사</th><th class="num">금액(₩)</th></tr></thead>
+      <tbody>${items.map(s=>`<tr><td>${s.id}</td><td>${s.commodity}</td><td>${s.pol.split('(')[0]}→${s.pod.split('(')[0]}</td><td>${s.qty}</td><td>${s.carrier}</td><td class="num">${s.revenue.toLocaleString()}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td colspan="5">합계 (${items.length}건)</td><td class="num">₩ ${total.toLocaleString()}</td></tr></tfoot>
+    </table>
+    <div class="total-box"><div class="lbl">청구 총액 (VAT 별도)</div><div class="amt">₩ ${total.toLocaleString()}</div></div>
+    <div class="terms">
+      📌 <b>결제 조건</b>: 본 청구서는 ${month} 한 달간의 모든 선적 건을 통합한 것입니다.<br>
+      • 결제 기한: <b>${dueDate}</b>까지 (청구월 익월 말일)<br>
+      • 입금 계좌: (계좌 정보 기입)<br>
+      • 문의: SeaFlow Forwarding 담당자
+    </div>
+    <div class="foot">본 청구서는 SeaFlow 시스템에서 자동 생성되었습니다.</div>
+    <div class="noprint" style="text-align:center;">
+      <button class="btn" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+      <button class="btn" style="background:#5B6B7A" onclick="window.close()">닫기</button>
+    </div>
+  </div></body></html>`);
+  w.document.close();
+}
+
+/* ============================================================
+   견적 관리 (Quotation)
+   - 화주 오더 → 선사 2개 선택 + 가격 → 화주에게 견적
+   - 화주가 1개 선택 → 가격 FIX → 부킹 진행
+   ============================================================ */
+function viewQuote(){
+  const quotes = DB.quotes || [];
+  const pending = quotes.filter(q=>q.status!=='fixed');
+  const fixed = quotes.filter(q=>q.status==='fixed');
+  return `
+  <div class="ai-drop" style="border-color:var(--sky); background:linear-gradient(135deg,#EAF4FB,#DCEBF7)">
+    <div class="ai-drop-ico">💱</div>
+    <div class="ai-drop-txt">
+      <b>견적 관리 — 선사 비교 → 화주 선택 → 가격 확정</b>
+      <p>화주 오더가 오면 선사 2~3곳의 운임을 비교해 화주에게 보냅니다. 화주가 하나를 선택하면 가격이 확정(FIX)되고, 그 선사로 부킹을 진행합니다.</p>
+    </div>
+  </div>
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-head"><div class="panel-title">진행 중 견적 <span class="tag">${pending.length}건</span></div><button class="btn btn-primary btn-sm" data-newquote="1">+ 새 견적 작성</button></div>
+    <div class="panel-body">${pending.length? `<table>
+      <thead><tr><th>견적번호</th><th>화주</th><th>노선</th><th>품목</th><th>선사 견적</th><th>상태</th><th>처리</th></tr></thead>
+      <tbody>${pending.map(q=>quoteRow(q)).join('')}</tbody></table>` : '<div class="empty"><div class="empty-ico">💱</div><h4>진행 중인 견적이 없습니다</h4><p>새 견적을 작성해 선사 운임을 비교해보세요.</p></div>'}
+    </div>
+  </div>
+  ${fixed.length?`<div class="panel">
+    <div class="panel-head"><div class="panel-title">확정된 견적 <span class="tag">${fixed.length}건</span></div></div>
+    <div class="panel-body"><table>
+      <thead><tr><th>견적번호</th><th>화주</th><th>노선</th><th>선택 선사</th><th>확정 운임</th><th>처리</th></tr></thead>
+      <tbody>${fixed.map(q=>{
+        const sel = q.carriers.find(c=>c.name===q.selectedCarrier)||{};
+        return `<tr><td class="mono">${q.id}</td><td class="cell-strong">${q.shipper}</td><td class="cell-sub">${q.pol}→${q.pod}</td><td><span class="badge b-arrived">${q.selectedCarrier}</span></td><td style="font-weight:700">${won(sel.price||0)}</td><td><button class="btn btn-ai btn-sm" data-quote2ship="${q.id}">📦 화물 등록</button></td></tr>`;
+      }).join('')}</tbody></table></div>
+  </div>`:''}`;
+}
+function quoteRow(q){
+  const cheapest = Math.min(...q.carriers.map(c=>c.price));
+  const carrierCells = q.carriers.map(c=>`<div style="font-size:11.5px;${c.price===cheapest?'font-weight:700;color:var(--ok)':''}">${c.name} ${won(c.price)}${c.price===cheapest?' ⭐':''}</div>`).join('');
+  const statusBadge = q.status==='sent'?'<span class="badge b-sailing">화주 검토중</span>':'<span class="badge b-booking">작성중</span>';
+  let action;
+  if(q.status==='draft') action = `<button class="btn btn-primary btn-sm" data-sendquote="${q.id}">📤 화주에게 발송</button>`;
+  else action = `<button class="btn btn-ai btn-sm" data-fixquote="${q.id}">✅ 화주 선택 입력</button> <button class="btn btn-ghost btn-sm" data-quotepdf="${q.id}">📄</button>`;
+  return `<tr><td class="mono">${q.id}</td><td class="cell-strong">${q.shipper}</td><td class="cell-sub">${q.pol}→${q.pod}</td><td class="cell-sub">${q.commodity}<br>${q.qty}</td><td>${carrierCells}</td><td>${statusBadge}</td><td>${action}</td></tr>`;
+}
+
+// 새 견적 작성 모달
+function newQuoteModal(){
+  const shippers = DB.partners.filter(p=>p.kind==='shipper');
+  const carriers = DB.partners.filter(p=>p.kind==='carrier');
+  openModal(`
+    <div class="modal-head"><h3>💱 새 견적 작성</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-body"><form id="quoteForm">
+      <div class="form-grid">
+        <div class="form-section-label">화주 오더 정보</div>
+        <div class="field"><label>화주 <span class="req">*</span></label><input list="qShipperList" name="shipper" required><datalist id="qShipperList">${shippers.map(s=>`<option value="${s.name}">`).join('')}</datalist></div>
+        <div class="field"><label>품목</label><input name="commodity" placeholder="예: 자동차 부품"></div>
+        <div class="field"><label>선적항 (POL) <span class="req">*</span></label><input name="pol" value="부산(KRPUS)" required></div>
+        <div class="field"><label>도착항 (POD) <span class="req">*</span></label><input name="pod" placeholder="예: 도쿄(JPTYO)" required></div>
+        <div class="field"><label>수량/컨테이너</label><input name="qty" placeholder="예: 1 x 40HC"></div>
+        <div class="field"><label>희망 출항일</label><input type="date" name="etd"></div>
+        <div class="form-section-label">선사 견적 (2~3개 비교)</div>
+        <div class="field"><label>선사 1</label><input list="qCarrierList" name="c1name" placeholder="HMM"></div>
+        <div class="field"><label>운임 1 (₩)</label><input type="number" name="c1price" placeholder="1800000"></div>
+        <div class="field"><label>선사 2</label><input list="qCarrierList" name="c2name" placeholder="ONE"></div>
+        <div class="field"><label>운임 2 (₩)</label><input type="number" name="c2price" placeholder="1750000"></div>
+        <div class="field"><label>선사 3 (선택)</label><input list="qCarrierList" name="c3name" placeholder="Maersk"></div>
+        <div class="field"><label>운임 3 (₩)</label><input type="number" name="c3price" placeholder="비워도 됨"></div>
+        <datalist id="qCarrierList">${carriers.map(c=>`<option value="${c.name}">`).join('')}<option value="HMM"><option value="ONE"><option value="Maersk"><option value="고려해운"><option value="SM상선"></datalist>
+      </div>
+    </form></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">취소</button><button class="btn btn-primary" data-savequote="1">견적 생성</button></div>`);
+  bindActions();
+}
+
+function saveQuote(){
+  const f = $('#quoteForm');
+  if(!f.shipper.value || !f.pol.value || !f.pod.value){ toast('⚠ 화주·노선을 입력해주세요.'); return; }
+  const carriers = [];
+  [['c1name','c1price'],['c2name','c2price'],['c3name','c3price']].forEach(([n,p])=>{
+    if(f[n].value && f[p].value) carriers.push({ name:f[n].value, price:Number(f[p].value) });
+  });
+  if(carriers.length<2){ toast('⚠ 선사 견적을 최소 2개 입력해주세요.'); return; }
+  DB.quotes = DB.quotes || [];
+  const id = 'QT-' + (2500 + DB.quotes.length + 1);
+  DB.quotes.push({ id, shipper:f.shipper.value, commodity:f.commodity.value||'-', pol:f.pol.value, pod:f.pod.value, qty:f.qty.value||'-', etd:f.etd.value||'-', carriers, status:'draft', selectedCarrier:'' });
+  closeModal(); render();
+  toast(`💱 견적 ${id} 생성됨. 화주에게 발송하세요.`);
+}
+
+function sendQuote(id){
+  const q = (DB.quotes||[]).find(x=>x.id===id); if(!q) return;
+  q.status='sent'; render();
+  // 견적 메일 초안
+  const ship = DB.partners.find(p=>p.name===q.shipper)||{};
+  const lines = q.carriers.map(c=>`· ${c.name}: ₩${c.price.toLocaleString()}`).join('\n');
+  const subj = encodeURIComponent(`[견적] ${q.pol}→${q.pod} ${q.commodity} 운임 견적 (${q.id})`);
+  const body = encodeURIComponent(`${ship.manager||q.shipper} 님 안녕하세요. SeaFlow Forwarding입니다.\n\n요청하신 화물의 선사별 운임 견적입니다.\n\n· 노선: ${q.pol} → ${q.pod}\n· 품목: ${q.commodity} / ${q.qty}\n\n[선사 견적]\n${lines}\n\n위 선사 중 하나를 선택해 회신 주시면, 해당 선사로 부킹 진행하겠습니다.\n감사합니다.\n\nSeaFlow Forwarding`);
+  window.open(`mailto:${ship.email||''}?subject=${subj}&body=${body}`,'_blank');
+  toast('📤 견적 발송 메일 초안이 열렸습니다.');
+}
+
+// 화주가 선택한 선사 입력 → FIX
+function fixQuoteModal(id){
+  const q = (DB.quotes||[]).find(x=>x.id===id); if(!q) return;
+  openModal(`
+    <div class="modal-head"><h3>✅ 화주 선택 입력 — ${q.id}</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px;">${q.shipper}가 어느 선사를 선택했나요? 선택하면 가격이 확정(FIX)됩니다.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        ${q.carriers.map(c=>`<button class="btn btn-ghost" style="justify-content:space-between;display:flex;padding:14px 18px;" data-pickcarrier="${q.id}|${c.name}"><span style="font-weight:700">${c.name}</span><span>${won(c.price)}</span></button>`).join('')}
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">취소</button></div>`);
+  bindActions();
+}
+function pickCarrier(id, carrierName){
+  const q = (DB.quotes||[]).find(x=>x.id===id); if(!q) return;
+  q.selectedCarrier = carrierName; q.status='fixed';
+  closeModal(); render();
+  const sel = q.carriers.find(c=>c.name===carrierName)||{};
+  toast(`✅ ${carrierName} 확정! 운임 ${won(sel.price)} FIX. 이제 화물로 등록하세요.`);
+}
+
+// 확정 견적 → 화물 등록
+function quoteToShipment(id){
+  const q = (DB.quotes||[]).find(x=>x.id===id); if(!q) return;
+  const sel = q.carriers.find(c=>c.name===q.selectedCarrier)||{};
+  const sid = `EXP-${seqExp++}`;
+  const month = (q.etd&&q.etd!=='-'?q.etd:new Date().toISOString()).slice(0,7);
+  const obj = { id:sid, type:'export', mode:'sea', shipper:q.shipper, consignee:'-', pol:q.pol, pod:q.pod, carrier:q.selectedCarrier, booking:'', bl:'', container:'', incoterms:'FOB', commodity:q.commodity, qty:q.qty, status:'booking', etd:q.etd, eta:'-', revenue:sel.price||0, cost:0, paid:false, blReleased:false, billingMonth:month, billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', confirmedAt:'', memo:`견적 ${q.id}에서 전환 (${q.selectedCarrier} 선택)` };
+  DB.shipments.push(obj); cloudUpsertShip(obj);
+  // 견적은 완료 처리 (목록에서 제거)
+  DB.quotes = DB.quotes.filter(x=>x.id!==id);
+  current='export'; render();
+  toast(`📦 ${sid} 화물 등록 완료! 이제 ${q.selectedCarrier}에 부킹하세요.`);
 }
 
 function viewPartners(){
@@ -1455,6 +1703,18 @@ function bindActions(){
   document.querySelectorAll('[data-tax]').forEach(b=> b.onclick = ()=> toast('🧾 홈택스 전자세금계산서 연동 예정입니다.'));
   document.querySelectorAll('[data-markpaid]').forEach(b=> b.onclick = ()=> markPaid(b.dataset.markpaid, b.dataset.type));
   document.querySelectorAll('[data-releasebl]').forEach(b=> b.onclick = ()=> releaseBL(b.dataset.releasebl, b.dataset.type));
+  // 월말 통합 청구
+  document.querySelectorAll('[data-billgroup]').forEach(b=> b.onclick = ()=>{ const [c,m]=b.dataset.billgroup.split('|'); billGroup(c,m); });
+  document.querySelectorAll('[data-paygroup]').forEach(b=> b.onclick = ()=>{ const [c,m]=b.dataset.paygroup.split('|'); payGroup(c,m); });
+  document.querySelectorAll('[data-billview]').forEach(b=> b.onclick = ()=>{ const [c,m]=b.dataset.billview.split('|'); billView(c,m); });
+  // 견적 관리
+  document.querySelectorAll('[data-newquote]').forEach(b=> b.onclick = ()=> newQuoteModal());
+  document.querySelectorAll('[data-savequote]').forEach(b=> b.onclick = ()=> saveQuote());
+  document.querySelectorAll('[data-sendquote]').forEach(b=> b.onclick = ()=> sendQuote(b.dataset.sendquote));
+  document.querySelectorAll('[data-fixquote]').forEach(b=> b.onclick = ()=> fixQuoteModal(b.dataset.fixquote));
+  document.querySelectorAll('[data-pickcarrier]').forEach(b=> b.onclick = ()=>{ const [id,c]=b.dataset.pickcarrier.split('|'); pickCarrier(id,c); });
+  document.querySelectorAll('[data-quote2ship]').forEach(b=> b.onclick = ()=> quoteToShipment(b.dataset.quote2ship));
+  document.querySelectorAll('[data-quotepdf]').forEach(b=> b.onclick = ()=> sendQuote(b.dataset.quotepdf));
   document.querySelectorAll('[data-connect]').forEach(b=> b.onclick = ()=> carrierApiModal(b.dataset.connect));
 }
 
@@ -1869,7 +2129,17 @@ async function cloudLoad(){
     }
   } catch(e){ console.warn('cloud load fail', e); }
 }
-async function cloudUpsertShip(obj){ if(CLOUD){ try{ await sb.from('shipments').upsert(obj); }catch(e){console.warn(e);} } }
+async function cloudUpsertShip(obj){
+  if(!CLOUD) return;
+  // 전체 저장 시도 → 실패하면(컬럼 없음) 기존 컬럼만 저장 (graceful fallback)
+  try{
+    await sb.from('shipments').upsert(obj);
+  }catch(e){
+    const KNOWN = ['id','type','mode','shipper','consignee','pol','pod','carrier','booking','bl','container','incoterms','commodity','qty','status','etd','eta','revenue','cost','paid','blReleased','memo','created_at'];
+    const safe = {}; KNOWN.forEach(k=>{ if(obj[k]!==undefined) safe[k]=obj[k]; });
+    try{ await sb.from('shipments').upsert(safe); }catch(e2){console.warn(e2);}
+  }
+}
 async function cloudDeleteShip(id){ if(CLOUD){ try{ await sb.from('shipments').delete().eq('id',id); }catch(e){console.warn(e);} } }
 async function cloudUpsertPartner(obj){ if(CLOUD){ try{ await sb.from('partners').upsert(obj); }catch(e){console.warn(e);} } }
 async function cloudDeletePartner(id){ if(CLOUD){ try{ await sb.from('partners').delete().eq('id',id); }catch(e){console.warn(e);} } }
