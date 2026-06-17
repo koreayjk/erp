@@ -223,6 +223,16 @@
   .now-desc { font-size:12.5px; opacity:.85; margin-top:6px; line-height:1.5; }
   .now-btn { width:100%; margin-top:14px; background:#fff !important; color:var(--navy) !important; font-weight:700; font-size:14px; padding:12px; }
   .now-btn:hover { background:#EAF2FB !important; }
+  .now-act-btn { width:100%; margin-top:14px; background:var(--gold,#B8862F) !important; color:#fff !important; font-weight:700; font-size:15px; padding:13px; border:none; }
+  .now-act-btn:hover { filter:brightness(1.08); }
+  .now-act-note { font-size:11px; opacity:.7; text-align:center; margin-top:6px; }
+  .now-checks { margin:12px 0 4px; background:rgba(255,255,255,.1); border-radius:8px; padding:10px 12px; }
+  .now-check { font-size:12px; color:rgba(255,255,255,.9); padding:3px 0; line-height:1.4; }
+  /* 6단계 노드 라벨 (상세 화면) */
+  .wf-node-label { font-size:9.5px; color:var(--ink-soft); margin-top:4px; text-align:center; white-space:nowrap; position:absolute; top:26px; left:50%; transform:translateX(-50%); }
+  .wf-mini-track .wf-node { position:relative; padding-bottom:18px; }
+  .wf-mini-track .wf-track { margin-bottom:6px; }
+  .wf-node.current .wf-node-label { color:var(--navy); font-weight:700; }
   .now-back { display:block; width:100%; margin-top:8px; background:transparent; border:none; color:rgba(255,255,255,.6); font-size:11.5px; cursor:pointer; padding:4px; }
   .now-back:hover { color:#fff; }
   .now-done { font-size:15px; font-weight:700; text-align:center; padding:8px; }
@@ -532,19 +542,19 @@ if(CLOUD){ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
 const DB = {
   shipments: [
     // ===== 대한정밀(주) — 자동차 부품 수출 (3건) =====
-    { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'고려해운', booking:'KMTC25B0887', bl:'KMTCBSC2501', container:'KMTU1234567', incoterms:'FOB', commodity:'자동차 엔진 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-08', eta:'2025-06-14', revenue:4200000, cost:3350000, paid:false, blReleased:true, workflowStep:10, billingMonth:'2025-06', billed:false, invoiceFromCarrier:3350000, confirmStatus:'confirmed', memo:'' },
-    { id:'EXP-2502', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'OSAKA AUTO PARTS', pol:'부산(KRPUS)', pod:'오사카(JPOSA)', carrier:'HMM', booking:'HDMU25B1120', bl:'', container:'HMMU3340125', incoterms:'CIF', commodity:'브레이크 패드', qty:'2 x 20GP', status:'booking', etd:'2025-06-18', eta:'2025-06-24', revenue:3100000, cost:0, paid:false, blReleased:false, workflowStep:7, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', memo:'' },
-    { id:'EXP-2503', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'LA MOTORS INC.', pol:'부산(KRPUS)', pod:'로스앤젤레스(USLAX)', carrier:'', booking:'', bl:'', container:'', incoterms:'FOB', commodity:'변속기 부품', qty:'1 x 40HC', status:'booking', etd:'2025-06-22', eta:'', revenue:0, cost:0, paid:false, blReleased:false, workflowStep:2, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'pending', memo:'화주 오더 접수, 견적 작성중' },
+    { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'고려해운', booking:'KMTC25B0887', bl:'KMTCBSC2501', container:'KMTU1234567', incoterms:'FOB', commodity:'자동차 엔진 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-08', eta:'2025-06-14', revenue:4200000, cost:3350000, paid:false, blReleased:true, workflowStep:6, billingMonth:'2025-06', billed:false, invoiceFromCarrier:3350000, confirmStatus:'confirmed', memo:'' },
+    { id:'EXP-2502', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'OSAKA AUTO PARTS', pol:'부산(KRPUS)', pod:'오사카(JPOSA)', carrier:'HMM', booking:'HDMU25B1120', bl:'', container:'HMMU3340125', incoterms:'CIF', commodity:'브레이크 패드', qty:'2 x 20GP', status:'booking', etd:'2025-06-18', eta:'2025-06-24', revenue:3100000, cost:0, paid:false, blReleased:false, workflowStep:4, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', memo:'' },
+    { id:'EXP-2503', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'LA MOTORS INC.', pol:'부산(KRPUS)', pod:'로스앤젤레스(USLAX)', carrier:'', booking:'', bl:'', container:'', incoterms:'FOB', commodity:'변속기 부품', qty:'1 x 40HC', status:'booking', etd:'2025-06-22', eta:'', revenue:0, cost:0, paid:false, blReleased:false, workflowStep:1, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'pending', memo:'화주 오더 접수, 견적 작성중' },
 
     // ===== 그린푸드(주) — 식품 수출 (3건) =====
-    { id:'EXP-2504', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HANOI FOOD IMPORT', pol:'부산(KRPUS)', pod:'하이퐁(VNHPH)', carrier:'SM상선', booking:'SMLM25C0331', bl:'SMLMBSC2504', container:'SMLU7782041', incoterms:'CIF', commodity:'김·건어물', qty:'1 x 20RF', status:'sailing', etd:'2025-06-17', eta:'2025-06-23', revenue:2900000, cost:2200000, paid:false, blReleased:true, workflowStep:9, billingMonth:'2025-06', billed:false, invoiceFromCarrier:2200000, confirmStatus:'confirmed', memo:'냉장 컨테이너' },
-    { id:'EXP-2505', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HK GOURMET LTD', pol:'부산(KRPUS)', pod:'홍콩(HKHKG)', carrier:'ONE', booking:'ONEY25D5540', bl:'', container:'', incoterms:'FOB', commodity:'인삼 가공식품', qty:'1 x 20GP', status:'booking', etd:'2025-06-20', eta:'', revenue:3600000, cost:0, paid:false, blReleased:false, workflowStep:6, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', memo:'30일 신용 거래' },
-    { id:'EXP-2506', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'SAIGON MART', pol:'인천(KRINC)', pod:'호치민(VNSGN)', carrier:'고려해운', booking:'', bl:'', container:'', incoterms:'CIF', commodity:'라면·스낵류', qty:'2 x 40HC', status:'booking', etd:'2025-06-25', eta:'', revenue:5200000, cost:0, paid:false, blReleased:false, workflowStep:4, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', memo:'화주가 고려해운 선택, 부킹 진행 예정' },
+    { id:'EXP-2504', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HANOI FOOD IMPORT', pol:'부산(KRPUS)', pod:'하이퐁(VNHPH)', carrier:'SM상선', booking:'SMLM25C0331', bl:'SMLMBSC2504', container:'SMLU7782041', incoterms:'CIF', commodity:'김·건어물', qty:'1 x 20RF', status:'sailing', etd:'2025-06-17', eta:'2025-06-23', revenue:2900000, cost:2200000, paid:false, blReleased:true, workflowStep:5, billingMonth:'2025-06', billed:false, invoiceFromCarrier:2200000, confirmStatus:'confirmed', memo:'냉장 컨테이너' },
+    { id:'EXP-2505', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HK GOURMET LTD', pol:'부산(KRPUS)', pod:'홍콩(HKHKG)', carrier:'ONE', booking:'ONEY25D5540', bl:'', container:'', incoterms:'FOB', commodity:'인삼 가공식품', qty:'1 x 20GP', status:'booking', etd:'2025-06-20', eta:'', revenue:3600000, cost:0, paid:false, blReleased:false, workflowStep:3, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', memo:'30일 신용 거래' },
+    { id:'EXP-2506', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'SAIGON MART', pol:'인천(KRINC)', pod:'호치민(VNSGN)', carrier:'고려해운', booking:'', bl:'', container:'', incoterms:'CIF', commodity:'라면·스낵류', qty:'2 x 40HC', status:'booking', etd:'2025-06-25', eta:'', revenue:5200000, cost:0, paid:false, blReleased:false, workflowStep:2, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', memo:'화주가 고려해운 선택, 부킹 진행 예정' },
 
     // ===== 한빛전자 — 전자제품 수출 (3건) =====
     { id:'EXP-2507', type:'export', mode:'sea', shipper:'한빛전자', consignee:'NY ELECTRONICS', pol:'부산(KRPUS)', pod:'뉴욕(USNYC)', carrier:'', booking:'', bl:'', container:'', incoterms:'FOB', commodity:'LED 디스플레이', qty:'2 x 40HC', status:'booking', etd:'', eta:'', revenue:0, cost:0, paid:false, blReleased:false, workflowStep:1, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'pending', memo:'고가 화물 · 적하보험 필요. 화주 첫 오더 접수' },
-    { id:'EXP-2508', type:'export', mode:'sea', shipper:'한빛전자', consignee:'LONDON TECH', pol:'부산(KRPUS)', pod:'로테르담(NLRTM)', carrier:'Maersk', booking:'MAEU25E3390', bl:'MAEUBSC2508', container:'MRKU5567810', incoterms:'CIF', commodity:'반도체 장비 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-09', eta:'2025-07-02', revenue:11200000, cost:8800000, paid:false, blReleased:true, workflowStep:11, billingMonth:'2025-06', billed:true, invoiceFromCarrier:8800000, confirmStatus:'confirmed', memo:'적하보험 가입 완료' },
-    { id:'EXP-2509', type:'export', mode:'sea', shipper:'한빛전자', consignee:'SINGAPORE ELEC', pol:'부산(KRPUS)', pod:'싱가포르(SGSIN)', carrier:'ONE', booking:'ONEY25E8810', bl:'', container:'ONEU4451200', incoterms:'FOB', commodity:'PCB 기판', qty:'1 x 20GP', status:'booking', etd:'2025-06-19', eta:'2025-06-26', revenue:2800000, cost:2150000, paid:false, blReleased:false, workflowStep:8, billingMonth:'2025-06', billed:false, invoiceFromCarrier:2150000, confirmStatus:'confirmed', memo:'선사 인보이스 수령, 지불 대기' },
+    { id:'EXP-2508', type:'export', mode:'sea', shipper:'한빛전자', consignee:'LONDON TECH', pol:'부산(KRPUS)', pod:'로테르담(NLRTM)', carrier:'Maersk', booking:'MAEU25E3390', bl:'MAEUBSC2508', container:'MRKU5567810', incoterms:'CIF', commodity:'반도체 장비 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-09', eta:'2025-07-02', revenue:11200000, cost:8800000, paid:false, blReleased:true, workflowStep:6, billingMonth:'2025-06', billed:true, invoiceFromCarrier:8800000, confirmStatus:'confirmed', memo:'적하보험 가입 완료' },
+    { id:'EXP-2509', type:'export', mode:'sea', shipper:'한빛전자', consignee:'SINGAPORE ELEC', pol:'부산(KRPUS)', pod:'싱가포르(SGSIN)', carrier:'ONE', booking:'ONEY25E8810', bl:'', container:'ONEU4451200', incoterms:'FOB', commodity:'PCB 기판', qty:'1 x 20GP', status:'booking', etd:'2025-06-19', eta:'2025-06-26', revenue:2800000, cost:2150000, paid:false, blReleased:false, workflowStep:5, billingMonth:'2025-06', billed:false, invoiceFromCarrier:2150000, confirmStatus:'confirmed', memo:'선사 인보이스 수령, 지불 대기' },
   ],
   imports: [],
   quotes: [
@@ -567,20 +577,30 @@ const KIND_LABEL = { shipper:'화주', carrier:'선사', customs:'관세사', tr
    포워딩 11단계 워크플로우 (친구 실무 흐름)
    직원이 화물마다 "지금 몇 단계"를 보며 진행
    ============================================================ */
+// 포워딩 6단계 워크플로우 (큰 단계 6개 + 각 단계 세부 체크리스트)
+// 친구 실무 19스텝을 6개 단계로 묶음 — 직원은 6단계만, 세부는 빠짐없이
 const WORKFLOW = [
-  { step:1,  key:'order',     icon:'📩', title:'화주 오더 접수',   desc:'화주가 이메일로 첫 오더 (컨테이너 수, 노선, 날짜, 기간)', who:'화주→포워더', action:'오더 등록 (AI 추출 가능)' },
-  { step:2,  key:'quote',     icon:'💱', title:'선사 견적 작성',   desc:'보유 데이터로 선사 1~2개 선정 → 가격·날짜 가능여부', who:'포워더', action:'견적 작성' },
-  { step:3,  key:'quoteSent', icon:'📤', title:'화주에게 견적 발송', desc:'선사별 가격·일정을 화주에게 회신', who:'포워더→화주', action:'견적 메일 발송' },
-  { step:4,  key:'confirmed', icon:'✅', title:'화주 선택·컨펌',    desc:'화주가 선사 1개 선택 → 오더 확정 (가격 FIX)', who:'화주', action:'선택 선사 확정' },
-  { step:5,  key:'booking',   icon:'🚢', title:'선사 부킹',        desc:'선사 홈페이지에서 그 날짜·선박 찾아 부킹 예약 (S/R)', who:'포워더→선사', action:'선사 부킹하기' },
-  { step:6,  key:'bkgNo',     icon:'🔢', title:'부킹번호 확정',     desc:'선사가 검토 후 이메일로 부킹번호 부여 (부킹 확정)', who:'선사→포워더', action:'부킹번호 입력' },
-  { step:7,  key:'si',        icon:'📋', title:'S/I 제출',         desc:'화주 화물 상세를 선사 포털에 제출 (HS코드·VGM·B/L정보)', who:'포워더→선사', action:'S/I 정보 정리·제출' },
-  { step:8,  key:'carrierInv',icon:'🧾', title:'선사 인보이스·지불', desc:'선사가 인보이스 발행 → 포워더가 선사에 먼저 지불', who:'선사↔포워더', action:'선사 비용 지불 기록' },
-  { step:9,  key:'bl',        icon:'📜', title:'선적·B/L 수령',    desc:'선적 완료 → 선사가 B/L을 포워더에게 발행', who:'선사→포워더', action:'B/L 수령 입력' },
-  { step:10, key:'blToShip',  icon:'📦', title:'B/L 전달·트래킹',   desc:'화주에게 B/L 전달 → 운송 추적 시작', who:'포워더→화주', action:'B/L 전달·추적' },
-  { step:11, key:'billed',    icon:'💰', title:'월말 청구·수금',    desc:'그 달 건 월말 일괄 청구 → 화주는 익월 지불', who:'포워더↔화주', action:'월말 통합 청구' },
+  { step:1, key:'quote', icon:'💱', title:'견적', who:'화주↔포워더',
+    desc:'화주 RFQ 접수 → 선사 운임 문의 → 화주에게 견적 제출',
+    checks:['화주 RFQ 접수 (출발/도착/품목/중량/CBM)','선사 운임·Space·Transit Time 문의','화주에게 견적 제출'] },
+  { step:2, key:'confirm', icon:'✅', title:'컨펌·등록', who:'화주→포워더',
+    desc:'화주 Booking Confirm → SeaFlow 등록 → Job No. 생성 → SOP 확인',
+    checks:['화주 Booking Confirm (오더 확정)','Job Number 생성','SOP(거래처 특이사항) 확인'] },
+  { step:3, key:'booking', icon:'🚢', title:'부킹', who:'포워더↔선사',
+    desc:'선사에 S/R 제출 → 부킹번호 수령 → 화주에 부킹·Empty Pickup 안내',
+    checks:['선사에 Booking Request(S/R) 제출','선사로부터 Booking Number 수령','화주에 부킹확정·Empty Pickup 정보 안내'] },
+  { step:4, key:'si', icon:'📋', title:'서류·S/I', who:'화주↔포워더↔선사',
+    desc:'화주 서류 수령(C/I·P/L·S/I) → 선사에 S/I·VGM·사전신고 제출',
+    checks:['화주 서류 수령 (Commercial Invoice, Packing List, S/I 정보)','선사에 S/I·VGM 제출','사전신고 (AMS/ACI/ENS 필요시)'] },
+  { step:5, key:'bl', icon:'📜', title:'B/L·운임', who:'선사↔포워더↔화주',
+    desc:'Draft B/L 확인 → 선사 인보이스·지급 → Original B/L → 화주 전달·트래킹',
+    checks:['Draft B/L 확인·수정사항 반영','선사 Freight Invoice 수령 (원가 확정)','선사 운임 지급','Original B/L / Sea Waybill 수령','화주에 B/L·ETD/ETA·트래킹 전달'] },
+  { step:6, key:'settle', icon:'💰', title:'정산', who:'포워더↔화주',
+    desc:'월말 통합 청구 → 세금계산서(세무사) → 익월 수금',
+    checks:['월말 통합 청구서 발행','세금계산서 발행 (세무사)','화주 익월 결제 (수금 확인)'] },
 ];
 function wfStepOf(s){ return s.workflowStep || 1; }
+function wfTotalSteps(){ return WORKFLOW.length; }
 
 
 const $ = (s, el=document) => el.querySelector(s);
@@ -688,25 +708,20 @@ function viewDashboard(){
   const riskUnpaid = all.filter(s=>!s.paid && s.blReleased).length;
   const recent = all.slice().reverse().slice(0,5);
 
-  // ===== 오늘 할 일 (액션 센터) =====
-  const needConfirm = all.filter(s=>s.confirmStatus==='pending');        // 컨펌 대기
-  const needBooking = all.filter(s=>s.status==='booking' && !s.booking); // 부킹 필요
-  const transiting = all.filter(s=>s.status==='transit'||s.status==='delay'); // 운송중
-  // 청구 그룹 계산 (미청구 / 미입금)
-  const billGroups = {};
-  all.forEach(s=>{ const c=s.type==='export'?s.shipper:s.consignee; const m=s.billingMonth||(s.etd||'').slice(0,7); const k=c+'|'+m; if(!billGroups[k])billGroups[k]={c,m,items:[],billed:false}; billGroups[k].items.push(s); if(s.billed)billGroups[k].billed=true; });
-  const groupArr = Object.values(billGroups);
-  const needBill = groupArr.filter(g=>!g.billed);
-  const needCollect = groupArr.filter(g=>g.billed && !g.items.every(i=>i.paid));
-  const pendingQuotes = (DB.quotes||[]).filter(q=>q.status!=='fixed');
+  // ===== 오늘 할 일 (6단계 워크플로우 기준) =====
+  // 단계별 화물 수 집계
+  const byStep = {};
+  all.forEach(s=>{ const st=wfStepOf(s); (byStep[st]=byStep[st]||[]).push(s); });
+  // 입금 대기 (정산 단계인데 미입금)
+  const needCollect = all.filter(s=>wfStepOf(s)>=6 && !s.paid);
 
   const actions = [
-    { n:needConfirm.length, ico:'📋', label:'화주 컨펌 대기', color:'#B8862F', go:'export', desc:'화주 확인 받을 건' },
-    { n:pendingQuotes.length, ico:'💱', label:'견적 진행중', color:'#3A7CA5', go:'quote', desc:'선사 비교·발송할 견적' },
-    { n:needBooking.length, ico:'🚢', label:'부킹 필요', color:'#134074', go:'export', desc:'선사 예약할 건' },
-    { n:transiting.length, ico:'📦', label:'운송중', color:'#5FA8D3', go:'tracking', desc:'추적·알림 보낼 건' },
-    { n:needBill.length, ico:'🧾', label:'청구 대기', color:'#C0392B', go:'receivable', desc:'월말 청구할 화주' },
-    { n:needCollect.length, ico:'💰', label:'입금 대기', color:'#7A5C12', go:'receivable', desc:'수금 확인할 화주' },
+    { n:(byStep[1]||[]).length, ico:'💱', label:'견적 단계', color:'#3A7CA5', go:'export', desc:'견적 작성·발송할 건' },
+    { n:(byStep[2]||[]).length, ico:'✅', label:'컨펌·등록', color:'#B8862F', go:'export', desc:'화주 확정·Job 등록' },
+    { n:(byStep[3]||[]).length, ico:'🚢', label:'부킹 단계', color:'#134074', go:'export', desc:'선사 부킹할 건' },
+    { n:(byStep[4]||[]).length, ico:'📋', label:'서류·S/I', color:'#5FA8D3', go:'export', desc:'서류·S/I 제출할 건' },
+    { n:(byStep[5]||[]).length, ico:'📜', label:'B/L·운임', color:'#2E8B57', go:'export', desc:'B/L·운임 처리할 건' },
+    { n:needCollect.length, ico:'💰', label:'입금 대기', color:'#C0392B', go:'receivable', desc:'수금 확인할 건' },
   ].filter(a=>a.n>0);
 
   return `
@@ -777,8 +792,8 @@ function renderShipRows(list, type){
     const profit = s.revenue - s.cost;
     const cf = s.confirmStatus && s.confirmStatus!=='confirmed' ? `<br><span class="cell-sub" style="color:${(CONFIRM_LABEL[s.confirmStatus]||{}).color||'#888'};font-weight:600">${(CONFIRM_LABEL[s.confirmStatus]||{}).label||''}</span>` : '';
     const wf = WORKFLOW[wfStepOf(s)-1] || WORKFLOW[0];
-    const pct = Math.round(wfStepOf(s)/11*100);
-    const wfBadge = `<div class="wf-mini">${wf.icon} <b>${wfStepOf(s)}/11</b></div><div class="cell-sub" style="font-size:10.5px">${wf.title}</div><div class="wf-bar"><div class="wf-bar-fill" style="width:${pct}%"></div></div>`;
+    const pct = Math.round(wfStepOf(s)/wfTotalSteps()*100);
+    const wfBadge = `<div class="wf-mini">${wf.icon} <b>${wfStepOf(s)}/${wfTotalSteps()}</b></div><div class="cell-sub" style="font-size:10.5px">${wf.title}</div><div class="wf-bar"><div class="wf-bar-fill" style="width:${pct}%"></div></div>`;
     return `<tr><td class="mono">${s.id}</td><td><div class="cell-strong">${s.type==='export'?s.shipper:s.consignee}</div><div class="cell-sub">${s.type==='export'?s.consignee:s.shipper}</div></td><td class="cell-sub">${s.pol}<br>→ ${s.pod}</td><td>${s.carrier}<br><span class="cell-sub mono">${s.bl||'B/L 대기'}</span></td><td style="min-width:120px">${wfBadge}</td><td class="cell-sub">${s.qty}${cf}</td><td><span style="font-weight:700;color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span><br><span class="cell-sub">매출 ${won(s.revenue)}</span></td><td><span class="row-link" data-detail="${s.id}" data-type="${type}">상세 →</span></td></tr>`;
   }).join('');
 }
@@ -1818,21 +1833,31 @@ function shipmentDetail(id, type){
   const s = list.find(x=>x.id===id); if(!s) return;
   const profit = s.revenue-s.cost;
   const cur = wfStepOf(s);
+  const TOT = wfTotalSteps();
   const curStep = WORKFLOW[cur-1] || WORKFLOW[0];
-  const inputCfg = STEP_INPUTS[cur+1]; // 다음 단계에 입력 필요한지
 
   // "지금 할 일" 액션 카드 내용
   let nowAction;
-  if(cur>=11){
-    nowAction = `<div class="now-done">✅ 모든 단계 완료된 화물입니다.</div>`;
-  } else {
-    const nextStep = WORKFLOW[cur]; // 다음 단계
+  const action = stepActionBtn(s, type);
+  const checksHtml = (curStep.checks||[]).map(c=>`<div class="now-check">☐ ${c}</div>`).join('');
+  if(cur>=TOT){
     nowAction = `
-      <div class="now-label">📍 지금 할 일 (STEP ${cur} → ${cur+1})</div>
-      <div class="now-title">${nextStep.icon} ${nextStep.title}</div>
-      <div class="now-desc">${nextStep.desc}</div>
-      <button class="btn btn-primary now-btn" data-wfnext="${s.id}|${type}">
-        ${inputCfg ? `✍️ 정보 입력하고 STEP ${cur+1} 완료` : `✓ STEP ${cur+1} 완료 처리`}
+      <div class="now-label">📍 지금 할 일 (STEP ${cur}/${TOT} · 마지막)</div>
+      <div class="now-title">${curStep.icon} ${curStep.title}</div>
+      <div class="now-desc">${curStep.desc}</div>
+      <div class="now-checks">${checksHtml}</div>
+      ${action?`<button class="btn now-act-btn" ${action.act}>${action.label}</button>
+      <div class="now-act-note">${action.note}</div>`:''}`;
+  } else {
+    nowAction = `
+      <div class="now-label">📍 지금 할 일 (STEP ${cur}/${TOT})</div>
+      <div class="now-title">${curStep.icon} ${curStep.title}</div>
+      <div class="now-desc">${curStep.desc}</div>
+      <div class="now-checks">${checksHtml}</div>
+      ${action?`<button class="btn now-act-btn" ${action.act}>${action.label}</button>
+      <div class="now-act-note">${action.note}</div>`:''}
+      <button class="btn now-btn" data-wfnext="${s.id}|${type}">
+        ✓ 이 단계 완료 → STEP ${cur+1} (${WORKFLOW[cur].title})
       </button>`;
   }
 
@@ -1846,14 +1871,14 @@ function shipmentDetail(id, type){
   };
 
   openModal(`
-    <div class="modal-head"><h3>${s.id} · ${s.type==='export'?'수출':'수입'} 상세</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-head"><h3>${s.id} · ${s.type==='export'?'수출':'수입'} 상세${s.jobNo?` <span style="font-size:12px;color:var(--ink-soft)">· ${s.jobNo}</span>`:''}</h3><button class="modal-x" onclick="closeModal()">×</button></div>
     <div class="modal-body">
       <!-- 진행 단계 (작게) -->
       <div class="wf-mini-track">
-        <div class="wf-mini-head"><b>STEP ${cur}/11</b> · ${curStep.title} <span class="wf-who">${curStep.who}</span></div>
+        <div class="wf-mini-head"><b>STEP ${cur}/${TOT}</b> · ${curStep.title} <span class="wf-who">${curStep.who}</span></div>
         <div class="wf-track">${WORKFLOW.map(w=>`
           <div class="wf-node ${w.step<cur?'done':w.step===cur?'current':''}" data-wfjump="${s.id}|${type}|${w.step}" title="STEP ${w.step}: ${w.title}">
-            <div class="wf-dot">${w.step<cur?'✓':w.step}</div>
+            <div class="wf-dot">${w.step<cur?'✓':w.step}</div><div class="wf-node-label">${w.title}</div>
           </div>`).join('')}</div>
       </div>
 
@@ -1866,15 +1891,16 @@ function shipmentDetail(id, type){
       <div class="detail-sec-label">📦 화물 정보 <span style="font-size:11px;color:var(--ink-faint);font-weight:400">(✏️ 클릭하면 수정)</span></div>
       <div class="detail-grid">
         <div class="detail-cell"><div class="k">화주 (Shipper)</div><div class="v">${s.shipper}</div></div>
-        ${rowEdit('수하인 (Consignee)', s.consignee, 4)}
+        <div class="detail-cell"><div class="k">수하인 (Consignee)</div><div class="v">${s.consignee||wfLock(2)}</div></div>
         <div class="detail-cell"><div class="k">선적항 → 도착항</div><div class="v">${s.pol} → ${s.pod}</div></div>
-        ${rowEdit('선사 / 인코텀즈', (cur>=4&&s.carrier)?`${s.carrier} / ${s.incoterms}`:'', 4, 4)}
-        ${rowEdit('부킹 번호', s.booking?`<span class="mono">${s.booking}</span>`:'', 6, 6)}
-        ${rowEdit('컨테이너', s.container?`<span class="mono">${s.container}</span>`:'', 7, 7)}
-        ${rowEdit('B/L 번호', s.bl?`<span class="mono">${s.bl}</span>`:'', 9, 9)}
+        ${rowEdit('선사 / 인코텀즈', (cur>=2&&s.carrier)?`${s.carrier} / ${s.incoterms}`:'', 2, 2)}
+        ${rowEdit('Job Number', s.jobNo?`<span class="mono">${s.jobNo}</span>`:'', 2, 2)}
+        ${rowEdit('부킹 번호', s.booking?`<span class="mono">${s.booking}</span>`:'', 3, 3)}
+        ${rowEdit('컨테이너 / VGM', s.container?`<span class="mono">${s.container}</span>${s.weight?` · ${s.weight}kg`:''}`:'', 4, 4)}
+        ${rowEdit('B/L 번호', s.bl?`<span class="mono">${s.bl}</span>`:'', 5, 5)}
         <div class="detail-cell"><div class="k">품명 / 수량</div><div class="v">${s.commodity} · ${s.qty}</div></div>
-        ${rowEdit('도착예정 (ETA)', s.eta, 10, 10)}
-        <div class="detail-cell"><div class="k">손익</div><div class="v">${cur>=4&&s.revenue?`<span style="color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span> <span style="font-size:11px;color:var(--ink-soft)">(매출 ${won(s.revenue)}${cur>=8&&s.cost?`, 원가 ${won(s.cost)}`:', 원가 '+wfLockShort(8)})</span> ${(cur>=4)?`<button class="mini-edit" data-editstep="${s.id}|${type}|4" title="수정">✏️</button>`:''}`:wfLock(4)}</div></div>
+        ${rowEdit('도착예정 (ETA)', s.eta, 5, 5)}
+        <div class="detail-cell"><div class="k">손익</div><div class="v">${cur>=2&&s.revenue?`<span style="color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span> <span style="font-size:11px;color:var(--ink-soft)">(매출 ${won(s.revenue)}${cur>=5&&s.cost?`, 원가 ${won(s.cost)}`:', 원가 '+wfLockShort(5)})</span> ${(cur>=2)?`<button class="mini-edit" data-editstep="${s.id}|${type}|2" title="수정">✏️</button>`:''}`:wfLock(2)}</div></div>
         ${s.memo?`<div class="detail-cell full"><div class="k">메모</div><div class="v" style="font-weight:500">${s.memo}</div></div>`:''}
         ${s.confirmStatus?`<div class="detail-cell full"><div class="k">화주 컨펌 상태</div><div class="v" style="font-weight:700;color:${(CONFIRM_LABEL[s.confirmStatus]||{}).color||'#888'}">${(CONFIRM_LABEL[s.confirmStatus]||{}).label||s.confirmStatus}${s.confirmedAt?` <span style="font-size:11px;color:var(--ink-soft);font-weight:400">(${s.confirmedAt})</span>`:''}</div></div>`:''}
       </div>
@@ -1937,25 +1963,47 @@ function saveEditInfo(id, type, step){
   toast('✏️ 정보가 수정되었습니다.');
 }
 
+// 화물 정보로 화주에게 견적 메일
+function quoteMailFromShip(id, type){
+  const s = findShip(id, type); if(!s) return;
+  const ship = DB.partners.find(p=>p.name===(type==='export'?s.shipper:s.consignee)) || {};
+  const subj = `[견적] ${s.pol.split('(')[0]}→${s.pod.split('(')[0]} ${s.commodity} 운임 견적`;
+  const body = `${ship.manager||s.shipper} 님 안녕하세요. SeaFlow Forwarding입니다.\n\n요청하신 화물의 견적을 안내드립니다.\n\n· 노선: ${s.pol} → ${s.pod}\n· 품목: ${s.commodity}\n· 수량: ${s.qty}\n· 선사: ${s.carrier||'(선사 검토중)'}\n· 운임: ${s.revenue?('₩'+s.revenue.toLocaleString()):'(견적 산출중)'}\n· 출항예정: ${s.etd||'협의'}\n\n위 조건으로 진행 가능하시면 회신 부탁드립니다. 감사합니다.\n\nSeaFlow Forwarding`;
+  window.open(`mailto:${ship.email||''}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`,'_blank');
+  toast('📤 견적 메일 초안이 열렸습니다. 발송 후 "완료"를 누르세요.');
+}
+
 /* ====== 워크플로우 단계 진행 ====== */
 // 아직 안 온 정보 표시
 function wfLock(step){ return `<span class="wf-lock">🔒 STEP ${step}에서 입력</span>`; }
 function wfLockShort(step){ return `<span class="wf-lock" style="font-size:10px">STEP ${step}</span>`; }
 
-// 단계별로 입력받아야 할 정보 정의
+// 단계별로 입력받아야 할 정보 정의 (6단계 기준, 단계 진입 시 입력)
 const STEP_INPUTS = {
-  4: { fields:[ {k:'carrier',label:'선택된 선사',ph:'예: 고려해운'}, {k:'revenue',label:'운임(매출, 원)',ph:'4200000',type:'number'} ], title:'화주 컨펌 — 선사·운임 확정' },
-  6: { fields:[ {k:'booking',label:'부킹번호',ph:'선사가 준 부킹번호'} ], title:'부킹번호 입력' },
-  7: { fields:[ {k:'container',label:'컨테이너 번호',ph:'예: KMTU1234567'} ], title:'S/I — 컨테이너 정보' },
-  8: { fields:[ {k:'cost',label:'선사 인보이스 금액(원가, 원)',ph:'3350000',type:'number'} ], title:'선사 인보이스 — 원가 입력' },
-  9: { fields:[ {k:'bl',label:'B/L 번호',ph:'선사가 발행한 B/L'} ], title:'B/L 번호 입력' },
-  10:{ fields:[ {k:'eta',label:'도착 예정일(ETA)',ph:'2025-06-28',type:'date'} ], title:'트래킹 — 도착 예정일' },
+  2: { fields:[ {k:'carrier',label:'선택된 선사',ph:'예: 고려해운'}, {k:'revenue',label:'운임(매출, 원)',ph:'4200000',type:'number'}, {k:'jobNo',label:'Job Number',ph:'예: SF-2506-001'} ], title:'컨펌·등록 — 선사·운임·Job No.' },
+  3: { fields:[ {k:'booking',label:'부킹번호 (Booking No.)',ph:'선사가 준 부킹번호'} ], title:'부킹 — 부킹번호' },
+  4: { fields:[ {k:'container',label:'컨테이너 번호',ph:'예: KMTU1234567'}, {k:'weight',label:'총중량 VGM (kg)',ph:'18000',type:'number'} ], title:'서류·S/I — 컨테이너·VGM' },
+  5: { fields:[ {k:'cost',label:'선사 운임(원가, 원)',ph:'3350000',type:'number'}, {k:'bl',label:'B/L 번호',ph:'선사 발행 B/L'}, {k:'eta',label:'도착예정 ETA',ph:'2025-06-28',type:'date'} ], title:'B/L·운임 — 원가·B/L·ETA' },
 };
+
+// 단계별 "실제 작업" 버튼 (6단계 기준)
+function stepActionBtn(s, type){
+  const cur = wfStepOf(s);
+  const A = {
+    1: { label:'💱 견적 작성하기', act:`data-gostep="quote"`, note:'선사 운임 비교 견적 생성 → 화주 발송' },
+    2: { label:'📋 화주 컨펌 받기', act:`data-cfopenmodal="${s.id}|${type}"`, note:'화주에게 발주 내역 확인 + 정보 입력' },
+    3: { label:'🚢 스케줄 조회·선사 부킹', act:`data-gostep="schedule"`, note:'선사 페이지에서 S/R 제출·부킹' },
+    4: { label:'🔍 서류 대조 (S/I 확인)', act:`data-vfopen="${s.id}|${type}"`, note:'화주서류·B/L·인보이스 대조 후 S/I 제출' },
+    5: { label:'📜 B/L·운임 처리', act:`data-editstep="${s.id}|${type}|5"`, note:'선사 인보이스·원가·B/L·ETA 입력' },
+    6: { label:'💰 월말 통합 청구', act:`data-gostep="receivable"`, note:'월말 청구서 발행 → 세무사 자료' },
+  };
+  return A[cur];
+}
 
 function wfNext(id, type){
   const s = findShip(id, type); if(!s) return;
   const cur = wfStepOf(s);
-  if(cur>=11) return;
+  if(cur>=wfTotalSteps()) return;
   const targetStep = cur+1;
   // 다음 단계에 입력이 필요하면 팝업 먼저
   if(STEP_INPUTS[targetStep]){
@@ -2035,23 +2083,22 @@ function wfJump(id, type, step){
 // 워크플로우 단계 → 화물 상태 자동 매핑
 function syncStatusFromStep(s){
   const st = s.workflowStep;
-  if(st<=6) s.status = 'booking';        // 1~6: 부킹 전후
-  else if(st<=8) s.status = 'booking';   // 7~8: S/I·인보이스
-  else if(st===9) s.status = 'sailing';  // 9: 선적·B/L
-  else if(st===10) s.status = 'transit'; // 10: 운송중
-  else if(st===11) s.status = 'arrived'; // 11: 도착·청구
+  if(st<=3) s.status = 'booking';        // 1~3: 견적·컨펌·부킹
+  else if(st===4) s.status = 'booking';  // 4: 서류·S/I
+  else if(st===5) s.status = 'transit';  // 5: B/L·운임·선적
+  else if(st>=6) s.status = 'arrived';   // 6: 정산
   // 컨펌/청구 연동
-  if(st>=4 && s.confirmStatus==='pending') s.confirmStatus='confirmed';
-  if(st>=11) s.billed = true;
+  if(st>=2 && s.confirmStatus==='pending') s.confirmStatus='confirmed';
+  if(st>=6) s.billed = true;
 }
 // 단계별 도움 안내 (관련 기능으로 유도)
 function wfStepHint(s, type){
   const st = s.workflowStep;
   const hints = {
-    5: '🚢 선사 부킹: "스케줄 조회" 화면에서 선사 페이지로 이동해 부킹하세요.',
-    7: '📋 S/I 제출: 화주 컨펌 내역(품목·수량·중량)을 선사 포털에 입력하세요.',
-    9: '📜 B/L 수령: 받은 B/L 번호를 화물 정보에 입력하세요.',
-    11:'💰 월말 청구: "월말 청구·미수금"에서 통합 청구서를 발행하세요.',
+    3: '🚢 부킹: "스케줄 조회"에서 선사 페이지로 이동해 S/R 제출 후, 부킹번호를 입력하세요.',
+    4: '📋 서류·S/I: 화주 서류(C/I·P/L) 수령 후 선사 포털에 S/I·VGM을 제출하세요.',
+    5: '📜 B/L·운임: 선사 인보이스(원가)·B/L 번호·ETA를 입력하세요.',
+    6: '💰 정산: "월말 청구·미수금"에서 통합 청구서를 발행하세요.',
   };
   if(hints[st]) setTimeout(()=>toast(hints[st]), 1200);
 }
@@ -2294,6 +2341,17 @@ function bindActions(){
   document.querySelectorAll('[data-editsave]').forEach(b=> b.onclick = ()=>{ const [id,t,st]=b.dataset.editsave.split('|'); saveEditInfo(id,t,Number(st)); });
   document.querySelectorAll('[data-moretools]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.moretools.split('|'); moreToolsMenu(id,t); });
   document.querySelectorAll('[data-backdetail]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.backdetail.split('|'); shipmentDetail(id,t); });
+  // 단계별 작업: 화면 이동
+  document.querySelectorAll('[data-gostep]').forEach(b=> b.onclick = ()=>{
+    const v=b.dataset.gostep; closeModal();
+    const map={ quote:'quote', schedule:'quote', receivable:'receivable' };
+    current = map[v]||v;
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.view===current));
+    $('#pageTitle').textContent = TITLES[current]||current; render();
+    if(v==='schedule') setTimeout(()=>toast('🚢 스케줄 조회·부킹 기능은 선사 API 연동 시 활성화됩니다. 지금은 견적 화면에서 선사를 선택하세요.'), 400);
+  });
+  // 단계별 작업: 견적 메일 (화물 정보로)
+  document.querySelectorAll('[data-quotemailship]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.quotemailship.split('|'); quoteMailFromShip(id,t); });
   document.querySelectorAll('[data-delship]').forEach(b=> b.onclick = ()=> delShipment(b.dataset.delship, b.dataset.type));
   document.querySelectorAll('[data-doc]').forEach(b=> b.onclick = ()=> printDoc(b.dataset.doc, b.dataset.shipid, b.dataset.type));
   document.querySelectorAll('[data-kakao]').forEach(b=> b.onclick = ()=> kakaoModal(b.dataset.kakao, b.dataset.type));
