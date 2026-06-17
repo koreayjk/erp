@@ -210,6 +210,33 @@
   .wf-bar { height:4px; background:#E3EAF0; border-radius:3px; margin-top:4px; overflow:hidden; }
   .wf-bar-fill { height:100%; background:linear-gradient(90deg,var(--sky),var(--navy)); border-radius:3px; transition:width .3s; }
   .wf-lock { color:var(--ink-faint); font-size:12px; font-style:italic; background:#F4F6F8; padding:2px 8px; border-radius:6px; }
+
+  /* ===== 상세 화면 재설계 ===== */
+  /* 미니 진행 트랙 */
+  .wf-mini-track { background:#F7FAFC; border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .wf-mini-head { font-size:12.5px; color:var(--ink); margin-bottom:10px; }
+  .wf-mini-head b { color:var(--navy); }
+  /* 지금 할 일 카드 (강조) */
+  .now-card { background:linear-gradient(135deg,#0B2545,#13315C); border-radius:13px; padding:18px 20px; margin-top:14px; color:#fff; }
+  .now-label { font-size:11px; opacity:.75; font-weight:600; letter-spacing:.3px; }
+  .now-title { font-size:18px; font-weight:800; margin-top:5px; }
+  .now-desc { font-size:12.5px; opacity:.85; margin-top:6px; line-height:1.5; }
+  .now-btn { width:100%; margin-top:14px; background:#fff !important; color:var(--navy) !important; font-weight:700; font-size:14px; padding:12px; }
+  .now-btn:hover { background:#EAF2FB !important; }
+  .now-back { display:block; width:100%; margin-top:8px; background:transparent; border:none; color:rgba(255,255,255,.6); font-size:11.5px; cursor:pointer; padding:4px; }
+  .now-back:hover { color:#fff; }
+  .now-done { font-size:15px; font-weight:700; text-align:center; padding:8px; }
+  /* 정보 섹션 라벨 */
+  .detail-sec-label { font-size:13px; font-weight:700; color:var(--ink); margin:20px 0 10px; }
+  /* 미니 수정 버튼 */
+  .mini-edit { background:none; border:none; cursor:pointer; font-size:12px; opacity:.45; padding:2px 4px; border-radius:4px; transition:.15s; }
+  .mini-edit:hover { opacity:1; background:#EAF2FB; }
+  /* 기타 작업 메뉴 */
+  .tool-list { display:flex; flex-direction:column; gap:8px; }
+  .tool-item { display:flex; align-items:center; gap:13px; width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:10px; padding:13px 15px; cursor:pointer; font-family:inherit; font-size:13px; color:var(--ink); transition:.15s; }
+  .tool-item:hover { border-color:var(--sky); background:#F7FAFC; }
+  .tool-ico { font-size:22px; flex-shrink:0; }
+  .tool-item.tool-danger:hover { border-color:var(--danger); background:#FDECEA; }
   /* drag & drop */
   .drop-zone { border:2px dashed var(--sky-light); border-radius:12px; background:linear-gradient(135deg,#F4F9FC,#EAF3FA); padding:28px 20px; text-align:center; cursor:pointer; transition:all 0.18s; }
   .drop-zone:hover, .drop-zone.dragover { border-color:var(--gold); background:#FDF8EE; }
@@ -1790,45 +1817,124 @@ function shipmentDetail(id, type){
   const list = type==='export'?DB.shipments:DB.imports;
   const s = list.find(x=>x.id===id); if(!s) return;
   const profit = s.revenue-s.cost;
-  const idx = TRACK_STEPS.indexOf(s.status==='delay'?'transit':s.status);
   const cur = wfStepOf(s);
   const curStep = WORKFLOW[cur-1] || WORKFLOW[0];
+  const inputCfg = STEP_INPUTS[cur+1]; // 다음 단계에 입력 필요한지
+
+  // "지금 할 일" 액션 카드 내용
+  let nowAction;
+  if(cur>=11){
+    nowAction = `<div class="now-done">✅ 모든 단계 완료된 화물입니다.</div>`;
+  } else {
+    const nextStep = WORKFLOW[cur]; // 다음 단계
+    nowAction = `
+      <div class="now-label">📍 지금 할 일 (STEP ${cur} → ${cur+1})</div>
+      <div class="now-title">${nextStep.icon} ${nextStep.title}</div>
+      <div class="now-desc">${nextStep.desc}</div>
+      <button class="btn btn-primary now-btn" data-wfnext="${s.id}|${type}">
+        ${inputCfg ? `✍️ 정보 입력하고 STEP ${cur+1} 완료` : `✓ STEP ${cur+1} 완료 처리`}
+      </button>`;
+  }
+
+  // 정보 행: 입력된 건 수정버튼, 안 된 건 잠금
+  const rowEdit = (label, val, lockStep, editStep) => {
+    if(val){
+      const canEdit = editStep && STEP_INPUTS[editStep];
+      return `<div class="detail-cell"><div class="k">${label}</div><div class="v">${val}${canEdit?` <button class="mini-edit" data-editstep="${s.id}|${type}|${editStep}" title="수정">✏️</button>`:''}</div></div>`;
+    }
+    return `<div class="detail-cell"><div class="k">${label}</div><div class="v">${wfLock(lockStep)}</div></div>`;
+  };
+
   openModal(`
     <div class="modal-head"><h3>${s.id} · ${s.type==='export'?'수출':'수입'} 상세</h3><button class="modal-x" onclick="closeModal()">×</button></div>
     <div class="modal-body">
-      <!-- 11단계 워크플로우 -->
-      <div class="wf-box">
-        <div class="wf-head">
-          <div><span class="wf-cur-ico">${curStep.icon}</span> <b>STEP ${cur}/11 · ${curStep.title}</b></div>
-          <span class="wf-who">${curStep.who}</span>
-        </div>
-        <div class="wf-desc">${curStep.desc}</div>
+      <!-- 진행 단계 (작게) -->
+      <div class="wf-mini-track">
+        <div class="wf-mini-head"><b>STEP ${cur}/11</b> · ${curStep.title} <span class="wf-who">${curStep.who}</span></div>
         <div class="wf-track">${WORKFLOW.map(w=>`
-          <div class="wf-node ${w.step<cur?'done':w.step===cur?'current':''}" data-wfjump="${s.id}|${type}|${w.step}" title="${w.title}">
+          <div class="wf-node ${w.step<cur?'done':w.step===cur?'current':''}" data-wfjump="${s.id}|${type}|${w.step}" title="STEP ${w.step}: ${w.title}">
             <div class="wf-dot">${w.step<cur?'✓':w.step}</div>
           </div>`).join('')}</div>
-        <div class="wf-actions">
-          ${cur>1?`<button class="btn btn-ghost btn-sm" data-wfback="${s.id}|${type}">← 이전 단계</button>`:'<span></span>'}
-          ${cur<11?`<button class="btn btn-primary btn-sm" data-wfnext="${s.id}|${type}">${curStep.action} 완료 → 다음 단계</button>`:'<span style="color:var(--ok);font-weight:700">✅ 전체 완료</span>'}
-        </div>
       </div>
-      <div class="detail-grid" style="margin-top:18px">
+
+      <!-- 지금 할 일 (강조) -->
+      <div class="now-card">${nowAction}
+        ${cur>1?`<button class="now-back" data-wfback="${s.id}|${type}">← 이전 단계로 되돌리기</button>`:''}
+      </div>
+
+      <!-- 화물 정보 -->
+      <div class="detail-sec-label">📦 화물 정보 <span style="font-size:11px;color:var(--ink-faint);font-weight:400">(✏️ 클릭하면 수정)</span></div>
+      <div class="detail-grid">
         <div class="detail-cell"><div class="k">화주 (Shipper)</div><div class="v">${s.shipper}</div></div>
-        <div class="detail-cell"><div class="k">수하인 (Consignee)</div><div class="v">${s.consignee||wfLock(4)}</div></div>
+        ${rowEdit('수하인 (Consignee)', s.consignee, 4)}
         <div class="detail-cell"><div class="k">선적항 → 도착항</div><div class="v">${s.pol} → ${s.pod}</div></div>
-        <div class="detail-cell"><div class="k">선사 / 인코텀즈</div><div class="v">${cur>=4&&s.carrier?`${s.carrier} / ${s.incoterms}`:wfLock(4)}</div></div>
-        <div class="detail-cell"><div class="k">부킹 번호</div><div class="v mono">${s.booking||wfLock(6)}</div></div>
-        <div class="detail-cell"><div class="k">컨테이너</div><div class="v mono">${s.container||wfLock(7)}</div></div>
-        <div class="detail-cell"><div class="k">B/L 번호</div><div class="v mono">${s.bl||wfLock(9)}</div></div>
+        ${rowEdit('선사 / 인코텀즈', (cur>=4&&s.carrier)?`${s.carrier} / ${s.incoterms}`:'', 4, 4)}
+        ${rowEdit('부킹 번호', s.booking?`<span class="mono">${s.booking}</span>`:'', 6, 6)}
+        ${rowEdit('컨테이너', s.container?`<span class="mono">${s.container}</span>`:'', 7, 7)}
+        ${rowEdit('B/L 번호', s.bl?`<span class="mono">${s.bl}</span>`:'', 9, 9)}
         <div class="detail-cell"><div class="k">품명 / 수량</div><div class="v">${s.commodity} · ${s.qty}</div></div>
-        <div class="detail-cell"><div class="k">ETD / ETA</div><div class="v">${s.etd||'미정'} → ${s.eta||wfLock(10)}</div></div>
-        <div class="detail-cell"><div class="k">손익</div><div class="v">${cur>=4&&s.revenue?`<span style="color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span> <span style="font-size:11px;color:var(--ink-soft)">(매출 ${won(s.revenue)}${cur>=8&&s.cost?`, 원가 ${won(s.cost)}`:', 원가 '+wfLockShort(8)})</span>`:wfLock(4)}</div></div>
+        ${rowEdit('도착예정 (ETA)', s.eta, 10, 10)}
+        <div class="detail-cell"><div class="k">손익</div><div class="v">${cur>=4&&s.revenue?`<span style="color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span> <span style="font-size:11px;color:var(--ink-soft)">(매출 ${won(s.revenue)}${cur>=8&&s.cost?`, 원가 ${won(s.cost)}`:', 원가 '+wfLockShort(8)})</span> ${(cur>=4)?`<button class="mini-edit" data-editstep="${s.id}|${type}|4" title="수정">✏️</button>`:''}`:wfLock(4)}</div></div>
         ${s.memo?`<div class="detail-cell full"><div class="k">메모</div><div class="v" style="font-weight:500">${s.memo}</div></div>`:''}
         ${s.confirmStatus?`<div class="detail-cell full"><div class="k">화주 컨펌 상태</div><div class="v" style="font-weight:700;color:${(CONFIRM_LABEL[s.confirmStatus]||{}).color||'#888'}">${(CONFIRM_LABEL[s.confirmStatus]||{}).label||s.confirmStatus}${s.confirmedAt?` <span style="font-size:11px;color:var(--ink-soft);font-weight:400">(${s.confirmedAt})</span>`:''}</div></div>`:''}
       </div>
     </div>
-    <div class="modal-foot"><button class="btn btn-danger-ghost" data-delship="${s.id}" data-type="${type}">삭제</button><button class="btn btn-ghost" data-cfopenmodal="${s.id}|${type}">📋 화주 컨펌</button><button class="btn btn-ghost" data-vfopen="${s.id}|${type}">🔍 서류 대조</button><button class="btn btn-ghost" data-doc="invoice" data-shipid="${s.id}" data-type="${type}">📄 인보이스</button><button class="btn btn-ghost" data-doc="bl" data-shipid="${s.id}" data-type="${type}">📋 B/L 출력</button><button class="btn btn-ghost" onclick="closeModal()">닫기</button></div>`);
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" data-moretools="${s.id}|${type}">⚙️ 기타 작업 ▾</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-ghost" onclick="closeModal()">닫기</button>
+    </div>`);
   bindActions();
+}
+
+// 기타 작업 메뉴 (단계 무관 보조 기능들)
+function moreToolsMenu(id, type){
+  openModal(`
+    <div class="modal-head"><h3>⚙️ 기타 작업 — ${id}</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:14px;">단계 진행과 별개로 필요할 때 쓰는 보조 기능입니다.</p>
+      <div class="tool-list">
+        <button class="tool-item" data-cfopenmodal="${id}|${type}"><span class="tool-ico">📋</span><div><b>화주 컨펌</b><br><span class="cell-sub">화주에게 발주 내역 확인받기</span></div></button>
+        <button class="tool-item" data-vfopen="${id}|${type}"><span class="tool-ico">🔍</span><div><b>서류 대조</b><br><span class="cell-sub">컨펌·B/L·인보이스 자동 비교</span></div></button>
+        <button class="tool-item" data-doc="invoice" data-shipid="${id}" data-type="${type}"><span class="tool-ico">📄</span><div><b>인보이스 출력</b><br><span class="cell-sub">건별 인보이스 PDF</span></div></button>
+        <button class="tool-item" data-doc="bl" data-shipid="${id}" data-type="${type}"><span class="tool-ico">📋</span><div><b>B/L 출력</b><br><span class="cell-sub">B/L 문서 PDF</span></div></button>
+        <button class="tool-item tool-danger" data-delship="${id}" data-type="${type}"><span class="tool-ico">🗑</span><div><b>화물 삭제</b><br><span class="cell-sub">이 건을 삭제합니다</span></div></button>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" data-backdetail="${id}|${type}">← 상세로 돌아가기</button></div>`);
+  bindActions();
+}
+
+// 정보 수정 (단계는 그대로, 해당 정보만 수정)
+function editStepInfo(id, type, step){
+  const s = findShip(id, type); if(!s) return;
+  const cfg = STEP_INPUTS[step]; if(!cfg) return;
+  const w = WORKFLOW[step-1];
+  openModal(`
+    <div class="modal-head"><h3>✏️ 정보 수정 — ${cfg.title}</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:14px;">${w.icon} ${w.title} 단계의 정보를 수정합니다. (단계는 그대로 유지)</p>
+      <form id="editForm"><div class="form-grid">
+        ${cfg.fields.map(f=>`<div class="field full"><label>${f.label}</label><input name="${f.k}" type="${f.type||'text'}" value="${s[f.k]&&s[f.k]!==0?s[f.k]:''}" placeholder="${f.ph}"></div>`).join('')}
+      </div></form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-backdetail="${id}|${type}">취소</button>
+      <button class="btn btn-primary" data-editsave="${id}|${type}|${step}">수정 저장</button>
+    </div>`);
+  bindActions();
+}
+function saveEditInfo(id, type, step){
+  const s = findShip(id, type); if(!s) return;
+  const f = document.getElementById('editForm');
+  const cfg = STEP_INPUTS[step];
+  cfg.fields.forEach(fd=>{
+    const val = f[fd.k].value;
+    s[fd.k] = fd.type==='number' ? Number(val)||0 : val;
+  });
+  cloudUpsertShip(s);
+  shipmentDetail(id, type);
+  toast('✏️ 정보가 수정되었습니다.');
 }
 
 /* ====== 워크플로우 단계 진행 ====== */
@@ -2183,6 +2289,11 @@ function bindActions(){
   document.querySelectorAll('[data-wfjump]').forEach(b=> b.onclick = ()=>{ const [id,t,st]=b.dataset.wfjump.split('|'); wfJump(id,t,st); });
   document.querySelectorAll('[data-stepsave]').forEach(b=> b.onclick = ()=>{ const [id,t,st]=b.dataset.stepsave.split('|'); saveStepInput(id,t,Number(st),false); });
   document.querySelectorAll('[data-stepskip]').forEach(b=> b.onclick = ()=>{ const [id,t,st]=b.dataset.stepskip.split('|'); saveStepInput(id,t,Number(st),true); });
+  // 정보 수정 / 기타 작업 / 돌아가기
+  document.querySelectorAll('[data-editstep]').forEach(b=> b.onclick = ()=>{ const [id,t,st]=b.dataset.editstep.split('|'); editStepInfo(id,t,Number(st)); });
+  document.querySelectorAll('[data-editsave]').forEach(b=> b.onclick = ()=>{ const [id,t,st]=b.dataset.editsave.split('|'); saveEditInfo(id,t,Number(st)); });
+  document.querySelectorAll('[data-moretools]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.moretools.split('|'); moreToolsMenu(id,t); });
+  document.querySelectorAll('[data-backdetail]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.backdetail.split('|'); shipmentDetail(id,t); });
   document.querySelectorAll('[data-delship]').forEach(b=> b.onclick = ()=> delShipment(b.dataset.delship, b.dataset.type));
   document.querySelectorAll('[data-doc]').forEach(b=> b.onclick = ()=> printDoc(b.dataset.doc, b.dataset.shipid, b.dataset.type));
   document.querySelectorAll('[data-kakao]').forEach(b=> b.onclick = ()=> kakaoModal(b.dataset.kakao, b.dataset.type));
