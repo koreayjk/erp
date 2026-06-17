@@ -188,6 +188,27 @@
   .portal-chip { border: 1px solid var(--line); background: #fff; border-radius: 18px; padding: 6px 14px; font-size: 12.5px; cursor: pointer; color: var(--ink); font-family: inherit; white-space: nowrap; }
   .portal-chip:hover { border-color: var(--sky); }
   .portal-chip.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  /* ===== 11단계 워크플로우 ===== */
+  .wf-box { background: linear-gradient(135deg,#F4F8FC,#EAF2FA); border:1px solid #C9DCEC; border-radius:12px; padding:16px 18px; }
+  .wf-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; }
+  .wf-head b { color:var(--navy); font-size:15px; }
+  .wf-cur-ico { font-size:18px; }
+  .wf-who { font-size:11px; background:#fff; border:1px solid #C9DCEC; border-radius:12px; padding:3px 10px; color:var(--steel); font-weight:600; }
+  .wf-desc { font-size:12.5px; color:var(--ink-soft); margin:8px 0 14px; line-height:1.5; }
+  .wf-track { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .wf-node { flex:1; display:flex; align-items:center; cursor:pointer; }
+  .wf-node:not(:last-child)::after { content:''; flex:1; height:2px; background:#D0DEEB; margin:0 2px; }
+  .wf-node.done:not(:last-child)::after { background:var(--ok,#2E8B57); }
+  .wf-dot { width:24px; height:24px; border-radius:50%; background:#fff; border:2px solid #D0DEEB; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:var(--ink-soft); flex-shrink:0; transition:.15s; }
+  .wf-node.done .wf-dot { background:var(--ok,#2E8B57); border-color:var(--ok,#2E8B57); color:#fff; }
+  .wf-node.current .wf-dot { background:var(--navy); border-color:var(--navy); color:#fff; transform:scale(1.25); box-shadow:0 2px 8px rgba(11,37,69,.3); }
+  .wf-node:hover .wf-dot { border-color:var(--sky); }
+  .wf-actions { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  @media (max-width:900px){ .wf-dot{width:20px;height:20px;font-size:9px;} .wf-actions{flex-direction:column;} .wf-actions button{width:100%;} }
+  .wf-mini { font-size:12px; font-weight:700; color:var(--navy); }
+  .wf-bar { height:4px; background:#E3EAF0; border-radius:3px; margin-top:4px; overflow:hidden; }
+  .wf-bar-fill { height:100%; background:linear-gradient(90deg,var(--sky),var(--navy)); border-radius:3px; transition:width .3s; }
   /* drag & drop */
   .drop-zone { border:2px dashed var(--sky-light); border-radius:12px; background:linear-gradient(135deg,#F4F9FC,#EAF3FA); padding:28px 20px; text-align:center; cursor:pointer; transition:all 0.18s; }
   .drop-zone:hover, .drop-zone.dragover { border-color:var(--gold); background:#FDF8EE; }
@@ -483,19 +504,19 @@ if(CLOUD){ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
 const DB = {
   shipments: [
     // ===== 대한정밀(주) — 자동차 부품 수출 (3건) =====
-    { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'HMM', booking:'HDMU2501887', bl:'HDMUBSC2501887', container:'HMMU1234567', incoterms:'FOB', commodity:'자동차 엔진 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-08', eta:'2025-06-14', revenue:4200000, cost:3350000, paid:true, blReleased:true, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'' },
-    { id:'EXP-2502', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'OSAKA AUTO PARTS', pol:'부산(KRPUS)', pod:'오사카(JPOSA)', carrier:'고려해운', booking:'KMTC25B1120', bl:'KMTCBSC2502', container:'KMTU3340125', incoterms:'CIF', commodity:'브레이크 패드', qty:'2 x 20GP', status:'arrived', etd:'2025-05-30', eta:'2025-06-05', revenue:3100000, cost:2400000, paid:true, blReleased:true, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'' },
-    { id:'EXP-2503', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'LA MOTORS INC.', pol:'부산(KRPUS)', pod:'로스앤젤레스(USLAX)', carrier:'Maersk', booking:'MAEU25778120', bl:'', container:'', incoterms:'FOB', commodity:'변속기 부품', qty:'1 x 40HC', status:'booking', etd:'2025-06-22', eta:'2025-07-09', revenue:7100000, cost:5900000, paid:false, blReleased:false, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'선적 예약 완료, B/L 발행 대기' },
+    { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'HMM', booking:'HDMU2501887', bl:'HDMUBSC2501887', container:'HMMU1234567', incoterms:'FOB', commodity:'자동차 엔진 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-08', eta:'2025-06-14', revenue:4200000, cost:3350000, paid:true, blReleased:true, workflowStep:3, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'' },
+    { id:'EXP-2502', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'OSAKA AUTO PARTS', pol:'부산(KRPUS)', pod:'오사카(JPOSA)', carrier:'고려해운', booking:'KMTC25B1120', bl:'KMTCBSC2502', container:'KMTU3340125', incoterms:'CIF', commodity:'브레이크 패드', qty:'2 x 20GP', status:'arrived', etd:'2025-05-30', eta:'2025-06-05', revenue:3100000, cost:2400000, paid:true, blReleased:true, workflowStep:5, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'' },
+    { id:'EXP-2503', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'LA MOTORS INC.', pol:'부산(KRPUS)', pod:'로스앤젤레스(USLAX)', carrier:'Maersk', booking:'MAEU25778120', bl:'', container:'', incoterms:'FOB', commodity:'변속기 부품', qty:'1 x 40HC', status:'booking', etd:'2025-06-22', eta:'2025-07-09', revenue:7100000, cost:5900000, paid:false, blReleased:false, workflowStep:7, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'선적 예약 완료, B/L 발행 대기' },
 
     // ===== 그린푸드(주) — 식품 수출 (3건) =====
-    { id:'EXP-2504', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HANOI FOOD IMPORT', pol:'부산(KRPUS)', pod:'하이퐁(VNHPH)', carrier:'SM상선', booking:'SMLM25C0331', bl:'SMLMBSC2504', container:'SMLU7782041', incoterms:'CIF', commodity:'김·건어물', qty:'1 x 20RF', status:'transit', etd:'2025-06-07', eta:'2025-06-13', revenue:2900000, cost:2200000, paid:true, blReleased:true, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'냉장 컨테이너' },
-    { id:'EXP-2505', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HK GOURMET LTD', pol:'부산(KRPUS)', pod:'홍콩(HKHKG)', carrier:'ONE', booking:'ONEY25D5540', bl:'ONEYBSC2505', container:'ONEU9921077', incoterms:'FOB', commodity:'인삼 가공식품', qty:'1 x 20GP', status:'transit', etd:'2025-06-10', eta:'2025-06-16', revenue:3600000, cost:2750000, paid:false, blReleased:true, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'30일 신용 거래' },
-    { id:'EXP-2506', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'SAIGON MART', pol:'인천(KRINC)', pod:'호치민(VNSGN)', carrier:'고려해운', booking:'KMTC25D2231', bl:'', container:'', incoterms:'CIF', commodity:'라면·스낵류', qty:'2 x 40HC', status:'booking', etd:'2025-06-25', eta:'2025-07-02', revenue:5200000, cost:4100000, paid:false, blReleased:false, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'부킹 확정, 선적 준비중' },
+    { id:'EXP-2504', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HANOI FOOD IMPORT', pol:'부산(KRPUS)', pod:'하이퐁(VNHPH)', carrier:'SM상선', booking:'SMLM25C0331', bl:'SMLMBSC2504', container:'SMLU7782041', incoterms:'CIF', commodity:'김·건어물', qty:'1 x 20RF', status:'transit', etd:'2025-06-07', eta:'2025-06-13', revenue:2900000, cost:2200000, paid:true, blReleased:true, workflowStep:9, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'냉장 컨테이너' },
+    { id:'EXP-2505', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HK GOURMET LTD', pol:'부산(KRPUS)', pod:'홍콩(HKHKG)', carrier:'ONE', booking:'ONEY25D5540', bl:'ONEYBSC2505', container:'ONEU9921077', incoterms:'FOB', commodity:'인삼 가공식품', qty:'1 x 20GP', status:'transit', etd:'2025-06-10', eta:'2025-06-16', revenue:3600000, cost:2750000, paid:false, blReleased:true, workflowStep:10, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'30일 신용 거래' },
+    { id:'EXP-2506', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'SAIGON MART', pol:'인천(KRINC)', pod:'호치민(VNSGN)', carrier:'고려해운', booking:'KMTC25D2231', bl:'', container:'', incoterms:'CIF', commodity:'라면·스낵류', qty:'2 x 40HC', status:'booking', etd:'2025-06-25', eta:'2025-07-02', revenue:5200000, cost:4100000, paid:false, blReleased:false, workflowStep:11, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'부킹 확정, 선적 준비중' },
 
     // ===== 한빛전자 — 전자제품 수출 (3건) =====
-    { id:'EXP-2507', type:'export', mode:'sea', shipper:'한빛전자', consignee:'NY ELECTRONICS', pol:'부산(KRPUS)', pod:'뉴욕(USNYC)', carrier:'Maersk', booking:'MAEU25E3390', bl:'MAEUBSC2507', container:'MRKU5567810', incoterms:'FOB', commodity:'LED 디스플레이', qty:'2 x 40HC', status:'transit', etd:'2025-06-05', eta:'2025-06-28', revenue:9800000, cost:7900000, paid:true, blReleased:true, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'고가 화물 · 적하보험 가입' },
-    { id:'EXP-2508', type:'export', mode:'sea', shipper:'한빛전자', consignee:'HAMBURG TECH GMBH', pol:'부산(KRPUS)', pod:'함부르크(DEHAM)', carrier:'HMM', booking:'HDMU25E7745', bl:'HDMUBSC2508', container:'HMMU8830012', incoterms:'CIF', commodity:'반도체 부품', qty:'1 x 20GP', status:'delay', etd:'2025-05-25', eta:'2025-06-20', revenue:6400000, cost:5100000, paid:false, blReleased:true, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'⚠️ 수에즈 운하 우회로 5일 지연' },
-    { id:'EXP-2509', type:'export', mode:'sea', shipper:'한빛전자', consignee:'LA ELECTRONICS INC.', pol:'부산(KRPUS)', pod:'롱비치(USLGB)', carrier:'ONE', booking:'ONEY25E1180', bl:'ONEYBSC2509', container:'ONEU2245518', incoterms:'FOB', commodity:'배터리 모듈', qty:'1 x 40HC', status:'arrived', etd:'2025-05-18', eta:'2025-06-10', revenue:8200000, cost:6600000, paid:true, blReleased:true, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'통관 완료' },
+    { id:'EXP-2507', type:'export', mode:'sea', shipper:'한빛전자', consignee:'NY ELECTRONICS', pol:'부산(KRPUS)', pod:'뉴욕(USNYC)', carrier:'Maersk', booking:'MAEU25E3390', bl:'MAEUBSC2507', container:'MRKU5567810', incoterms:'FOB', commodity:'LED 디스플레이', qty:'2 x 40HC', status:'transit', etd:'2025-06-05', eta:'2025-06-28', revenue:9800000, cost:7900000, paid:true, blReleased:true, workflowStep:2, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'고가 화물 · 적하보험 가입' },
+    { id:'EXP-2508', type:'export', mode:'sea', shipper:'한빛전자', consignee:'HAMBURG TECH GMBH', pol:'부산(KRPUS)', pod:'함부르크(DEHAM)', carrier:'HMM', booking:'HDMU25E7745', bl:'HDMUBSC2508', container:'HMMU8830012', incoterms:'CIF', commodity:'반도체 부품', qty:'1 x 20GP', status:'delay', etd:'2025-05-25', eta:'2025-06-20', revenue:6400000, cost:5100000, paid:false, blReleased:true, workflowStep:6, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'⚠️ 수에즈 운하 우회로 5일 지연' },
+    { id:'EXP-2509', type:'export', mode:'sea', shipper:'한빛전자', consignee:'LA ELECTRONICS INC.', pol:'부산(KRPUS)', pod:'롱비치(USLGB)', carrier:'ONE', booking:'ONEY25E1180', bl:'ONEYBSC2509', container:'ONEU2245518', incoterms:'FOB', commodity:'배터리 모듈', qty:'1 x 40HC', status:'arrived', etd:'2025-05-18', eta:'2025-06-10', revenue:8200000, cost:6600000, paid:true, blReleased:true, workflowStep:4, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, memo:'통관 완료' },
   ],
   imports: [],
   quotes: [
@@ -513,6 +534,26 @@ const DB = {
 const STATUS_MAP = { booking:{label:'부킹',cls:'b-booking'}, sailing:{label:'선적완료',cls:'b-sailing'}, transit:{label:'운송중',cls:'b-transit'}, arrived:{label:'입항',cls:'b-arrived'}, delay:{label:'지연',cls:'b-delay'} };
 const TRACK_STEPS = ['booking','sailing','transit','arrived'];
 const KIND_LABEL = { shipper:'화주', carrier:'선사', customs:'관세사', trucker:'운송사' };
+
+/* ============================================================
+   포워딩 11단계 워크플로우 (친구 실무 흐름)
+   직원이 화물마다 "지금 몇 단계"를 보며 진행
+   ============================================================ */
+const WORKFLOW = [
+  { step:1,  key:'order',     icon:'📩', title:'화주 오더 접수',   desc:'화주가 이메일로 첫 오더 (컨테이너 수, 노선, 날짜, 기간)', who:'화주→포워더', action:'오더 등록 (AI 추출 가능)' },
+  { step:2,  key:'quote',     icon:'💱', title:'선사 견적 작성',   desc:'보유 데이터로 선사 1~2개 선정 → 가격·날짜 가능여부', who:'포워더', action:'견적 작성' },
+  { step:3,  key:'quoteSent', icon:'📤', title:'화주에게 견적 발송', desc:'선사별 가격·일정을 화주에게 회신', who:'포워더→화주', action:'견적 메일 발송' },
+  { step:4,  key:'confirmed', icon:'✅', title:'화주 선택·컨펌',    desc:'화주가 선사 1개 선택 → 오더 확정 (가격 FIX)', who:'화주', action:'선택 선사 확정' },
+  { step:5,  key:'booking',   icon:'🚢', title:'선사 부킹',        desc:'선사 홈페이지에서 그 날짜·선박 찾아 부킹 예약 (S/R)', who:'포워더→선사', action:'선사 부킹하기' },
+  { step:6,  key:'bkgNo',     icon:'🔢', title:'부킹번호 확정',     desc:'선사가 검토 후 이메일로 부킹번호 부여 (부킹 확정)', who:'선사→포워더', action:'부킹번호 입력' },
+  { step:7,  key:'si',        icon:'📋', title:'S/I 제출',         desc:'화주 화물 상세를 선사 포털에 제출 (HS코드·VGM·B/L정보)', who:'포워더→선사', action:'S/I 정보 정리·제출' },
+  { step:8,  key:'carrierInv',icon:'🧾', title:'선사 인보이스·지불', desc:'선사가 인보이스 발행 → 포워더가 선사에 먼저 지불', who:'선사↔포워더', action:'선사 비용 지불 기록' },
+  { step:9,  key:'bl',        icon:'📜', title:'선적·B/L 수령',    desc:'선적 완료 → 선사가 B/L을 포워더에게 발행', who:'선사→포워더', action:'B/L 수령 입력' },
+  { step:10, key:'blToShip',  icon:'📦', title:'B/L 전달·트래킹',   desc:'화주에게 B/L 전달 → 운송 추적 시작', who:'포워더→화주', action:'B/L 전달·추적' },
+  { step:11, key:'billed',    icon:'💰', title:'월말 청구·수금',    desc:'그 달 건 월말 일괄 청구 → 화주는 익월 지불', who:'포워더↔화주', action:'월말 통합 청구' },
+];
+function wfStepOf(s){ return s.workflowStep || 1; }
+
 
 const $ = (s, el=document) => el.querySelector(s);
 const won = n => '₩' + (n||0).toLocaleString('ko-KR');
@@ -697,7 +738,7 @@ function viewShipmentList(type){
       <select id="statusFilter" data-type="${type}"><option value="">전체 상태</option><option value="booking">부킹</option><option value="sailing">선적완료</option><option value="transit">운송중</option><option value="arrived">입항</option><option value="delay">지연</option></select>
     </div>
     <div class="panel-body"><table>
-      <thead><tr><th>건 번호</th><th>화주 / 수하인</th><th>노선</th><th>선사 / B/L</th><th>수량</th><th>상태</th><th>손익</th><th></th></tr></thead>
+      <thead><tr><th>건 번호</th><th>화주 / 수하인</th><th>노선</th><th>선사 / B/L</th><th>진행 단계</th><th>수량</th><th>손익</th><th></th></tr></thead>
       <tbody id="shipRows">${renderShipRows(list, type)}</tbody>
     </table></div>
   </div>`;
@@ -707,7 +748,10 @@ function renderShipRows(list, type){
   return list.map(s=>{
     const profit = s.revenue - s.cost;
     const cf = s.confirmStatus && s.confirmStatus!=='confirmed' ? `<br><span class="cell-sub" style="color:${(CONFIRM_LABEL[s.confirmStatus]||{}).color||'#888'};font-weight:600">${(CONFIRM_LABEL[s.confirmStatus]||{}).label||''}</span>` : '';
-    return `<tr><td class="mono">${s.id}</td><td><div class="cell-strong">${s.type==='export'?s.shipper:s.consignee}</div><div class="cell-sub">${s.type==='export'?s.consignee:s.shipper}</div></td><td class="cell-sub">${s.pol}<br>→ ${s.pod}</td><td>${s.carrier}<br><span class="cell-sub mono">${s.bl||'B/L 대기'}</span></td><td class="cell-sub">${s.qty}${cf}</td><td><span class="badge ${STATUS_MAP[s.status].cls}">${STATUS_MAP[s.status].label}</span></td><td><span style="font-weight:700;color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span><br><span class="cell-sub">매출 ${won(s.revenue)}</span></td><td><span class="row-link" data-detail="${s.id}" data-type="${type}">상세 →</span></td></tr>`;
+    const wf = WORKFLOW[wfStepOf(s)-1] || WORKFLOW[0];
+    const pct = Math.round(wfStepOf(s)/11*100);
+    const wfBadge = `<div class="wf-mini">${wf.icon} <b>${wfStepOf(s)}/11</b></div><div class="cell-sub" style="font-size:10.5px">${wf.title}</div><div class="wf-bar"><div class="wf-bar-fill" style="width:${pct}%"></div></div>`;
+    return `<tr><td class="mono">${s.id}</td><td><div class="cell-strong">${s.type==='export'?s.shipper:s.consignee}</div><div class="cell-sub">${s.type==='export'?s.consignee:s.shipper}</div></td><td class="cell-sub">${s.pol}<br>→ ${s.pod}</td><td>${s.carrier}<br><span class="cell-sub mono">${s.bl||'B/L 대기'}</span></td><td style="min-width:120px">${wfBadge}</td><td class="cell-sub">${s.qty}${cf}</td><td><span style="font-weight:700;color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span><br><span class="cell-sub">매출 ${won(s.revenue)}</span></td><td><span class="row-link" data-detail="${s.id}" data-type="${type}">상세 →</span></td></tr>`;
   }).join('');
 }
 
@@ -1041,6 +1085,21 @@ function viewReceivable(){
       <p>한 화주의 그 달 오더를 모두 모아 <b>월말에 한 번에 청구</b>합니다. 건별로 청구하지 않습니다. 화주는 청구서를 받고 <b>다음 달 말</b>에 결제합니다. (예: 6월분 → 6월말 청구 → 7월말 입금)</p>
     </div>
   </div>
+
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-head">
+      <div class="panel-title">📊 세무사용 회계자료 내보내기</div>
+      <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">
+        <select id="acctMonth" style="padding:7px 10px;border:1px solid var(--line);border-radius:7px;font-size:12.5px;font-family:inherit;">
+          ${[...new Set([...DB.shipments,...DB.imports].map(s=>s.billingMonth||(s.etd||'').slice(0,7)).filter(Boolean))].sort().reverse().map(m=>`<option value="${m}">${m}월</option>`).join('')}
+        </select>
+        <button class="btn btn-primary btn-sm" data-acctexcel="1">📥 엑셀 다운로드</button>
+      </div>
+    </div>
+    <div class="panel-body" style="padding:14px 18px;">
+      <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;">세무사에게 보낼 <b>월별 거래 자료</b>를 엑셀로 만듭니다. 매출(화주별 청구), 매입(선사 지급), 손익이 시트별로 정리됩니다. 매달 자료 정리하던 수고가 사라집니다. <span style="color:var(--ink-faint)">※ 회계·세금계산서 발행은 세무사가 진행, SeaFlow는 자료만 제공합니다.</span></p>
+    </div>
+  </div>
   <div class="panel">
     <div class="panel-head"><div class="panel-title">화주별 월 청구 현황 <span class="tag">${groupList.length}개 청구 그룹</span></div></div>
     <div class="panel-body"><table>
@@ -1069,6 +1128,67 @@ function viewReceivable(){
       }).join('')}</tbody>
     </table></div>
   </div>`;
+}
+
+// 세무사용 회계자료 엑셀 내보내기
+function exportAccountingExcel(month){
+  if(!month){ toast('월을 선택하세요.'); return; }
+  if(typeof XLSX==='undefined'){ toast('엑셀 모듈 로딩 중입니다. 잠시 후 다시.'); return; }
+  const all = [...DB.shipments, ...DB.imports];
+  const items = all.filter(s=>(s.billingMonth||(s.etd||'').slice(0,7))===month);
+  if(!items.length){ toast(`${month}월 거래 자료가 없습니다.`); return; }
+
+  // 시트1: 매출 (화주별 청구)
+  const salesRows = items.map(s=>({
+    '청구월': month,
+    '건번호': s.id,
+    '구분': s.type==='export'?'수출':'수입',
+    '거래처(화주)': s.type==='export'?s.shipper:s.consignee,
+    '품목': s.commodity,
+    '노선': `${(s.pol||'').split('(')[0]}→${(s.pod||'').split('(')[0]}`,
+    '선사': s.carrier,
+    '매출액(원)': s.revenue||0,
+    '입금여부': s.paid?'입금완료':'미입금',
+    'ETD': s.etd, 'ETA': s.eta
+  }));
+  const salesTotal = items.reduce((a,s)=>a+(s.revenue||0),0);
+  salesRows.push({ '청구월':'', '건번호':'', '구분':'', '거래처(화주)':'', '품목':'', '노선':'', '선사':'합계', '매출액(원)':salesTotal, '입금여부':'', 'ETD':'', 'ETA':'' });
+
+  // 시트2: 매입 (선사 지급 = 원가)
+  const costRows = items.map(s=>({
+    '청구월': month,
+    '건번호': s.id,
+    '선사(매입처)': s.carrier,
+    '품목': s.commodity,
+    '노선': `${(s.pol||'').split('(')[0]}→${(s.pod||'').split('(')[0]}`,
+    '매입액(원가,원)': s.cost||0,
+  }));
+  const costTotal = items.reduce((a,s)=>a+(s.cost||0),0);
+  costRows.push({ '청구월':'', '건번호':'', '선사(매입처)':'합계', '품목':'', '노선':'', '매입액(원가,원)':costTotal });
+
+  // 시트3: 손익 요약 (화주별)
+  const byCustomer = {};
+  items.forEach(s=>{ const c=s.type==='export'?s.shipper:s.consignee; if(!byCustomer[c])byCustomer[c]={rev:0,cost:0,cnt:0}; byCustomer[c].rev+=s.revenue||0; byCustomer[c].cost+=s.cost||0; byCustomer[c].cnt++; });
+  const summaryRows = Object.entries(byCustomer).map(([c,v])=>({
+    '거래처(화주)': c, '건수': v.cnt, '매출(원)': v.rev, '매입(원가,원)': v.cost, '영업이익(원)': v.rev-v.cost, '이익률': v.rev?Math.round((v.rev-v.cost)/v.rev*100)+'%':'-'
+  }));
+  summaryRows.push({ '거래처(화주)':'전체 합계', '건수':items.length, '매출(원)':salesTotal, '매입(원가,원)':costTotal, '영업이익(원)':salesTotal-costTotal, '이익률': salesTotal?Math.round((salesTotal-costTotal)/salesTotal*100)+'%':'-' });
+
+  // 워크북 생성
+  const wb = XLSX.utils.book_new();
+  const ws1 = XLSX.utils.json_to_sheet(salesRows);
+  const ws2 = XLSX.utils.json_to_sheet(costRows);
+  const ws3 = XLSX.utils.json_to_sheet(summaryRows);
+  // 컬럼 너비
+  ws1['!cols'] = [{wch:9},{wch:11},{wch:6},{wch:16},{wch:16},{wch:16},{wch:10},{wch:13},{wch:9},{wch:11},{wch:11}];
+  ws2['!cols'] = [{wch:9},{wch:11},{wch:12},{wch:16},{wch:16},{wch:15}];
+  ws3['!cols'] = [{wch:16},{wch:7},{wch:13},{wch:14},{wch:14},{wch:8}];
+  XLSX.utils.book_append_sheet(wb, ws3, '손익요약');
+  XLSX.utils.book_append_sheet(wb, ws1, '매출(화주별)');
+  XLSX.utils.book_append_sheet(wb, ws2, '매입(선사지급)');
+
+  XLSX.writeFile(wb, `회계자료_${month}_SeaFlow.xlsx`);
+  toast(`📥 ${month}월 회계자료 엑셀 다운로드 완료! 세무사에게 전달하세요.`);
 }
 
 // 월말 통합 청구서 발행
@@ -1670,10 +1790,27 @@ function shipmentDetail(id, type){
   const s = list.find(x=>x.id===id); if(!s) return;
   const profit = s.revenue-s.cost;
   const idx = TRACK_STEPS.indexOf(s.status==='delay'?'transit':s.status);
+  const cur = wfStepOf(s);
+  const curStep = WORKFLOW[cur-1] || WORKFLOW[0];
   openModal(`
     <div class="modal-head"><h3>${s.id} · ${s.type==='export'?'수출':'수입'} 상세</h3><button class="modal-x" onclick="closeModal()">×</button></div>
     <div class="modal-body">
-      <div class="track-flow" style="margin-top:0">${TRACK_STEPS.map((step,i)=>`<div class="track-step ${i<idx?'done':i===idx?'current':''}"><div class="track-dot">${i<idx?'✓':i+1}</div><div class="track-label">${STATUS_MAP[step].label}</div></div>`).join('')}</div>
+      <!-- 11단계 워크플로우 -->
+      <div class="wf-box">
+        <div class="wf-head">
+          <div><span class="wf-cur-ico">${curStep.icon}</span> <b>STEP ${cur}/11 · ${curStep.title}</b></div>
+          <span class="wf-who">${curStep.who}</span>
+        </div>
+        <div class="wf-desc">${curStep.desc}</div>
+        <div class="wf-track">${WORKFLOW.map(w=>`
+          <div class="wf-node ${w.step<cur?'done':w.step===cur?'current':''}" data-wfjump="${s.id}|${type}|${w.step}" title="${w.title}">
+            <div class="wf-dot">${w.step<cur?'✓':w.step}</div>
+          </div>`).join('')}</div>
+        <div class="wf-actions">
+          ${cur>1?`<button class="btn btn-ghost btn-sm" data-wfback="${s.id}|${type}">← 이전 단계</button>`:'<span></span>'}
+          ${cur<11?`<button class="btn btn-primary btn-sm" data-wfnext="${s.id}|${type}">${curStep.action} 완료 → 다음 단계</button>`:'<span style="color:var(--ok);font-weight:700">✅ 전체 완료</span>'}
+        </div>
+      </div>
       <div class="detail-grid" style="margin-top:18px">
         <div class="detail-cell"><div class="k">화주 (Shipper)</div><div class="v">${s.shipper}</div></div>
         <div class="detail-cell"><div class="k">수하인 (Consignee)</div><div class="v">${s.consignee}</div></div>
@@ -1693,7 +1830,62 @@ function shipmentDetail(id, type){
   bindActions();
 }
 
-/* ====== 미수금 · B/L 발급 처리 ====== */
+/* ====== 워크플로우 단계 진행 ====== */
+function wfNext(id, type){
+  const s = findShip(id, type); if(!s) return;
+  const cur = wfStepOf(s);
+  if(cur>=11) return;
+  s.workflowStep = cur+1;
+  // 단계에 따라 상태도 자동 연동
+  syncStatusFromStep(s);
+  cloudUpsertShip(s);
+  shipmentDetail(id, type); // 모달 새로고침
+  const next = WORKFLOW[s.workflowStep-1];
+  toast(`✅ STEP ${cur} 완료 → STEP ${s.workflowStep}: ${next.title}`);
+  // 특정 단계는 관련 화면/도움 안내
+  wfStepHint(s, type);
+}
+function wfBack(id, type){
+  const s = findShip(id, type); if(!s) return;
+  const cur = wfStepOf(s);
+  if(cur<=1) return;
+  s.workflowStep = cur-1;
+  syncStatusFromStep(s);
+  cloudUpsertShip(s);
+  shipmentDetail(id, type);
+  toast(`← STEP ${s.workflowStep}로 되돌림`);
+}
+function wfJump(id, type, step){
+  const s = findShip(id, type); if(!s) return;
+  s.workflowStep = Number(step);
+  syncStatusFromStep(s);
+  cloudUpsertShip(s);
+  shipmentDetail(id, type);
+}
+// 워크플로우 단계 → 화물 상태 자동 매핑
+function syncStatusFromStep(s){
+  const st = s.workflowStep;
+  if(st<=6) s.status = 'booking';        // 1~6: 부킹 전후
+  else if(st<=8) s.status = 'booking';   // 7~8: S/I·인보이스
+  else if(st===9) s.status = 'sailing';  // 9: 선적·B/L
+  else if(st===10) s.status = 'transit'; // 10: 운송중
+  else if(st===11) s.status = 'arrived'; // 11: 도착·청구
+  // 컨펌/청구 연동
+  if(st>=4 && s.confirmStatus==='pending') s.confirmStatus='confirmed';
+  if(st>=11) s.billed = true;
+}
+// 단계별 도움 안내 (관련 기능으로 유도)
+function wfStepHint(s, type){
+  const st = s.workflowStep;
+  const hints = {
+    5: '🚢 선사 부킹: "스케줄 조회" 화면에서 선사 페이지로 이동해 부킹하세요.',
+    7: '📋 S/I 제출: 화주 컨펌 내역(품목·수량·중량)을 선사 포털에 입력하세요.',
+    9: '📜 B/L 수령: 받은 B/L 번호를 화물 정보에 입력하세요.',
+    11:'💰 월말 청구: "월말 청구·미수금"에서 통합 청구서를 발행하세요.',
+  };
+  if(hints[st]) setTimeout(()=>toast(hints[st]), 1200);
+}
+
 function findShip(id, type){ const arr = type==='export'?DB.shipments:DB.imports; return arr.find(s=>s.id===id); }
 function markPaid(id, type){
   const s = findShip(id, type); if(!s) return;
@@ -1921,6 +2113,10 @@ function bindActions(){
   document.querySelectorAll('[data-vfupload]').forEach(b=> b.onclick = ()=>{ const [dt,id]=b.dataset.vfupload.split('|'); verifyUpload(dt,id); });
   document.querySelectorAll('[data-vfpdf]').forEach(b=> b.onclick = ()=> verifyPDF(b.dataset.vfpdf));
   document.querySelectorAll('[data-detail]').forEach(b=> b.onclick = ()=> shipmentDetail(b.dataset.detail, b.dataset.type));
+  // 워크플로우 단계 진행
+  document.querySelectorAll('[data-wfnext]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.wfnext.split('|'); wfNext(id,t); });
+  document.querySelectorAll('[data-wfback]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.wfback.split('|'); wfBack(id,t); });
+  document.querySelectorAll('[data-wfjump]').forEach(b=> b.onclick = ()=>{ const [id,t,st]=b.dataset.wfjump.split('|'); wfJump(id,t,st); });
   document.querySelectorAll('[data-delship]').forEach(b=> b.onclick = ()=> delShipment(b.dataset.delship, b.dataset.type));
   document.querySelectorAll('[data-doc]').forEach(b=> b.onclick = ()=> printDoc(b.dataset.doc, b.dataset.shipid, b.dataset.type));
   document.querySelectorAll('[data-kakao]').forEach(b=> b.onclick = ()=> kakaoModal(b.dataset.kakao, b.dataset.type));
@@ -1936,6 +2132,8 @@ function bindActions(){
   document.querySelectorAll('[data-billgroup]').forEach(b=> b.onclick = ()=>{ const [c,m]=b.dataset.billgroup.split('|'); billGroup(c,m); });
   document.querySelectorAll('[data-paygroup]').forEach(b=> b.onclick = ()=>{ const [c,m]=b.dataset.paygroup.split('|'); payGroup(c,m); });
   document.querySelectorAll('[data-billview]').forEach(b=> b.onclick = ()=>{ const [c,m]=b.dataset.billview.split('|'); billView(c,m); });
+  // 세무사용 회계자료 내보내기
+  document.querySelectorAll('[data-acctexcel]').forEach(b=> b.onclick = ()=>{ const m=$('#acctMonth')?.value; exportAccountingExcel(m); });
   // 견적 관리
   document.querySelectorAll('[data-newquote]').forEach(b=> b.onclick = ()=> newQuoteModal());
   document.querySelectorAll('[data-savequote]').forEach(b=> b.onclick = ()=> saveQuote());
