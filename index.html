@@ -1963,6 +1963,64 @@ function saveEditInfo(id, type, step){
   toast('✏️ 정보가 수정되었습니다.');
 }
 
+// 화물에서 바로 견적 작성 (화물 정보 자동 채움 → 선사·운임만 입력)
+function quoteFromShip(id, type){
+  const s = findShip(id, type); if(!s) return;
+  const carriers = DB.partners.filter(p=>p.kind==='carrier');
+  openModal(`
+    <div class="modal-head"><h3>💱 견적 작성 — ${s.id}</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <div class="ai-result-banner" style="background:linear-gradient(135deg,#EAF2FB,#DCEBF8);border-color:#A9CCE8;margin-bottom:16px;">
+        <span class="ico">📦</span>
+        <div><b>${s.type==='export'?s.shipper:s.consignee} · ${s.commodity}</b><br>
+        <span style="font-size:12px;color:var(--ink-soft)">${s.pol} → ${s.pod} · ${s.qty}${s.etd?` · 희망출항 ${s.etd}`:''}</span><br>
+        <span style="font-size:11.5px;color:var(--steel)">↑ 화물 정보가 자동 입력됐습니다. 선사별 운임만 넣으세요.</span></div>
+      </div>
+      <form id="qsForm"><div class="form-grid">
+        <div class="form-section-label">선사별 운임 (선사에 문의한 운임을 입력)</div>
+        <div class="field"><label>선사 1 <span class="req">*</span></label><input list="qsCar" name="c1n" placeholder="고려해운"></div>
+        <div class="field"><label>운임 1 (₩) <span class="req">*</span></label><input type="number" name="c1p" placeholder="4200000"></div>
+        <div class="field"><label>출항/T.T 1</label><input name="c1t" placeholder="예: 6/20 출항, 5일"></div>
+        <div class="field"><label></label><span></span></div>
+        <div class="field"><label>선사 2</label><input list="qsCar" name="c2n" placeholder="HMM"></div>
+        <div class="field"><label>운임 2 (₩)</label><input type="number" name="c2p" placeholder="4500000"></div>
+        <div class="field"><label>출항/T.T 2</label><input name="c2t" placeholder="예: 6/22 출항, 4일"></div>
+        <div class="field"><label></label><span></span></div>
+        <div class="field"><label>선사 3 (선택)</label><input list="qsCar" name="c3n" placeholder="ONE"></div>
+        <div class="field"><label>운임 3 (₩)</label><input type="number" name="c3p"></div>
+        <div class="field"><label>출항/T.T 3</label><input name="c3t"></div>
+        <datalist id="qsCar">${carriers.map(c=>`<option value="${c.name}">`).join('')}<option value="HMM"><option value="ONE"><option value="Maersk"><option value="고려해운"><option value="SM상선"></datalist>
+      </div></form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-backdetail="${id}|${type}">취소</button>
+      <button class="btn btn-primary" data-qssave="${id}|${type}">💾 견적 저장 + 화주 메일 작성</button>
+    </div>`);
+  bindActions();
+}
+function saveQuoteFromShip(id, type){
+  const s = findShip(id, type); if(!s) return;
+  const f = document.getElementById('qsForm');
+  const cs = [];
+  [['c1n','c1p','c1t'],['c2n','c2p','c2t'],['c3n','c3p','c3t']].forEach(([n,p,t])=>{
+    if(f[n].value && f[p].value) cs.push({ name:f[n].value, price:Number(f[p].value), tt:f[t].value||'' });
+  });
+  if(cs.length<1){ toast('⚠ 선사 운임을 최소 1개 입력하세요.'); return; }
+  // 화물에 견적 정보 저장
+  s.quoteCarriers = cs;
+  // 견적 메일 생성
+  const ship = DB.partners.find(p=>p.name===(type==='export'?s.shipper:s.consignee)) || {};
+  const lines = cs.map(c=>`· ${c.name}: ₩${c.price.toLocaleString()}${c.tt?` (${c.tt})`:''}`).join('\n');
+  const subj = `[견적] ${s.pol.split('(')[0]}→${s.pod.split('(')[0]} ${s.commodity} 운임 견적`;
+  const body = `${ship.manager||s.shipper} 님 안녕하세요. SeaFlow Forwarding입니다.\n\n요청하신 화물의 선사별 운임 견적입니다.\n\n· 노선: ${s.pol} → ${s.pod}\n· 품목: ${s.commodity} / ${s.qty}\n\n[선사별 견적]\n${lines}\n\n위 선사 중 하나를 선택해 회신 주시면 해당 선사로 부킹 진행하겠습니다. 감사합니다.\n\nSeaFlow Forwarding`;
+  cloudUpsertShip(s);
+  closeModal();
+  // 메일 열기
+  window.open(`mailto:${ship.email||''}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`,'_blank');
+  shipmentDetail(id, type);
+  toast(`💱 견적 저장 + 메일 작성됨. 발송 후 "이 단계 완료"를 누르세요.`);
+}
+
 // 화물 정보로 화주에게 견적 메일
 function quoteMailFromShip(id, type){
   const s = findShip(id, type); if(!s) return;
@@ -1990,7 +2048,7 @@ const STEP_INPUTS = {
 function stepActionBtn(s, type){
   const cur = wfStepOf(s);
   const A = {
-    1: { label:'💱 견적 작성하기', act:`data-gostep="quote"`, note:'선사 운임 비교 견적 생성 → 화주 발송' },
+    1: { label:'💱 견적 작성하기', act:`data-quotefromship="${s.id}|${type}"`, note:'화물 정보로 선사별 운임 견적 작성 → 화주 발송' },
     2: { label:'📋 화주 컨펌 받기', act:`data-cfopenmodal="${s.id}|${type}"`, note:'화주에게 발주 내역 확인 + 정보 입력' },
     3: { label:'🚢 스케줄 조회·선사 부킹', act:`data-gostep="schedule"`, note:'선사 페이지에서 S/R 제출·부킹' },
     4: { label:'🔍 서류 대조 (S/I 확인)', act:`data-vfopen="${s.id}|${type}"`, note:'화주서류·B/L·인보이스 대조 후 S/I 제출' },
@@ -2352,6 +2410,9 @@ function bindActions(){
   });
   // 단계별 작업: 견적 메일 (화물 정보로)
   document.querySelectorAll('[data-quotemailship]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.quotemailship.split('|'); quoteMailFromShip(id,t); });
+  // 화물에서 바로 견적 작성
+  document.querySelectorAll('[data-quotefromship]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.quotefromship.split('|'); quoteFromShip(id,t); });
+  document.querySelectorAll('[data-qssave]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.qssave.split('|'); saveQuoteFromShip(id,t); });
   document.querySelectorAll('[data-delship]').forEach(b=> b.onclick = ()=> delShipment(b.dataset.delship, b.dataset.type));
   document.querySelectorAll('[data-doc]').forEach(b=> b.onclick = ()=> printDoc(b.dataset.doc, b.dataset.shipid, b.dataset.type));
   document.querySelectorAll('[data-kakao]').forEach(b=> b.onclick = ()=> kakaoModal(b.dataset.kakao, b.dataset.type));
