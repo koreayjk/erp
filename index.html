@@ -241,6 +241,23 @@
   .ai-cell { width:100%; min-width:80px; border:1px solid transparent; background:#FFFDF5; border-radius:5px; padding:6px 7px; font-size:12px; font-family:inherit; }
   .ai-cell:focus { border-color:var(--sky); background:#fff; outline:none; }
   .ai-row-chk { width:16px; height:16px; cursor:pointer; }
+
+  /* ===== 담당 직원 / 권한 ===== */
+  .staff-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:12px 16px; }
+  .staff-bar-left { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .staff-bar-label { font-size:13px; font-weight:700; color:var(--navy); }
+  .staff-select { padding:7px 12px; border:1.5px solid var(--sky); border-radius:8px; font-size:13px; font-family:inherit; font-weight:600; color:var(--navy); background:#F4F9FD; }
+  .staff-mine { font-size:11.5px; background:var(--sky); background:#3A7CA51a; color:var(--steel); padding:4px 10px; border-radius:12px; font-weight:600; }
+  .staff-bar-right { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .deleg-chip { border:1px solid var(--line); background:#fff; border-radius:14px; padding:5px 11px; font-size:11.5px; cursor:pointer; font-family:inherit; color:var(--ink-soft); }
+  .deleg-chip:hover { border-color:var(--gold); }
+  .deleg-chip.on { background:#2E8B5715; border-color:var(--ok,#2E8B57); color:var(--ok,#2E8B57); font-weight:700; }
+  .staff-viewall { font-size:12px; color:var(--ink-soft); cursor:pointer; display:flex; align-items:center; gap:5px; }
+  .staff-notice { padding:0 16px 12px; font-size:11.5px; color:var(--ink-soft); line-height:1.5; }
+  .staff-tag { display:inline-block; font-size:10.5px; background:#EEF1F4; color:var(--ink-soft); padding:2px 8px; border-radius:10px; font-weight:600; white-space:nowrap; }
+  .staff-tag.mine { background:#3A7CA51a; color:var(--steel); }
+  .row-locked { background:#FAFAFA; }
+  .row-locked .cell-strong { color:var(--ink-soft); }
   .now-back { display:block; width:100%; margin-top:8px; background:transparent; border:none; color:rgba(255,255,255,.6); font-size:11.5px; cursor:pointer; padding:4px; }
   .now-back:hover { color:#fff; }
   .now-done { font-size:15px; font-weight:700; text-align:center; padding:8px; }
@@ -548,25 +565,32 @@ const CLOUD = !!(SUPABASE_URL && SUPABASE_KEY && window.supabase);
 if(CLOUD){ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
 
 const DB = {
+  // 담당 직원 (실무: 직원마다 화주 몇 개씩 담당)
+  staff: [
+    { id:'S1', name:'김민지', role:'담당', shippers:['대한정밀(주)','그린푸드(주)'] },
+    { id:'S2', name:'이준호', role:'담당', shippers:['한빛전자','금호미쓰이화학'] },
+    { id:'S3', name:'박서연', role:'담당', shippers:['MS CHEM'] },
+    { id:'ADMIN', name:'관리자(사장)', role:'admin', shippers:[] },
+  ],
   shipments: [
     // ===== 실제 자료 기반 샘플 (부킹장·이메일) =====
-    { id:'EXP-2510', type:'export', mode:'sea', customer:'금호미쓰이화학', shipperName:'유니드', shipper:'금호미쓰이화학', consignee:'NHAVA SHEVA IMPORTER', pol:'광양(KRKAN)', pod:'NHAVA SHEVA(INNSA)', carrier:'HMM', booking:'SELA12192700', vessel:'HMM DIAMOND 0010W', docCls:'6/26 11:00', cargoCls:'6/27', pickupYard:'E-TRANS', inYard:'KIT(06277033)', ts:'NINGBO', destTerminal:'NHAVA SHEVA', bl:'', container:'', weight:0, incoterms:'FOB', commodity:'PH (화학품)', qty:'20RF x 5 (-20도)', status:'booking', etd:'2026-06-29', eta:'2026-07-24', revenue:8500000, cost:0, paid:false, blReleased:false, workflowStep:3, billingMonth:'2026-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', memo:'냉동 -20도 / 도착 최대 10~14일 지연 가능 / T/S 닝보' },
-    { id:'EXP-2511', type:'export', mode:'sea', customer:'MS CHEM', shipperName:'MS CHEM INTERNATIONAL', shipper:'MS CHEM', consignee:'SHANGHAI CHEM CO.', pol:'부산(KRPUS)', pod:'상해(CNSHA)', carrier:'ONE', booking:'SELGB0492600', vessel:'MARIA C 0095S', docCls:'6/19 14:00', cargoCls:'6/23', pickupYard:'', inYard:'', ts:'', destTerminal:'SIPG WAIGAOQIAO', bl:'', container:'', weight:0, incoterms:'FOB', commodity:'화학 원료', qty:'1 x 20GP', status:'booking', etd:'2026-06-25', eta:'2026-06-27', revenue:1800000, cost:0, paid:false, blReleased:false, workflowStep:2, billingMonth:'2026-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', memo:'화주 요청으로 모선 여러 번 변경 (IRENES RALLY→PHOEBE→MARIA C). 작업일 협의중' },
+    { id:'EXP-2510', type:'export', mode:'sea', customer:'금호미쓰이화학', shipperName:'유니드', shipper:'금호미쓰이화학', consignee:'NHAVA SHEVA IMPORTER', pol:'광양(KRKAN)', pod:'NHAVA SHEVA(INNSA)', carrier:'HMM', booking:'SELA12192700', vessel:'HMM DIAMOND 0010W', docCls:'6/26 11:00', cargoCls:'6/27', pickupYard:'E-TRANS', inYard:'KIT(06277033)', ts:'NINGBO', destTerminal:'NHAVA SHEVA', bl:'', container:'', weight:0, incoterms:'FOB', commodity:'PH (화학품)', qty:'20RF x 5 (-20도)', status:'booking', etd:'2026-06-29', eta:'2026-07-24', revenue:8500000, cost:0, paid:false, blReleased:false, workflowStep:3, billingMonth:'2026-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', staff:'S2', memo:'냉동 -20도 / 도착 최대 10~14일 지연 가능 / T/S 닝보' },
+    { id:'EXP-2511', type:'export', mode:'sea', customer:'MS CHEM', shipperName:'MS CHEM INTERNATIONAL', shipper:'MS CHEM', consignee:'SHANGHAI CHEM CO.', pol:'부산(KRPUS)', pod:'상해(CNSHA)', carrier:'ONE', booking:'SELGB0492600', vessel:'MARIA C 0095S', docCls:'6/19 14:00', cargoCls:'6/23', pickupYard:'', inYard:'', ts:'', destTerminal:'SIPG WAIGAOQIAO', bl:'', container:'', weight:0, incoterms:'FOB', commodity:'화학 원료', qty:'1 x 20GP', status:'booking', etd:'2026-06-25', eta:'2026-06-27', revenue:1800000, cost:0, paid:false, blReleased:false, workflowStep:2, billingMonth:'2026-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', staff:'S3', memo:'화주 요청으로 모선 여러 번 변경 (IRENES RALLY→PHOEBE→MARIA C). 작업일 협의중' },
 
     // ===== 대한정밀(주) — 자동차 부품 수출 (3건) =====
-    { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'고려해운', booking:'KMTC25B0887', bl:'KMTCBSC2501', container:'KMTU1234567', incoterms:'FOB', commodity:'자동차 엔진 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-08', eta:'2025-06-14', revenue:4200000, cost:3350000, paid:false, blReleased:true, workflowStep:6, billingMonth:'2025-06', billed:false, invoiceFromCarrier:3350000, confirmStatus:'confirmed', memo:'' },
-    { id:'EXP-2502', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'OSAKA AUTO PARTS', pol:'부산(KRPUS)', pod:'오사카(JPOSA)', carrier:'HMM', booking:'HDMU25B1120', bl:'', container:'HMMU3340125', incoterms:'CIF', commodity:'브레이크 패드', qty:'2 x 20GP', status:'booking', etd:'2025-06-18', eta:'2025-06-24', revenue:3100000, cost:0, paid:false, blReleased:false, workflowStep:4, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', memo:'' },
-    { id:'EXP-2503', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'LA MOTORS INC.', pol:'부산(KRPUS)', pod:'로스앤젤레스(USLAX)', carrier:'', booking:'', bl:'', container:'', incoterms:'FOB', commodity:'변속기 부품', qty:'1 x 40HC', status:'booking', etd:'2025-06-22', eta:'', revenue:0, cost:0, paid:false, blReleased:false, workflowStep:1, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'pending', memo:'화주 오더 접수, 견적 작성중' },
+    { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'고려해운', booking:'KMTC25B0887', bl:'KMTCBSC2501', container:'KMTU1234567', incoterms:'FOB', commodity:'자동차 엔진 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-08', eta:'2025-06-14', revenue:4200000, cost:3350000, paid:false, blReleased:true, workflowStep:6, billingMonth:'2025-06', billed:false, invoiceFromCarrier:3350000, confirmStatus:'confirmed', staff:'S1', memo:'' },
+    { id:'EXP-2502', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'OSAKA AUTO PARTS', pol:'부산(KRPUS)', pod:'오사카(JPOSA)', carrier:'HMM', booking:'HDMU25B1120', bl:'', container:'HMMU3340125', incoterms:'CIF', commodity:'브레이크 패드', qty:'2 x 20GP', status:'booking', etd:'2025-06-18', eta:'2025-06-24', revenue:3100000, cost:0, paid:false, blReleased:false, workflowStep:4, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', staff:'S1', memo:'' },
+    { id:'EXP-2503', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'LA MOTORS INC.', pol:'부산(KRPUS)', pod:'로스앤젤레스(USLAX)', carrier:'', booking:'', bl:'', container:'', incoterms:'FOB', commodity:'변속기 부품', qty:'1 x 40HC', status:'booking', etd:'2025-06-22', eta:'', revenue:0, cost:0, paid:false, blReleased:false, workflowStep:1, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'pending', staff:'S1', memo:'화주 오더 접수, 견적 작성중' },
 
     // ===== 그린푸드(주) — 식품 수출 (3건) =====
-    { id:'EXP-2504', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HANOI FOOD IMPORT', pol:'부산(KRPUS)', pod:'하이퐁(VNHPH)', carrier:'SM상선', booking:'SMLM25C0331', bl:'SMLMBSC2504', container:'SMLU7782041', incoterms:'CIF', commodity:'김·건어물', qty:'1 x 20RF', status:'sailing', etd:'2025-06-17', eta:'2025-06-23', revenue:2900000, cost:2200000, paid:false, blReleased:true, workflowStep:5, billingMonth:'2025-06', billed:false, invoiceFromCarrier:2200000, confirmStatus:'confirmed', memo:'냉장 컨테이너' },
-    { id:'EXP-2505', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HK GOURMET LTD', pol:'부산(KRPUS)', pod:'홍콩(HKHKG)', carrier:'ONE', booking:'ONEY25D5540', bl:'', container:'', incoterms:'FOB', commodity:'인삼 가공식품', qty:'1 x 20GP', status:'booking', etd:'2025-06-20', eta:'', revenue:3600000, cost:0, paid:false, blReleased:false, workflowStep:3, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', memo:'30일 신용 거래' },
-    { id:'EXP-2506', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'SAIGON MART', pol:'인천(KRINC)', pod:'호치민(VNSGN)', carrier:'고려해운', booking:'', bl:'', container:'', incoterms:'CIF', commodity:'라면·스낵류', qty:'2 x 40HC', status:'booking', etd:'2025-06-25', eta:'', revenue:5200000, cost:0, paid:false, blReleased:false, workflowStep:2, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', memo:'화주가 고려해운 선택, 부킹 진행 예정' },
+    { id:'EXP-2504', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HANOI FOOD IMPORT', pol:'부산(KRPUS)', pod:'하이퐁(VNHPH)', carrier:'SM상선', booking:'SMLM25C0331', bl:'SMLMBSC2504', container:'SMLU7782041', incoterms:'CIF', commodity:'김·건어물', qty:'1 x 20RF', status:'sailing', etd:'2025-06-17', eta:'2025-06-23', revenue:2900000, cost:2200000, paid:false, blReleased:true, workflowStep:5, billingMonth:'2025-06', billed:false, invoiceFromCarrier:2200000, confirmStatus:'confirmed', staff:'S1', memo:'냉장 컨테이너' },
+    { id:'EXP-2505', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'HK GOURMET LTD', pol:'부산(KRPUS)', pod:'홍콩(HKHKG)', carrier:'ONE', booking:'ONEY25D5540', bl:'', container:'', incoterms:'FOB', commodity:'인삼 가공식품', qty:'1 x 20GP', status:'booking', etd:'2025-06-20', eta:'', revenue:3600000, cost:0, paid:false, blReleased:false, workflowStep:3, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', staff:'S1', memo:'30일 신용 거래' },
+    { id:'EXP-2506', type:'export', mode:'sea', shipper:'그린푸드(주)', consignee:'SAIGON MART', pol:'인천(KRINC)', pod:'호치민(VNSGN)', carrier:'고려해운', booking:'', bl:'', container:'', incoterms:'CIF', commodity:'라면·스낵류', qty:'2 x 40HC', status:'booking', etd:'2025-06-25', eta:'', revenue:5200000, cost:0, paid:false, blReleased:false, workflowStep:2, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', staff:'S1', memo:'화주가 고려해운 선택, 부킹 진행 예정' },
 
     // ===== 한빛전자 — 전자제품 수출 (3건) =====
-    { id:'EXP-2507', type:'export', mode:'sea', shipper:'한빛전자', consignee:'NY ELECTRONICS', pol:'부산(KRPUS)', pod:'뉴욕(USNYC)', carrier:'', booking:'', bl:'', container:'', incoterms:'FOB', commodity:'LED 디스플레이', qty:'2 x 40HC', status:'booking', etd:'', eta:'', revenue:0, cost:0, paid:false, blReleased:false, workflowStep:1, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'pending', memo:'고가 화물 · 적하보험 필요. 화주 첫 오더 접수' },
-    { id:'EXP-2508', type:'export', mode:'sea', shipper:'한빛전자', consignee:'LONDON TECH', pol:'부산(KRPUS)', pod:'로테르담(NLRTM)', carrier:'Maersk', booking:'MAEU25E3390', bl:'MAEUBSC2508', container:'MRKU5567810', incoterms:'CIF', commodity:'반도체 장비 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-09', eta:'2025-07-02', revenue:11200000, cost:8800000, paid:false, blReleased:true, workflowStep:6, billingMonth:'2025-06', billed:true, invoiceFromCarrier:8800000, confirmStatus:'confirmed', memo:'적하보험 가입 완료' },
-    { id:'EXP-2509', type:'export', mode:'sea', shipper:'한빛전자', consignee:'SINGAPORE ELEC', pol:'부산(KRPUS)', pod:'싱가포르(SGSIN)', carrier:'ONE', booking:'ONEY25E8810', bl:'', container:'ONEU4451200', incoterms:'FOB', commodity:'PCB 기판', qty:'1 x 20GP', status:'booking', etd:'2025-06-19', eta:'2025-06-26', revenue:2800000, cost:2150000, paid:false, blReleased:false, workflowStep:5, billingMonth:'2025-06', billed:false, invoiceFromCarrier:2150000, confirmStatus:'confirmed', memo:'선사 인보이스 수령, 지불 대기' },
+    { id:'EXP-2507', type:'export', mode:'sea', shipper:'한빛전자', consignee:'NY ELECTRONICS', pol:'부산(KRPUS)', pod:'뉴욕(USNYC)', carrier:'', booking:'', bl:'', container:'', incoterms:'FOB', commodity:'LED 디스플레이', qty:'2 x 40HC', status:'booking', etd:'', eta:'', revenue:0, cost:0, paid:false, blReleased:false, workflowStep:1, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'pending', staff:'S2', memo:'고가 화물 · 적하보험 필요. 화주 첫 오더 접수' },
+    { id:'EXP-2508', type:'export', mode:'sea', shipper:'한빛전자', consignee:'LONDON TECH', pol:'부산(KRPUS)', pod:'로테르담(NLRTM)', carrier:'Maersk', booking:'MAEU25E3390', bl:'MAEUBSC2508', container:'MRKU5567810', incoterms:'CIF', commodity:'반도체 장비 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-09', eta:'2025-07-02', revenue:11200000, cost:8800000, paid:false, blReleased:true, workflowStep:6, billingMonth:'2025-06', billed:true, invoiceFromCarrier:8800000, confirmStatus:'confirmed', staff:'S2', memo:'적하보험 가입 완료' },
+    { id:'EXP-2509', type:'export', mode:'sea', shipper:'한빛전자', consignee:'SINGAPORE ELEC', pol:'부산(KRPUS)', pod:'싱가포르(SGSIN)', carrier:'ONE', booking:'ONEY25E8810', bl:'', container:'ONEU4451200', incoterms:'FOB', commodity:'PCB 기판', qty:'1 x 20GP', status:'booking', etd:'2025-06-19', eta:'2025-06-26', revenue:2800000, cost:2150000, paid:false, blReleased:false, workflowStep:5, billingMonth:'2025-06', billed:false, invoiceFromCarrier:2150000, confirmStatus:'confirmed', staff:'S2', memo:'선사 인보이스 수령, 지불 대기' },
   ],
   imports: [],
   quotes: [
@@ -615,6 +639,23 @@ function wfStepOf(s){ return s.workflowStep || 1; }
 function wfTotalSteps(){ return WORKFLOW.length; }
 // 청구·정산 대상 = 실거래처(customer) 우선, 없으면 기존 화주
 function custOf(s){ return s.customer || (s.type==='export'?s.shipper:s.consignee); }
+
+// ===== 담당 직원 / 권한 =====
+// 현재 작업 중인 직원 (로그인 개념). 기본 관리자.
+window._activeStaff = window._activeStaff || 'ADMIN';
+// 대리 권한 부여 목록 (휴가 등으로 임시로 열어준 직원 id)
+window._delegated = window._delegated || {};  // { 'S1': true } = S1 업무를 누구나 수정 가능
+function activeStaff(){ return DB.staff.find(s=>s.id===window._activeStaff) || DB.staff.find(s=>s.role==='admin'); }
+function staffName(id){ const s=DB.staff.find(x=>x.id===id); return s?s.name:'미배정'; }
+// 이 화물을 현재 작업자가 수정할 수 있나?
+function canEdit(s){
+  const me = activeStaff();
+  if(!me) return false;
+  if(me.role==='admin') return true;          // 관리자는 전부
+  if(s.staff===me.id) return true;            // 내 담당
+  if(window._delegated[s.staff]) return true; // 대리 권한 열린 담당
+  return false;                                // 그 외는 보기만
+}
 
 
 const $ = (s, el=document) => el.querySelector(s);
@@ -779,36 +820,57 @@ function viewDashboard(){
 }
 
 function viewShipmentList(type){
-  const list = type==='export' ? DB.shipments : DB.imports;
+  const allList = type==='export' ? DB.shipments : DB.imports;
   const label = type==='export' ? '수출' : '수입';
+  const me = activeStaff();
+  // 담당 직원 필터: 관리자면 전체, 직원이면 본인 담당만 (단 전체보기 토글 가능)
+  const viewAll = window._staffViewAll || me.role==='admin';
+  const list = viewAll ? allList : allList.filter(s=>s.staff===me.id);
+  const staffOpts = DB.staff.map(s=>`<option value="${s.id}" ${s.id===window._activeStaff?'selected':''}>${s.name}${s.role==='admin'?' (전체)':''}</option>`).join('');
+  const myCount = allList.filter(s=>s.staff===me.id).length;
+
   return `
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="staff-bar">
+      <div class="staff-bar-left">
+        <span class="staff-bar-label">👤 작업 직원</span>
+        <select id="activeStaffSel" class="staff-select">${staffOpts}</select>
+        ${me.role!=='admin'?`<span class="staff-mine">내 담당 ${myCount}건</span>`:`<span class="staff-mine" style="background:#B8862F1a;color:#7A5C12">관리자 · 전체 ${allList.length}건</span>`}
+      </div>
+      <div class="staff-bar-right">
+        ${me.role==='admin' ? `
+          <span style="font-size:11.5px;color:var(--ink-soft)">휴가 대리 권한:</span>
+          ${DB.staff.filter(s=>s.role!=='admin').map(s=>`<button class="deleg-chip ${window._delegated[s.id]?'on':''}" data-deleg="${s.id}">${s.name}${window._delegated[s.id]?' 🔓':''}</button>`).join('')}
+        ` : `<label class="staff-viewall"><input type="checkbox" id="staffViewAll" ${window._staffViewAll?'checked':''}> 전체 보기</label>`}
+      </div>
+    </div>
+    ${me.role!=='admin' && !window._delegated_notice_off ? `<div class="staff-notice">평소엔 <b>본인 담당 화물만</b> 수정할 수 있어요. 다른 직원 화물은 보기만 가능합니다. ${Object.keys(window._delegated).filter(k=>window._delegated[k]).length?`<b style="color:var(--ok)">현재 대리 권한 열림: ${Object.keys(window._delegated).filter(k=>window._delegated[k]).map(staffName).join(', ')}</b>`:''}</div>`:''}
+  </div>
+
   <div class="panel">
     <div class="panel-head"><div class="panel-title">${label} 건 목록 <span class="tag">${list.length}건</span></div>
       <div style="display:flex;gap:8px"><button class="btn btn-ai btn-sm" data-aiparse="${type}">🤖 AI 자동 등록</button><button class="btn btn-primary btn-sm" data-new="${type}">+ 직접 등록</button></div></div>
-    <div class="ai-drop">
-      <div class="ai-drop-ico">🤖</div>
-      <div class="ai-drop-txt"><b>AI 서류 자동 입력 <span class="ai-tag">작동중</span></b><p>화주가 보낸 S/R·인보이스 내용을 붙여넣으면 AI가 항목을 자동으로 채워줍니다. 양식이 달라도 OK!</p></div>
-      <button class="btn btn-ai btn-sm" data-aiparse="${type}">지금 사용</button>
-    </div>
     <div class="filter-bar">
       <input type="text" placeholder="🔍 화주명, 건번호, B/L로 검색" id="searchBox" data-type="${type}">
       <select id="statusFilter" data-type="${type}"><option value="">전체 상태</option><option value="booking">부킹</option><option value="sailing">선적완료</option><option value="transit">운송중</option><option value="arrived">입항</option><option value="delay">지연</option></select>
     </div>
     <div class="panel-body"><table>
-      <thead><tr><th>건 번호</th><th>화주 / 수하인</th><th>노선</th><th>선사 / B/L</th><th>진행 단계</th><th>수량</th><th>손익</th><th></th></tr></thead>
+      <thead><tr><th>건 번호</th><th>담당</th><th>화주 / 수하인</th><th>노선</th><th>선사 / B/L</th><th>진행 단계</th><th>손익</th><th></th></tr></thead>
       <tbody id="shipRows">${renderShipRows(list, type)}</tbody>
     </table></div>
   </div>`;
 }
 function renderShipRows(list, type){
-  if(!list.length) return `<tr><td colspan="8"><div class="empty"><div class="empty-ico">📭</div><h4>등록된 건이 없습니다</h4><p>AI 자동 등록 또는 직접 등록으로 시작하세요.</p><button class="btn btn-ai" data-aiparse="${type}">🤖 AI 자동 등록</button></div></td></tr>`;
+  if(!list.length) return `<tr><td colspan="8"><div class="empty"><div class="empty-ico">📭</div><h4>담당 화물이 없습니다</h4><p>AI 자동 등록 또는 직접 등록으로 시작하세요.</p><button class="btn btn-ai" data-aiparse="${type}">🤖 AI 자동 등록</button></div></td></tr>`;
   return list.map(s=>{
     const profit = s.revenue - s.cost;
     const cf = s.confirmStatus && s.confirmStatus!=='confirmed' ? `<br><span class="cell-sub" style="color:${(CONFIRM_LABEL[s.confirmStatus]||{}).color||'#888'};font-weight:600">${(CONFIRM_LABEL[s.confirmStatus]||{}).label||''}</span>` : '';
     const wf = WORKFLOW[wfStepOf(s)-1] || WORKFLOW[0];
     const pct = Math.round(wfStepOf(s)/wfTotalSteps()*100);
     const wfBadge = `<div class="wf-mini">${wf.icon} <b>${wfStepOf(s)}/${wfTotalSteps()}</b></div><div class="cell-sub" style="font-size:10.5px">${wf.title}</div><div class="wf-bar"><div class="wf-bar-fill" style="width:${pct}%"></div></div>`;
-    return `<tr><td class="mono">${s.id}</td><td><div class="cell-strong">${s.type==='export'?s.shipper:s.consignee}</div><div class="cell-sub">${s.type==='export'?s.consignee:s.shipper}</div></td><td class="cell-sub">${s.pol}<br>→ ${s.pod}</td><td>${s.carrier}<br><span class="cell-sub mono">${s.bl||'B/L 대기'}</span></td><td style="min-width:120px">${wfBadge}</td><td class="cell-sub">${s.qty}${cf}</td><td><span style="font-weight:700;color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span><br><span class="cell-sub">매출 ${won(s.revenue)}</span></td><td><span class="row-link" data-detail="${s.id}" data-type="${type}">상세 →</span></td></tr>`;
+    const editable = canEdit(s);
+    const staffBadge = `<span class="staff-tag ${editable?'mine':''}">${staffName(s.staff)}</span>${!editable?'<br><span class="cell-sub" style="font-size:9.5px">🔒 보기만</span>':''}`;
+    return `<tr class="${editable?'':'row-locked'}"><td class="mono">${s.id}</td><td>${staffBadge}</td><td><div class="cell-strong">${custOf(s)}</div><div class="cell-sub">${s.consignee}</div></td><td class="cell-sub">${s.pol}<br>→ ${s.pod}</td><td>${s.carrier||'-'}<br><span class="cell-sub mono">${s.bl||'B/L 대기'}</span></td><td style="min-width:120px">${wfBadge}</td><td><span style="font-weight:700;color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span>${cf}</td><td><span class="row-link" data-detail="${s.id}" data-type="${type}">${editable?'진행 →':'보기 →'}</span></td></tr>`;
   }).join('');
 }
 
@@ -1929,9 +1991,15 @@ function shipmentDetail(id, type){
 
   // "지금 할 일" 액션 카드 내용
   let nowAction;
+  const editable = canEdit(s);  // 담당자 권한
   const action = stepActionBtn(s, type);
   const checksHtml = (curStep.checks||[]).map(c=>`<div class="now-check">☐ ${c}</div>`).join('');
-  if(cur>=TOT){
+  if(!editable){
+    nowAction = `
+      <div class="now-label">🔒 보기 전용</div>
+      <div class="now-title">${curStep.icon} STEP ${cur}/${TOT} · ${curStep.title}</div>
+      <div class="now-desc">담당자는 <b>${staffName(s.staff)}</b>님입니다. 진행·수정은 담당자(또는 대리 권한)만 가능합니다.</div>`;
+  } else if(cur>=TOT){
     nowAction = `
       <div class="now-label">📍 지금 할 일 (STEP ${cur}/${TOT} · 마지막)</div>
       <div class="now-title">${curStep.icon} ${curStep.title}</div>
@@ -1952,17 +2020,17 @@ function shipmentDetail(id, type){
       </button>`;
   }
 
-  // 정보 행: 입력된 건 수정버튼, 안 된 건 잠금
+  // 정보 행: 입력된 건 수정버튼(담당자만), 안 된 건 잠금
   const rowEdit = (label, val, lockStep, editStep) => {
     if(val){
-      const canEdit = editStep && STEP_INPUTS[editStep];
-      return `<div class="detail-cell"><div class="k">${label}</div><div class="v">${val}${canEdit?` <button class="mini-edit" data-editstep="${s.id}|${type}|${editStep}" title="수정">✏️</button>`:''}</div></div>`;
+      const showEdit = editable && editStep && STEP_INPUTS[editStep];
+      return `<div class="detail-cell"><div class="k">${label}</div><div class="v">${val}${showEdit?` <button class="mini-edit" data-editstep="${s.id}|${type}|${editStep}" title="수정">✏️</button>`:''}</div></div>`;
     }
     return `<div class="detail-cell"><div class="k">${label}</div><div class="v">${wfLock(lockStep)}</div></div>`;
   };
 
   openModal(`
-    <div class="modal-head"><h3>${s.id} · ${s.type==='export'?'수출':'수입'} 상세${s.jobNo?` <span style="font-size:12px;color:var(--ink-soft)">· ${s.jobNo}</span>`:''}</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-head"><h3>${s.id} · ${s.type==='export'?'수출':'수입'} 상세${s.jobNo?` <span style="font-size:12px;color:var(--ink-soft)">· ${s.jobNo}</span>`:''} <span class="staff-tag ${editable?'mine':''}" style="margin-left:6px">${staffName(s.staff)}</span></h3><button class="modal-x" onclick="closeModal()">×</button></div>
     <div class="modal-body">
       <!-- 진행 단계 (작게) -->
       <div class="wf-mini-track">
@@ -1981,7 +2049,7 @@ function shipmentDetail(id, type){
       <!-- 화물 정보 -->
       <div class="detail-sec-label">📦 화물 정보 <span style="font-size:11px;color:var(--ink-faint);font-weight:400">(✏️ 클릭하면 수정)</span></div>
       <div class="detail-grid">
-        <div class="detail-cell"><div class="k">실거래처 (청구처)</div><div class="v">${s.customer||s.shipper||wfLock(2)}${cur>=2?` <button class="mini-edit" data-editstep="${s.id}|${type}|2" title="수정">✏️</button>`:''}</div></div>
+        <div class="detail-cell"><div class="k">실거래처 (청구처)</div><div class="v">${s.customer||s.shipper||wfLock(2)}${(cur>=2&&editable)?` <button class="mini-edit" data-editstep="${s.id}|${type}|2" title="수정">✏️</button>`:''}</div></div>
         <div class="detail-cell"><div class="k">송하인 (Shipper)</div><div class="v">${s.shipperName||s.shipper||(cur>=2?'(실거래처와 동일)':wfLock(2))}</div></div>
         <div class="detail-cell"><div class="k">수하인 (Consignee)</div><div class="v">${s.consignee||wfLock(2)}</div></div>
         <div class="detail-cell"><div class="k">선적항 → 도착항</div><div class="v">${s.pol} → ${s.pod}</div></div>
@@ -1999,7 +2067,7 @@ function shipmentDetail(id, type){
         ${rowEdit('도착지 터미널', s.destTerminal, 5, 5)}
         <div class="detail-cell"><div class="k">품명 / 수량</div><div class="v">${s.commodity} · ${s.qty}</div></div>
         ${rowEdit('도착예정 (ETA)', s.eta, 5, 5)}
-        <div class="detail-cell"><div class="k">손익</div><div class="v">${cur>=2&&s.revenue?`<span style="color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span> <span style="font-size:11px;color:var(--ink-soft)">(매출 ${won(s.revenue)}${cur>=5&&s.cost?`, 원가 ${won(s.cost)}`:', 원가 '+wfLockShort(5)})</span> ${(cur>=2)?`<button class="mini-edit" data-editstep="${s.id}|${type}|2" title="수정">✏️</button>`:''}`:wfLock(2)}</div></div>
+        <div class="detail-cell"><div class="k">손익</div><div class="v">${cur>=2&&s.revenue?`<span style="color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span> <span style="font-size:11px;color:var(--ink-soft)">(매출 ${won(s.revenue)}${cur>=5&&s.cost?`, 원가 ${won(s.cost)}`:', 원가 '+wfLockShort(5)})</span> ${(cur>=2&&editable)?`<button class="mini-edit" data-editstep="${s.id}|${type}|2" title="수정">✏️</button>`:''}`:wfLock(2)}</div></div>
         ${s.memo?`<div class="detail-cell full"><div class="k">메모</div><div class="v" style="font-weight:500">${s.memo}</div></div>`:''}
         ${s.confirmStatus?`<div class="detail-cell full"><div class="k">화주 컨펌 상태</div><div class="v" style="font-weight:700;color:${(CONFIRM_LABEL[s.confirmStatus]||{}).color||'#888'}">${(CONFIRM_LABEL[s.confirmStatus]||{}).label||s.confirmStatus}${s.confirmedAt?` <span style="font-size:11px;color:var(--ink-soft);font-weight:400">(${s.confirmedAt})</span>`:''}</div></div>`:''}
       </div>
@@ -2519,6 +2587,12 @@ function bindActions(){
   document.querySelectorAll('[data-delpartner]').forEach(b=> b.onclick = ()=> delPartner(b.dataset.delpartner));
   const sb=$('#searchBox'); if(sb) sb.oninput = filterShip;
   const sf=$('#statusFilter'); if(sf) sf.onchange = filterShip;
+  // 담당 직원 전환
+  const ass=$('#activeStaffSel'); if(ass) ass.onchange = ()=>{ window._activeStaff = ass.value; window._staffViewAll=false; render(); };
+  // 대리 권한 토글 (관리자)
+  document.querySelectorAll('[data-deleg]').forEach(b=> b.onclick = ()=>{ const id=b.dataset.deleg; window._delegated[id]=!window._delegated[id]; toast(window._delegated[id]?`🔓 ${staffName(id)} 업무 대리 권한을 열었어요.`:`🔒 ${staffName(id)} 대리 권한을 닫았어요.`); render(); });
+  // 전체 보기 토글 (직원)
+  const sva=$('#staffViewAll'); if(sva) sva.onchange = ()=>{ window._staffViewAll = sva.checked; render(); };
   document.querySelectorAll('#kindSeg button').forEach(btn=> btn.onclick = ()=>{ document.querySelectorAll('#kindSeg button').forEach(x=>x.classList.remove('on')); btn.classList.add('on'); $('#partnerRows').innerHTML = renderPartnerRows(btn.dataset.kind); bindActions(); });
   document.querySelectorAll('[data-refresh]').forEach(b=> b.onclick = ()=> toast('📡 선사 API 연동 후 실시간 갱신됩니다.'));
   document.querySelectorAll('[data-tax]').forEach(b=> b.onclick = ()=> toast('🧾 홈택스 전자세금계산서 연동 예정입니다.'));
