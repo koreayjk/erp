@@ -78,6 +78,7 @@
   .modal-bg.show { display: flex; }
   .modal { background: #fff; border-radius: 14px; width: 100%; max-width: 640px; box-shadow: 0 20px 60px rgba(11,37,69,0.3); animation: pop 0.2s ease; }
   .modal.wide { max-width: 860px; }
+  .modal.xwide { max-width: 1000px; }
   @keyframes pop { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   .modal-head { padding: 20px 24px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
   .modal-head h3 { font-size: 17px; font-weight: 700; }
@@ -113,6 +114,12 @@
   .detail-cell.full { grid-column: 1 / -1; }
   .detail-cell .k { font-size: 11.5px; color: var(--ink-soft); font-weight: 500; margin-bottom: 3px; }
   .detail-cell .v { font-size: 14px; font-weight: 600; }
+  /* 상세 좌우 2단 레이아웃 (스크롤 최소화) */
+  .detail-2col { display:grid; grid-template-columns: 1fr 1.15fr; gap:18px; margin-top:16px; align-items:start; }
+  .detail-col-left { position:sticky; top:0; }
+  .detail-tools-btn { width:100%; margin-top:10px; }
+  .detail-2col .detail-grid { grid-template-columns: 1fr 1fr; }
+  @media (max-width:760px){ .detail-2col { grid-template-columns: 1fr; } .detail-col-left{position:static;} }
   .track-flow { display:flex; align-items:center; gap:0; margin: 18px 0 4px; }
   .track-step { flex:1; text-align:center; position:relative; }
   .track-step::after { content:''; position:absolute; top:11px; left:50%; width:100%; height:2px; background: var(--line); z-index:0; }
@@ -258,6 +265,39 @@
   .staff-tag.mine { background:#3A7CA51a; color:var(--steel); }
   .row-locked { background:#FAFAFA; }
   .row-locked .cell-strong { color:var(--ink-soft); }
+
+  /* 단계별 가로 탭 */
+  .step-tabs { display:flex; gap:6px; padding:12px 16px 0; flex-wrap:wrap; border-bottom:1px solid var(--line); }
+  .step-tab { border:1px solid var(--line); background:#fff; border-radius:8px 8px 0 0; padding:8px 13px; font-size:12.5px; cursor:pointer; font-family:inherit; color:var(--ink-soft); display:flex; align-items:center; gap:6px; border-bottom:none; margin-bottom:-1px; }
+  .step-tab:hover { background:#F7FAFC; color:var(--ink); }
+  .step-tab.on { background:var(--navy); color:#fff; border-color:var(--navy); font-weight:700; }
+  .step-tab-n { background:rgba(0,0,0,.08); border-radius:10px; padding:1px 7px; font-size:11px; font-weight:700; }
+  .step-tab.on .step-tab-n { background:rgba(255,255,255,.25); }
+  @media (max-width:900px){ .step-tabs{overflow-x:auto;flex-wrap:nowrap;} .step-tab{white-space:nowrap;} }
+
+  /* 직원 업무량 대시보드 */
+  .workload-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
+  .workload-card { border:1px solid var(--line); border-radius:12px; padding:15px 17px; background:#fff; }
+  .workload-card.over { border-color:var(--danger); background:#FEF6F5; }
+  .wl-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .wl-head b { color:var(--navy); font-size:14px; }
+  .wl-over-badge { font-size:11px; background:var(--danger); color:#fff; padding:3px 9px; border-radius:10px; font-weight:700; }
+  .wl-ok-badge { font-size:11px; background:#2E8B5715; color:var(--ok,#2E8B57); padding:3px 9px; border-radius:10px; font-weight:600; }
+  .wl-num { margin-bottom:8px; }
+  .wl-active { font-size:26px; font-weight:800; color:var(--navy); }
+  .workload-card.over .wl-active { color:var(--danger); }
+  .wl-bar { height:7px; background:#EDF1F4; border-radius:4px; overflow:hidden; margin-bottom:10px; }
+  .wl-bar-fill { height:100%; background:linear-gradient(90deg,var(--sky),var(--navy)); border-radius:4px; }
+  .wl-bar-fill.over { background:linear-gradient(90deg,#E8927C,var(--danger)); }
+  .wl-steps { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:10px; }
+  .wl-step-chip { font-size:11px; background:#F1F6FA; border-radius:8px; padding:3px 8px; font-weight:600; color:var(--steel); }
+  .wl-shippers { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:12px; }
+  .wl-shipper { font-size:10.5px; background:#EEF1F4; color:var(--ink-soft); padding:2px 8px; border-radius:8px; }
+  .wl-actions { display:flex; gap:7px; }
+  .wl-alert { margin-top:14px; background:#FEF6F5; border:1px solid #E8927C; border-radius:9px; padding:12px 15px; font-size:12.5px; color:#B23A2E; line-height:1.5; }
+  .wl-balanced { margin-top:14px; background:#F0F8F3; border:1px solid #A8D5BA; border-radius:9px; padding:12px 15px; font-size:12.5px; color:var(--ok,#2E8B57); }
+  .staff-shipper-pick { display:flex; flex-wrap:wrap; gap:8px; max-height:160px; overflow-y:auto; padding:10px; border:1px solid var(--line); border-radius:8px; }
+  .ssp-item { font-size:12px; display:flex; align-items:center; gap:5px; cursor:pointer; background:#F7FAFC; padding:5px 10px; border-radius:7px; }
   .now-back { display:block; width:100%; margin-top:8px; background:transparent; border:none; color:rgba(255,255,255,.6); font-size:11.5px; cursor:pointer; padding:4px; }
   .now-back:hover { color:#fff; }
   .now-done { font-size:15px; font-weight:700; text-align:center; padding:8px; }
@@ -521,6 +561,7 @@
       <div class="nav-item" data-view="receivable"><span class="nav-ico">🧾</span> 월말 청구·미수금</div>
       <div class="nav-label">기준정보</div>
       <div class="nav-item" data-view="partners"><span class="nav-ico">👥</span> 거래처 관리</div>
+      <div class="nav-item" data-view="staff"><span class="nav-ico">🧑‍💼</span> 직원 관리</div>
       <div class="nav-item" data-view="portal"><span class="nav-ico">🔗</span> 화주 포털</div>
       <div class="nav-item" data-view="settings"><span class="nav-ico">⚙️</span> 설정</div>
     </nav>
@@ -662,11 +703,11 @@ const $ = (s, el=document) => el.querySelector(s);
 const won = n => '₩' + (n||0).toLocaleString('ko-KR');
 let toastTimer;
 function toast(msg){ $('#toastMsg').textContent = msg; $('#toast').classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(()=> $('#toast').classList.remove('show'), 2800); }
-function openModal(html, wide){ $('#modalBox').className = 'modal'+(wide?' wide':''); $('#modalBox').innerHTML = html; $('#modalBg').classList.add('show'); }
+function openModal(html, size){ const cls = size===true?'wide':(size||''); $('#modalBox').className = 'modal'+(cls?' '+cls:''); $('#modalBox').innerHTML = html; $('#modalBg').classList.add('show'); }
 function closeModal(){ $('#modalBg').classList.remove('show'); }
 $('#modalBg').addEventListener('click', e => { if(e.target.id==='modalBg') closeModal(); });
 
-const TITLES = { dashboard:'대시보드', assistant:'AI 비서', export:'수출 관리', quote:'견적 관리', import:'수입 관리', inbox:'메일 자동수신', tracking:'실시간 트래킹', settlement:'운임·정산', receivable:'월말 청구·미수금', partners:'거래처 관리', portal:'화주 포털', settings:'설정' };
+const TITLES = { dashboard:'대시보드', assistant:'AI 비서', export:'수출 관리', quote:'견적 관리', import:'수입 관리', inbox:'메일 자동수신', tracking:'실시간 트래킹', settlement:'운임·정산', receivable:'월말 청구·미수금', partners:'거래처 관리', staff:'직원 관리', portal:'화주 포털', settings:'설정' };
 let current = 'dashboard';
 document.querySelectorAll('.nav-item').forEach(item=>{
   item.addEventListener('click', ()=>{ document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); item.classList.add('active'); current = item.dataset.view; $('#pageTitle').textContent = TITLES[current]; render(); closeMobileMenu(); });
@@ -690,10 +731,151 @@ function render(){
   else if(current==='settlement') c.innerHTML = viewSettlement();
   else if(current==='receivable') c.innerHTML = viewReceivable();
   else if(current==='partners') c.innerHTML = viewPartners();
+  else if(current==='staff') c.innerHTML = viewStaff();
   else if(current==='portal') c.innerHTML = viewPortal();
   else if(current==='settings') c.innerHTML = viewSettings();
   bindActions();
   if(current==='tracking') initVoyageTracker();
+}
+
+function viewStaff(){
+  const all = [...DB.shipments, ...DB.imports];
+  const workers = DB.staff.filter(s=>s.role!=='admin');
+  // 직원별 업무량 계산
+  const stats = workers.map(st=>{
+    const mine = all.filter(s=>s.staff===st.id);
+    const active = mine.filter(s=>wfStepOf(s)<wfTotalSteps());
+    // 단계별 분포
+    const byStep = {};
+    WORKFLOW.forEach(w=> byStep[w.step] = mine.filter(s=>wfStepOf(s)===w.step).length);
+    // 마감 임박 (Doc/Cargo Closing 텍스트 있는 부킹 단계)
+    const urgent = mine.filter(s=>wfStepOf(s)>=3 && wfStepOf(s)<=4).length;
+    return { st, total:mine.length, active:active.length, byStep, urgent, shippers:st.shippers };
+  });
+  const maxActive = Math.max(...stats.map(s=>s.active), 1);
+  // 과중 기준: 평균의 1.5배 이상
+  const avg = stats.reduce((a,s)=>a+s.active,0) / (stats.length||1);
+  const overThreshold = avg * 1.4;
+
+  return `
+  <div class="ai-drop" style="border-color:var(--steel)">
+    <div class="ai-drop-ico">🧑‍💼</div>
+    <div class="ai-drop-txt"><b>직원 관리 · 업무량 모니터링</b><p>직원별 담당 화물과 진행 현황을 한눈에 봅니다. 특정 직원에게 일이 몰리면 빨갛게 경고하니, 업무를 재분배하세요.</p></div>
+    <button class="btn btn-primary btn-sm" data-addstaff="1">+ 직원 추가</button>
+  </div>
+
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-head"><div class="panel-title">📊 직원별 업무량 <span class="tag">진행중 기준</span></div></div>
+    <div class="panel-body" style="padding:16px 18px;">
+      <div class="workload-grid">
+        ${stats.map(d=>{
+          const over = d.active >= overThreshold && d.active > 3;
+          const barPct = Math.round(d.active/maxActive*100);
+          return `
+          <div class="workload-card ${over?'over':''}">
+            <div class="wl-head">
+              <div><b>${d.st.name}</b> <span class="cell-sub">· ${d.shippers.length}개 화주 담당</span></div>
+              ${over?'<span class="wl-over-badge">⚠️ 과중</span>':'<span class="wl-ok-badge">정상</span>'}
+            </div>
+            <div class="wl-num"><span class="wl-active">${d.active}</span><span class="cell-sub"> 진행중 / 총 ${d.total}건</span></div>
+            <div class="wl-bar"><div class="wl-bar-fill ${over?'over':''}" style="width:${barPct}%"></div></div>
+            <div class="wl-steps">
+              ${WORKFLOW.map(w=> d.byStep[w.step]>0 ? `<span class="wl-step-chip" title="${w.title}">${w.icon}${d.byStep[w.step]}</span>`:'').join('')}
+            </div>
+            <div class="wl-shippers">${d.shippers.map(sh=>`<span class="wl-shipper">${sh}</span>`).join('')||'<span class="cell-sub">담당 화주 없음</span>'}</div>
+            <div class="wl-actions">
+              <button class="btn btn-ghost btn-sm" data-editstaff="${d.st.id}">✏️ 수정</button>
+              <button class="btn btn-ghost btn-sm" data-viewstaffwork="${d.st.id}">📦 화물 보기</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+      ${stats.some(d=>d.active >= overThreshold && d.active>3) ? `
+      <div class="wl-alert">
+        ⚠️ <b>업무 과중 직원이 있습니다.</b> 일이 몰린 직원의 화주 일부를 다른 직원에게 재배정하거나, 휴가 시 대리 권한을 활용하세요.
+      </div>` : `<div class="wl-balanced">✅ 업무량이 균형있게 분배되어 있습니다.</div>`}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">👥 직원 목록 <span class="tag">${workers.length}명</span></div>
+      <button class="btn btn-primary btn-sm" data-addstaff="1">+ 직원 추가</button></div>
+    <div class="panel-body"><table>
+      <thead><tr><th>이름</th><th>역할</th><th>담당 화주</th><th>진행중 건수</th><th></th></tr></thead>
+      <tbody>${DB.staff.map(st=>{
+        const mine = all.filter(s=>s.staff===st.id);
+        const active = mine.filter(s=>wfStepOf(s)<wfTotalSteps()).length;
+        return `<tr>
+          <td class="cell-strong">${st.name}</td>
+          <td>${st.role==='admin'?'<span class="staff-tag" style="background:#B8862F1a;color:#7A5C12">관리자</span>':'<span class="staff-tag">담당</span>'}</td>
+          <td class="cell-sub">${(st.shippers||[]).join(', ')||(st.role==='admin'?'(전체)':'-')}</td>
+          <td>${st.role==='admin'?'-':active+'건'}</td>
+          <td><button class="btn btn-ghost btn-sm" data-editstaff="${st.id}">✏️ 수정</button></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>
+  </div>`;
+}
+
+// 직원 추가/수정 모달
+function staffModal(id){
+  const editing = id ? DB.staff.find(s=>s.id===id) : null;
+  const allShippers = DB.partners.filter(p=>p.kind==='shipper').map(p=>p.name);
+  // 화주 목록에 화물에만 있는 화주도 포함
+  [...DB.shipments,...DB.imports].forEach(s=>{ const c=custOf(s); if(c && !allShippers.includes(c)) allShippers.push(c); });
+  openModal(`
+    <div class="modal-head"><h3>${editing?'✏️ 직원 수정':'+ 직원 추가'}</h3><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-body"><form id="staffForm"><div class="form-grid">
+      <div class="field"><label>이름 <span class="req">*</span></label><input name="name" value="${editing?editing.name:''}" placeholder="예: 김민지" required></div>
+      <div class="field"><label>역할</label><select name="role"><option value="담당" ${editing&&editing.role==='담당'?'selected':''}>담당 직원</option><option value="admin" ${editing&&editing.role==='admin'?'selected':''}>관리자</option></select></div>
+      <div class="field full"><label>담당 화주 (복수 선택)</label>
+        <div class="staff-shipper-pick">
+          ${allShippers.map(sh=>`<label class="ssp-item"><input type="checkbox" name="shippers" value="${sh}" ${editing&&(editing.shippers||[]).includes(sh)?'checked':''}> ${sh}</label>`).join('')||'<span class="cell-sub">등록된 화주가 없습니다</span>'}
+        </div>
+      </div>
+    </div></form></div>
+    <div class="modal-foot">
+      ${editing&&editing.role!=='admin'?`<button class="btn btn-danger-ghost" data-delstaff="${editing.id}">삭제</button>`:'<span></span>'}
+      <button class="btn btn-ghost" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" data-savestaff="${id||''}">${editing?'수정 저장':'추가'}</button>
+    </div>`);
+  bindActions();
+}
+function saveStaff(id){
+  const f = document.getElementById('staffForm');
+  const name = f.name.value.trim();
+  if(!name){ toast('⚠ 이름을 입력하세요.'); return; }
+  const role = f.role.value;
+  const shippers = Array.from(f.querySelectorAll('input[name="shippers"]:checked')).map(c=>c.value);
+  if(id){
+    const st = DB.staff.find(s=>s.id===id);
+    st.name=name; st.role=role; st.shippers=shippers;
+    toast('✏️ 직원 정보가 수정되었습니다.');
+  } else {
+    const newId = 'S'+(DB.staff.filter(s=>s.role!=='admin').length+1)+Date.now().toString().slice(-3);
+    DB.staff.push({ id:newId, name, role, shippers });
+    toast(`✅ ${name} 직원이 추가되었습니다.`);
+  }
+  // 담당 화주 → 해당 화물에 staff 자동 배정
+  reassignByShippers();
+  closeModal();
+  render();
+}
+function delStaff(id){
+  const st = DB.staff.find(s=>s.id===id);
+  if(!confirm(`${st.name} 직원을 삭제할까요? 담당 화물은 미배정으로 바뀝니다.`)) return;
+  DB.staff = DB.staff.filter(s=>s.id!==id);
+  [...DB.shipments,...DB.imports].forEach(s=>{ if(s.staff===id) s.staff=''; });
+  closeModal(); render();
+  toast('직원이 삭제되었습니다.');
+}
+// 담당 화주 기준으로 화물에 직원 자동 배정
+function reassignByShippers(){
+  [...DB.shipments,...DB.imports].forEach(s=>{
+    const c = custOf(s);
+    const owner = DB.staff.find(st=>st.role!=='admin' && (st.shippers||[]).includes(c));
+    if(owner) s.staff = owner.id;
+  });
 }
 
 function viewAssistant(){
@@ -825,7 +1007,13 @@ function viewShipmentList(type){
   const me = activeStaff();
   // 담당 직원 필터: 관리자면 전체, 직원이면 본인 담당만 (단 전체보기 토글 가능)
   const viewAll = window._staffViewAll || me.role==='admin';
-  const list = viewAll ? allList : allList.filter(s=>s.staff===me.id);
+  const list0 = viewAll ? allList : allList.filter(s=>s.staff===me.id);
+  // 단계 필터
+  const stepFilter = window._stepFilter || 0; // 0=전체
+  const list = stepFilter ? list0.filter(s=>wfStepOf(s)===stepFilter) : list0;
+  // 단계별 건수
+  const stepCounts = {};
+  WORKFLOW.forEach(w=> stepCounts[w.step] = list0.filter(s=>wfStepOf(s)===w.step).length);
   const staffOpts = DB.staff.map(s=>`<option value="${s.id}" ${s.id===window._activeStaff?'selected':''}>${s.name}${s.role==='admin'?' (전체)':''}</option>`).join('');
   const myCount = allList.filter(s=>s.staff===me.id).length;
 
@@ -850,6 +1038,10 @@ function viewShipmentList(type){
   <div class="panel">
     <div class="panel-head"><div class="panel-title">${label} 건 목록 <span class="tag">${list.length}건</span></div>
       <div style="display:flex;gap:8px"><button class="btn btn-ai btn-sm" data-aiparse="${type}">🤖 AI 자동 등록</button><button class="btn btn-primary btn-sm" data-new="${type}">+ 직접 등록</button></div></div>
+    <div class="step-tabs">
+      <button class="step-tab ${stepFilter===0?'on':''}" data-stepfilter="0">전체 <span class="step-tab-n">${list0.length}</span></button>
+      ${WORKFLOW.map(w=>`<button class="step-tab ${stepFilter===w.step?'on':''}" data-stepfilter="${w.step}">${w.icon} ${w.title} <span class="step-tab-n">${stepCounts[w.step]}</span></button>`).join('')}
+    </div>
     <div class="filter-bar">
       <input type="text" placeholder="🔍 화주명, 건번호, B/L로 검색" id="searchBox" data-type="${type}">
       <select id="statusFilter" data-type="${type}"><option value="">전체 상태</option><option value="booking">부킹</option><option value="sailing">선적완료</option><option value="transit">운송중</option><option value="arrived">입항</option><option value="delay">지연</option></select>
@@ -2032,7 +2224,7 @@ function shipmentDetail(id, type){
   openModal(`
     <div class="modal-head"><h3>${s.id} · ${s.type==='export'?'수출':'수입'} 상세${s.jobNo?` <span style="font-size:12px;color:var(--ink-soft)">· ${s.jobNo}</span>`:''} <span class="staff-tag ${editable?'mine':''}" style="margin-left:6px">${staffName(s.staff)}</span></h3><button class="modal-x" onclick="closeModal()">×</button></div>
     <div class="modal-body">
-      <!-- 진행 단계 (작게) -->
+      <!-- 진행 단계 (상단 가로 풀폭) -->
       <div class="wf-mini-track">
         <div class="wf-mini-head"><b>STEP ${cur}/${TOT}</b> · ${curStep.title} <span class="wf-who">${curStep.who}</span></div>
         <div class="wf-track">${WORKFLOW.map(w=>`
@@ -2041,42 +2233,47 @@ function shipmentDetail(id, type){
           </div>`).join('')}</div>
       </div>
 
-      <!-- 지금 할 일 (강조) -->
-      <div class="now-card">${nowAction}
-        ${cur>1?`<button class="now-back" data-wfback="${s.id}|${type}">← 이전 단계로 되돌리기</button>`:''}
-      </div>
-
-      <!-- 화물 정보 -->
-      <div class="detail-sec-label">📦 화물 정보 <span style="font-size:11px;color:var(--ink-faint);font-weight:400">(✏️ 클릭하면 수정)</span></div>
-      <div class="detail-grid">
-        <div class="detail-cell"><div class="k">실거래처 (청구처)</div><div class="v">${s.customer||s.shipper||wfLock(2)}${(cur>=2&&editable)?` <button class="mini-edit" data-editstep="${s.id}|${type}|2" title="수정">✏️</button>`:''}</div></div>
-        <div class="detail-cell"><div class="k">송하인 (Shipper)</div><div class="v">${s.shipperName||s.shipper||(cur>=2?'(실거래처와 동일)':wfLock(2))}</div></div>
-        <div class="detail-cell"><div class="k">수하인 (Consignee)</div><div class="v">${s.consignee||wfLock(2)}</div></div>
-        <div class="detail-cell"><div class="k">선적항 → 도착항</div><div class="v">${s.pol} → ${s.pod}</div></div>
-        ${rowEdit('선사 (Liner) / 인코텀즈', (cur>=2&&s.carrier)?`${s.carrier} / ${s.incoterms}`:'', 2, 2)}
-        ${rowEdit('Job Number', s.jobNo?`<span class="mono">${s.jobNo}</span>`:'', 2, 2)}
-        ${rowEdit('부킹 번호', s.booking?`<span class="mono">${s.booking}</span>`:'', 3, 3)}
-        ${rowEdit('선박명/항차 (Vessel)', s.vessel?`<span class="mono">${s.vessel}</span>`:'', 3, 3)}
-        ${rowEdit('서류 마감 (Doc CLS)', s.docCls?`<b style="color:var(--danger)">${s.docCls}</b>`:'', 3, 3)}
-        ${rowEdit('화물 마감 (Cargo CLS)', s.cargoCls?`<b style="color:var(--danger)">${s.cargoCls}</b>`:'', 3, 3)}
-        ${rowEdit('Empty 픽업지', s.pickupYard, 3, 3)}
-        ${rowEdit('반입지(코드)', s.inYard, 3, 3)}
-        ${rowEdit('컨테이너 / VGM', s.container?`<span class="mono">${s.container}</span>${s.weight?` · ${s.weight}kg`:''}`:'', 4, 4)}
-        ${rowEdit('환적항 (T/S)', s.ts, 4, 4)}
-        ${rowEdit('B/L 번호', s.bl?`<span class="mono">${s.bl}</span>`:'', 5, 5)}
-        ${rowEdit('도착지 터미널', s.destTerminal, 5, 5)}
-        <div class="detail-cell"><div class="k">품명 / 수량</div><div class="v">${s.commodity} · ${s.qty}</div></div>
-        ${rowEdit('도착예정 (ETA)', s.eta, 5, 5)}
-        <div class="detail-cell"><div class="k">손익</div><div class="v">${cur>=2&&s.revenue?`<span style="color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span> <span style="font-size:11px;color:var(--ink-soft)">(매출 ${won(s.revenue)}${cur>=5&&s.cost?`, 원가 ${won(s.cost)}`:', 원가 '+wfLockShort(5)})</span> ${(cur>=2&&editable)?`<button class="mini-edit" data-editstep="${s.id}|${type}|2" title="수정">✏️</button>`:''}`:wfLock(2)}</div></div>
-        ${s.memo?`<div class="detail-cell full"><div class="k">메모</div><div class="v" style="font-weight:500">${s.memo}</div></div>`:''}
-        ${s.confirmStatus?`<div class="detail-cell full"><div class="k">화주 컨펌 상태</div><div class="v" style="font-weight:700;color:${(CONFIRM_LABEL[s.confirmStatus]||{}).color||'#888'}">${(CONFIRM_LABEL[s.confirmStatus]||{}).label||s.confirmStatus}${s.confirmedAt?` <span style="font-size:11px;color:var(--ink-soft);font-weight:400">(${s.confirmedAt})</span>`:''}</div></div>`:''}
+      <!-- 좌우 2단: 왼쪽 지금할일 / 오른쪽 화물정보 -->
+      <div class="detail-2col">
+        <div class="detail-col-left">
+          <div class="now-card">${nowAction}
+            ${cur>1&&editable?`<button class="now-back" data-wfback="${s.id}|${type}">← 이전 단계로 되돌리기</button>`:''}
+          </div>
+          ${editable?`<button class="btn btn-ghost btn-sm detail-tools-btn" data-moretools="${s.id}|${type}">⚙️ 기타 작업 (컨펌·서류대조·부킹시트·인보이스·B/L)</button>`:''}
+        </div>
+        <div class="detail-col-right">
+          <div class="detail-sec-label">📦 화물 정보 <span style="font-size:11px;color:var(--ink-faint);font-weight:400">(✏️ 클릭하면 수정)</span></div>
+          <div class="detail-grid">
+            <div class="detail-cell"><div class="k">실거래처 (청구처)</div><div class="v">${s.customer||s.shipper||wfLock(2)}${(cur>=2&&editable)?` <button class="mini-edit" data-editstep="${s.id}|${type}|2" title="수정">✏️</button>`:''}</div></div>
+            <div class="detail-cell"><div class="k">송하인 (Shipper)</div><div class="v">${s.shipperName||s.shipper||(cur>=2?'(실거래처와 동일)':wfLock(2))}</div></div>
+            <div class="detail-cell"><div class="k">수하인 (Consignee)</div><div class="v">${s.consignee||wfLock(2)}</div></div>
+            <div class="detail-cell"><div class="k">선적항 → 도착항</div><div class="v">${s.pol} → ${s.pod}</div></div>
+            ${rowEdit('선사 / 인코텀즈', (cur>=2&&s.carrier)?`${s.carrier} / ${s.incoterms}`:'', 2, 2)}
+            ${rowEdit('Job Number', s.jobNo?`<span class="mono">${s.jobNo}</span>`:'', 2, 2)}
+            ${rowEdit('부킹 번호', s.booking?`<span class="mono">${s.booking}</span>`:'', 3, 3)}
+            ${rowEdit('선박명/항차', s.vessel?`<span class="mono">${s.vessel}</span>`:'', 3, 3)}
+            ${rowEdit('서류 마감', s.docCls?`<b style="color:var(--danger)">${s.docCls}</b>`:'', 3, 3)}
+            ${rowEdit('화물 마감', s.cargoCls?`<b style="color:var(--danger)">${s.cargoCls}</b>`:'', 3, 3)}
+            ${rowEdit('Empty 픽업지', s.pickupYard, 3, 3)}
+            ${rowEdit('반입지(코드)', s.inYard, 3, 3)}
+            ${rowEdit('컨테이너 / VGM', s.container?`<span class="mono">${s.container}</span>${s.weight?` · ${s.weight}kg`:''}`:'', 4, 4)}
+            ${rowEdit('환적항 (T/S)', s.ts, 4, 4)}
+            ${rowEdit('B/L 번호', s.bl?`<span class="mono">${s.bl}</span>`:'', 5, 5)}
+            ${rowEdit('도착지 터미널', s.destTerminal, 5, 5)}
+            <div class="detail-cell"><div class="k">품명 / 수량</div><div class="v">${s.commodity} · ${s.qty}</div></div>
+            ${rowEdit('도착예정 (ETA)', s.eta, 5, 5)}
+            <div class="detail-cell full"><div class="k">손익</div><div class="v">${cur>=2&&s.revenue?`<span style="color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span> <span style="font-size:11px;color:var(--ink-soft)">(매출 ${won(s.revenue)}${cur>=5&&s.cost?`, 원가 ${won(s.cost)}`:', 원가 '+wfLockShort(5)})</span> ${(cur>=2&&editable)?`<button class="mini-edit" data-editstep="${s.id}|${type}|2" title="수정">✏️</button>`:''}`:wfLock(2)}</div></div>
+            ${s.memo?`<div class="detail-cell full"><div class="k">메모</div><div class="v" style="font-weight:500">${s.memo}</div></div>`:''}
+            ${s.confirmStatus?`<div class="detail-cell full"><div class="k">화주 컨펌 상태</div><div class="v" style="font-weight:700;color:${(CONFIRM_LABEL[s.confirmStatus]||{}).color||'#888'}">${(CONFIRM_LABEL[s.confirmStatus]||{}).label||s.confirmStatus}${s.confirmedAt?` <span style="font-size:11px;color:var(--ink-soft);font-weight:400">(${s.confirmedAt})</span>`:''}</div></div>`:''}
+          </div>
+        </div>
       </div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost btn-sm" data-moretools="${s.id}|${type}">⚙️ 기타 작업 ▾</button>
       <span style="flex:1"></span>
       <button class="btn btn-ghost" onclick="closeModal()">닫기</button>
-    </div>`);
+    </div>`, 'xwide');
   bindActions();
 }
 
@@ -2090,7 +2287,8 @@ function moreToolsMenu(id, type){
         <button class="tool-item" data-cfopenmodal="${id}|${type}"><span class="tool-ico">📋</span><div><b>화주 컨펌</b><br><span class="cell-sub">화주에게 발주 내역 확인받기</span></div></button>
         <button class="tool-item" data-vfopen="${id}|${type}"><span class="tool-ico">🔍</span><div><b>서류 대조</b><br><span class="cell-sub">컨펌·B/L·인보이스 자동 비교</span></div></button>
         <button class="tool-item" data-doc="invoice" data-shipid="${id}" data-type="${type}"><span class="tool-ico">📄</span><div><b>인보이스 출력</b><br><span class="cell-sub">건별 인보이스 PDF</span></div></button>
-        <button class="tool-item" data-doc="bl" data-shipid="${id}" data-type="${type}"><span class="tool-ico">📋</span><div><b>B/L 출력</b><br><span class="cell-sub">B/L 문서 PDF</span></div></button>
+        <button class="tool-item" data-bookingsheet="${id}|${type}"><span class="tool-ico">📋</span><div><b>부킹시트 발행</b><br><span class="cell-sub">부킹장 PDF (화주 전달용)</span></div></button>
+        <button class="tool-item" data-doc="bl" data-shipid="${id}" data-type="${type}"><span class="tool-ico">📄</span><div><b>B/L 출력</b><br><span class="cell-sub">B/L 문서 PDF</span></div></button>
         <button class="tool-item tool-danger" data-delship="${id}" data-type="${type}"><span class="tool-ico">🗑</span><div><b>화물 삭제</b><br><span class="cell-sub">이 건을 삭제합니다</span></div></button>
       </div>
     </div>
@@ -2128,6 +2326,71 @@ function saveEditInfo(id, type, step){
   cloudUpsertShip(s);
   shipmentDetail(id, type);
   toast('✏️ 정보가 수정되었습니다.');
+}
+
+// 부킹시트(부킹장) PDF 생성 — 실제 JDI 양식 기반
+function bookingSheet(id, type){
+  const s = findShip(id, type); if(!s) return;
+  if(!s.booking){ toast('⚠ 부킹번호가 없습니다. STEP 3에서 부킹번호를 먼저 입력하세요.'); return; }
+  const ship = DB.partners.find(p=>p.name===custOf(s)) || {};
+  const today = new Date().toISOString().slice(0,10);
+  const row = (label, val) => `<tr><td class="bs-label">${label}</td><td class="bs-val">${val||'-'}</td></tr>`;
+  const w = window.open('','_blank');
+  w.document.write(`<html><head><title>부킹시트 - ${s.booking}</title><style>
+    @media print{.noprint{display:none;}}
+    body{font-family:'Malgun Gothic',sans-serif;margin:0;background:#f5f5f5;color:#1a2733;}
+    .page{max-width:760px;margin:20px auto;background:#fff;padding:40px 44px;box-shadow:0 2px 16px rgba(0,0,0,.1);}
+    .hd{border-bottom:3px solid #0B2545;padding-bottom:16px;margin-bottom:20px;}
+    .hd .co{font-size:20px;font-weight:800;color:#0B2545;}
+    .hd .sub{font-size:11px;color:#5B6B7A;margin-top:3px;letter-spacing:.5px;}
+    .meta{display:flex;justify-content:space-between;font-size:12px;color:#5B6B7A;margin-bottom:6px;}
+    .title{font-size:22px;font-weight:800;color:#0B2545;text-align:center;margin:8px 0 18px;letter-spacing:2px;}
+    .recv{font-size:12.5px;margin-bottom:4px;}
+    .recv b{color:#0B2545;}
+    table{width:100%;border-collapse:collapse;margin-top:10px;}
+    .bs-label{background:#F1F6FA;color:#0B2545;font-weight:700;font-size:12px;padding:9px 12px;width:30%;border:1px solid #D8E0E6;}
+    .bs-val{font-size:12.5px;padding:9px 12px;border:1px solid #D8E0E6;font-family:monospace;}
+    .remark{margin-top:16px;background:#FFF8E8;border:1px solid #E8C57A;border-radius:8px;padding:12px 14px;font-size:11.5px;color:#7A5C12;line-height:1.7;}
+    .foot{margin-top:24px;font-size:11px;color:#92A0AC;text-align:center;border-top:1px solid #eee;padding-top:12px;}
+    .btn{background:#0B2545;color:#fff;border:none;border-radius:8px;padding:11px 22px;font-size:14px;cursor:pointer;margin:18px 6px 0;}
+  </style></head><body>
+  <div class="page">
+    <div class="hd">
+      <div class="co">SeaFlow Forwarding</div>
+      <div class="sub">INTERNATIONAL FREIGHT FORWARDER · SEA · IN-LAND · WAREHOUSING</div>
+    </div>
+    <div class="meta"><span>수신: ${custOf(s)} ${ship.manager?`/ ${ship.manager}`:''}</span><span>${today}</span></div>
+    <div class="meta"><span>발신: SeaFlow Forwarding</span><span></span></div>
+    <div class="title">B O O K I N G   S H E E T</div>
+    <div class="recv">제목: <b>SHIPMENT INFORMATION (${s.pol.split('(')[0]} → ${s.pod.split('(')[0]})</b></div>
+    <table>
+      ${row('Master Booking No.', s.booking)}
+      ${row('Shipper Name', s.shipperName||s.shipper)}
+      ${row('실거래처', custOf(s))}
+      ${row('Liner (선사)', s.carrier)}
+      ${row('POL (선적항)', s.pol)}
+      ${row('POD (도착항)', s.pod)}
+      ${row('Vessel / Carrier', s.vessel)}
+      ${row('Document Closing', s.docCls)}
+      ${row('Cargo Closing', s.cargoCls)}
+      ${row('ETD', s.etd)}
+      ${row('ETA', s.eta)}
+      ${row('Volume (수량)', s.qty)}
+      ${row('Item (품목)', s.commodity)}
+      ${row('픽업지 (Empty)', s.pickupYard)}
+      ${row('반입지', s.inYard)}
+      ${row('도착지 터미널', s.destTerminal)}
+    </table>
+    ${(s.ts||s.memo)?`<div class="remark"><b>REMARK</b><br>${s.ts?`* T/S: ${s.ts}<br>`:''}${s.memo?`* ${s.memo}<br>`:''}* 상기 일정은 선사 사정에 의해 변동될 수 있습니다.</div>`:'<div class="remark">* 상기 일정은 선사 사정에 의해 변동될 수 있습니다.</div>'}
+    <div class="foot">본 부킹시트는 SeaFlow 시스템에서 자동 생성되었습니다.</div>
+    <div class="noprint" style="text-align:center">
+      <button class="btn" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+      <button class="btn" style="background:#3A7CA5" onclick="window.location.href='mailto:${ship.email||''}?subject=${encodeURIComponent('[부킹시트] '+custOf(s)+' '+s.pol.split('(')[0]+'→'+s.pod.split('(')[0])}&body=${encodeURIComponent('부킹시트 송부드리오니 확인 부탁드립니다.\n\n부킹번호: '+s.booking+'\n선박: '+(s.vessel||'')+'\nETD: '+(s.etd||'')+' / ETA: '+(s.eta||'')+'\n\nPDF는 첨부해 주세요.\n\nSeaFlow Forwarding')}'">📧 화주에게 메일</button>
+      <button class="btn" style="background:#5B6B7A" onclick="window.close()">닫기</button>
+    </div>
+  </div></body></html>`);
+  w.document.close();
+  toast('📋 부킹시트를 생성했어요. 인쇄/PDF 저장 또는 화주에게 메일로 보내세요.');
 }
 
 // 화물에서 바로 견적 작성 (화물 정보 자동 채움 → 선사·운임만 입력)
@@ -2217,7 +2480,9 @@ function stepActionBtn(s, type){
   const A = {
     1: { label:'💱 견적 작성하기', act:`data-quotefromship="${s.id}|${type}"`, note:'화물 정보로 선사별 운임 견적 작성 → 화주 발송' },
     2: { label:'📋 화주 컨펌 받기', act:`data-cfopenmodal="${s.id}|${type}"`, note:'화주에게 발주 내역 확인 + 정보 입력' },
-    3: { label:'🚢 스케줄 조회·선사 부킹', act:`data-gostep="schedule"`, note:'선사 페이지에서 S/R 제출·부킹' },
+    3: s.booking
+       ? { label:'📋 부킹시트 발행 (화주 전달)', act:`data-bookingsheet="${s.id}|${type}"`, note:'부킹장 PDF 생성 → 화주에게 전달' }
+       : { label:'🚢 스케줄 조회·선사 부킹', act:`data-gostep="schedule"`, note:'선사 페이지에서 S/R 제출·부킹번호 받기' },
     4: { label:'🔍 서류 대조 (S/I 확인)', act:`data-vfopen="${s.id}|${type}"`, note:'화주서류·B/L·인보이스 대조 후 S/I 제출' },
     5: { label:'📜 B/L·운임 처리', act:`data-editstep="${s.id}|${type}|5"`, note:'선사 인보이스·원가·B/L·ETA 입력' },
     6: { label:'💰 월말 통합 청구', act:`data-gostep="receivable"`, note:'월말 청구서 발행 → 세무사 자료' },
@@ -2593,6 +2858,16 @@ function bindActions(){
   document.querySelectorAll('[data-deleg]').forEach(b=> b.onclick = ()=>{ const id=b.dataset.deleg; window._delegated[id]=!window._delegated[id]; toast(window._delegated[id]?`🔓 ${staffName(id)} 업무 대리 권한을 열었어요.`:`🔒 ${staffName(id)} 대리 권한을 닫았어요.`); render(); });
   // 전체 보기 토글 (직원)
   const sva=$('#staffViewAll'); if(sva) sva.onchange = ()=>{ window._staffViewAll = sva.checked; render(); };
+  // 단계 탭 필터
+  document.querySelectorAll('[data-stepfilter]').forEach(b=> b.onclick = ()=>{ window._stepFilter = Number(b.dataset.stepfilter); render(); });
+  // 직원 관리
+  document.querySelectorAll('[data-addstaff]').forEach(b=> b.onclick = ()=> staffModal(null));
+  document.querySelectorAll('[data-editstaff]').forEach(b=> b.onclick = ()=> staffModal(b.dataset.editstaff));
+  document.querySelectorAll('[data-savestaff]').forEach(b=> b.onclick = ()=> saveStaff(b.dataset.savestaff||null));
+  document.querySelectorAll('[data-delstaff]').forEach(b=> b.onclick = ()=> delStaff(b.dataset.delstaff));
+  document.querySelectorAll('[data-viewstaffwork]').forEach(b=> b.onclick = ()=>{ window._activeStaff=b.dataset.viewstaffwork; window._staffViewAll=false; window._stepFilter=0; current='export'; document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view==='export')); $('#pageTitle').textContent='수출 관리'; render(); });
+  // 부킹시트 발행
+  document.querySelectorAll('[data-bookingsheet]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.bookingsheet.split('|'); bookingSheet(id,t); });
   document.querySelectorAll('#kindSeg button').forEach(btn=> btn.onclick = ()=>{ document.querySelectorAll('#kindSeg button').forEach(x=>x.classList.remove('on')); btn.classList.add('on'); $('#partnerRows').innerHTML = renderPartnerRows(btn.dataset.kind); bindActions(); });
   document.querySelectorAll('[data-refresh]').forEach(b=> b.onclick = ()=> toast('📡 선사 API 연동 후 실시간 갱신됩니다.'));
   document.querySelectorAll('[data-tax]').forEach(b=> b.onclick = ()=> toast('🧾 홈택스 전자세금계산서 연동 예정입니다.'));
