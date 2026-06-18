@@ -233,6 +233,14 @@
   .wf-mini-track .wf-node { position:relative; padding-bottom:18px; }
   .wf-mini-track .wf-track { margin-bottom:6px; }
   .wf-node.current .wf-node-label { color:var(--navy); font-weight:700; }
+
+  /* AI 다건 등록 테이블 */
+  .ai-multi-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .ai-multi-table th { background:#F1F6FA; color:var(--navy); padding:8px 6px; text-align:left; font-weight:700; white-space:nowrap; border-bottom:2px solid var(--line); }
+  .ai-multi-table td { padding:4px; border-bottom:1px solid var(--line); }
+  .ai-cell { width:100%; min-width:80px; border:1px solid transparent; background:#FFFDF5; border-radius:5px; padding:6px 7px; font-size:12px; font-family:inherit; }
+  .ai-cell:focus { border-color:var(--sky); background:#fff; outline:none; }
+  .ai-row-chk { width:16px; height:16px; cursor:pointer; }
   .now-back { display:block; width:100%; margin-top:8px; background:transparent; border:none; color:rgba(255,255,255,.6); font-size:11.5px; cursor:pointer; padding:4px; }
   .now-back:hover { color:#fff; }
   .now-done { font-size:15px; font-weight:700; text-align:center; padding:8px; }
@@ -541,6 +549,10 @@ if(CLOUD){ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
 
 const DB = {
   shipments: [
+    // ===== 실제 자료 기반 샘플 (부킹장·이메일) =====
+    { id:'EXP-2510', type:'export', mode:'sea', customer:'금호미쓰이화학', shipperName:'유니드', shipper:'금호미쓰이화학', consignee:'NHAVA SHEVA IMPORTER', pol:'광양(KRKAN)', pod:'NHAVA SHEVA(INNSA)', carrier:'HMM', booking:'SELA12192700', vessel:'HMM DIAMOND 0010W', docCls:'6/26 11:00', cargoCls:'6/27', pickupYard:'E-TRANS', inYard:'KIT(06277033)', ts:'NINGBO', destTerminal:'NHAVA SHEVA', bl:'', container:'', weight:0, incoterms:'FOB', commodity:'PH (화학품)', qty:'20RF x 5 (-20도)', status:'booking', etd:'2026-06-29', eta:'2026-07-24', revenue:8500000, cost:0, paid:false, blReleased:false, workflowStep:3, billingMonth:'2026-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', memo:'냉동 -20도 / 도착 최대 10~14일 지연 가능 / T/S 닝보' },
+    { id:'EXP-2511', type:'export', mode:'sea', customer:'MS CHEM', shipperName:'MS CHEM INTERNATIONAL', shipper:'MS CHEM', consignee:'SHANGHAI CHEM CO.', pol:'부산(KRPUS)', pod:'상해(CNSHA)', carrier:'ONE', booking:'SELGB0492600', vessel:'MARIA C 0095S', docCls:'6/19 14:00', cargoCls:'6/23', pickupYard:'', inYard:'', ts:'', destTerminal:'SIPG WAIGAOQIAO', bl:'', container:'', weight:0, incoterms:'FOB', commodity:'화학 원료', qty:'1 x 20GP', status:'booking', etd:'2026-06-25', eta:'2026-06-27', revenue:1800000, cost:0, paid:false, blReleased:false, workflowStep:2, billingMonth:'2026-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', memo:'화주 요청으로 모선 여러 번 변경 (IRENES RALLY→PHOEBE→MARIA C). 작업일 협의중' },
+
     // ===== 대한정밀(주) — 자동차 부품 수출 (3건) =====
     { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'고려해운', booking:'KMTC25B0887', bl:'KMTCBSC2501', container:'KMTU1234567', incoterms:'FOB', commodity:'자동차 엔진 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-08', eta:'2025-06-14', revenue:4200000, cost:3350000, paid:false, blReleased:true, workflowStep:6, billingMonth:'2025-06', billed:false, invoiceFromCarrier:3350000, confirmStatus:'confirmed', memo:'' },
     { id:'EXP-2502', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'OSAKA AUTO PARTS', pol:'부산(KRPUS)', pod:'오사카(JPOSA)', carrier:'HMM', booking:'HDMU25B1120', bl:'', container:'HMMU3340125', incoterms:'CIF', commodity:'브레이크 패드', qty:'2 x 20GP', status:'booking', etd:'2025-06-18', eta:'2025-06-24', revenue:3100000, cost:0, paid:false, blReleased:false, workflowStep:4, billingMonth:'2025-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', memo:'' },
@@ -601,6 +613,8 @@ const WORKFLOW = [
 ];
 function wfStepOf(s){ return s.workflowStep || 1; }
 function wfTotalSteps(){ return WORKFLOW.length; }
+// 청구·정산 대상 = 실거래처(customer) 우선, 없으면 기존 화주
+function custOf(s){ return s.customer || (s.type==='export'?s.shipper:s.consignee); }
 
 
 const $ = (s, el=document) => el.querySelector(s);
@@ -838,7 +852,7 @@ function viewPortal(){
   const transitByShipper = {};
   [...DB.shipments, ...DB.imports].forEach(s=>{
     if(s.status==='transit'||s.status==='delay'){
-      const c = s.type==='export'?s.shipper:s.consignee;
+      const c = custOf(s);
       (transitByShipper[c] = transitByShipper[c]||[]).push(s);
     }
   });
@@ -938,7 +952,7 @@ function buildAlertMail(name, ships){
 
 function sendShipperAlert(name){
   const ships = [...DB.shipments, ...DB.imports].filter(s=>{
-    const c = s.type==='export'?s.shipper:s.consignee;
+    const c = custOf(s);
     return c===name && (s.status==='transit'||s.status==='delay');
   });
   if(!ships.length){ toast('운송중인 화물이 없습니다.'); return; }
@@ -951,7 +965,7 @@ function sendAllAlerts(){
   const byShipper = {};
   [...DB.shipments, ...DB.imports].forEach(s=>{
     if(s.status==='transit'||s.status==='delay'){
-      const c = s.type==='export'?s.shipper:s.consignee;
+      const c = custOf(s);
       (byShipper[c]=byShipper[c]||[]).push(s);
     }
   });
@@ -1097,7 +1111,7 @@ function viewReceivable(){
   // 청구 그룹: { 화주|월 : { customer, month, items[], total, billed, paid } }
   const groups = {};
   all.forEach(s=>{
-    const customer = s.type==='export'?s.shipper:s.consignee;
+    const customer = custOf(s);
     const month = s.billingMonth || (s.etd||'').slice(0,7) || '미정';
     const key = customer+'|'+month;
     if(!groups[key]) groups[key] = { customer, month, items:[], total:0, billed:false };
@@ -1186,7 +1200,7 @@ function exportAccountingExcel(month){
     '청구월': month,
     '건번호': s.id,
     '구분': s.type==='export'?'수출':'수입',
-    '거래처(화주)': s.type==='export'?s.shipper:s.consignee,
+    '거래처(화주)': custOf(s),
     '품목': s.commodity,
     '노선': `${(s.pol||'').split('(')[0]}→${(s.pod||'').split('(')[0]}`,
     '선사': s.carrier,
@@ -1211,7 +1225,7 @@ function exportAccountingExcel(month){
 
   // 시트3: 손익 요약 (화주별)
   const byCustomer = {};
-  items.forEach(s=>{ const c=s.type==='export'?s.shipper:s.consignee; if(!byCustomer[c])byCustomer[c]={rev:0,cost:0,cnt:0}; byCustomer[c].rev+=s.revenue||0; byCustomer[c].cost+=s.cost||0; byCustomer[c].cnt++; });
+  items.forEach(s=>{ const c=custOf(s); if(!byCustomer[c])byCustomer[c]={rev:0,cost:0,cnt:0}; byCustomer[c].rev+=s.revenue||0; byCustomer[c].cost+=s.cost||0; byCustomer[c].cnt++; });
   const summaryRows = Object.entries(byCustomer).map(([c,v])=>({
     '거래처(화주)': c, '건수': v.cnt, '매출(원)': v.rev, '매입(원가,원)': v.cost, '영업이익(원)': v.rev-v.cost, '이익률': v.rev?Math.round((v.rev-v.cost)/v.rev*100)+'%':'-'
   }));
@@ -1535,42 +1549,41 @@ function viewSettings(){
 }
 
 const SAMPLE_DOCS = {
-  email: `안녕하세요, 대한정밀 김상호 부장입니다.
-아래 건 선적 부탁드립니다.
+  // 간단한 양식 (코스폴물산처럼 짧게 보내는 화주)
+  email: `수신: 강연지 매니저님
 
-수출자: 대한정밀(주)
-수입자(Consignee): OSAKA MACHINERY CO., LTD
-선적항: 부산항
-도착항: 일본 오사카
-품목: 자동차 엔진 부품
-수량: 40피트 1대 (40HC x 1)
-인코텀즈: FOB 부산
-선적 희망일: 6월 20일경
-선사는 HMM으로 부탁드려요.
-견적가는 420만원으로 협의된 건입니다.
+안녕하세요 코스폴물산 김지혜 입니다.
+하기와 같이 부킹 요청 드립니다.
 
-감사합니다.`,
-  excel: `S/R No.\t2025-0612
-Shipper\t서울화학
-Consignee\tHANOI CHEMICAL TRADING
-POL\tInchon, Korea
-POD\tHai Phong, Vietnam
-Commodity\t산업용 화학원료 (비위험)
-Q'ty\t20GP x 2
-Incoterms\tCIF
-Carrier\tSM Line
-ETD\t2025-06-25
-Freight\tKRW 5,600,000`,
+40FT *3FCL
+KARACHI
+6월 말일배
+출하지: 한화토탈
+
+감사합니다.
+김지혜 배상`,
+  // 복잡한 표 양식 — 여러 건 (금호미쓰이처럼 표로 보내는 화주)
+  excel: `Dear JDI TEAM
+Please arrange shipment
+
+Invoice No,\tPO NO,\tAREA\tCustomer\tProduct\tPacking\tQty(MT)\tETD\tIncoterms\tPOL\tPOD\tVessel
+20147149\tHPP-PH260413\tINDIA\tHORIZON\tPH\tDrum\t84.6MT(RF,5FCL)\t4/30\tCIF\tKWANGYANG\tNHAVA SHEVA\tASAP
+20147180\tHPP-PH260413\tINDIA\tHORIZON\tPH\tDrum\t84.6MT(RF,5FCL)\t5/2\tCIF\tKWANGYANG\tNHAVA SHEVA\tASAP
+
+금호미쓰이화학 해외영업2팀 유자헌 대리`,
+  // 영문 Commercial Invoice (MS CHEM 실제)
   invoice: `COMMERCIAL INVOICE
-Seller: 한빛전자
-Buyer: BERLIN ELECTRONICS GMBH
-Port of Loading: Busan, Korea
-Port of Discharge: Hamburg, Germany
-Description: LED Display Modules
-Quantity: 1 x 40' High Cube
-Terms: CIF Hamburg
-Carrier: HMM
-Total: USD 52,000`
+Shipper: MS CHEM INTERNATIONAL CO., LTD. (BUSAN, KOREA)
+Buyer: UNITED INITIATORS (SHANGHAI) CO. LTD.
+Notify Party: UNITED INITIATORS (SHANGHAI) CO. LTD.
+Port of Loading: BUSAN, KOREA
+Final Destination: SHANGHAI, CHINA
+Carrier: ACX DIAMOND 0364S
+Commodity: Chemical Initiators
+Quantity: 1 x 20GP
+Terms: CIF SHANGHAI
+Invoice No: MS260521-GR-AC01
+Terms of Payment: 60 DAYS AFTER BL`
 };
 
 function aiParseModal(type, prefillText){
@@ -1599,8 +1612,8 @@ function aiParseModal(type, prefillText){
         <div>
           <div class="ai-samples" style="margin-bottom:8px">
             <span style="font-size:11px;color:var(--ink-soft)">예시:</span>
-            <span class="ai-sample-chip" data-sample="email">📧 이메일 S/R</span>
-            <span class="ai-sample-chip" data-sample="excel">📊 엑셀 표</span>
+            <span class="ai-sample-chip" data-sample="email">📧 간단 요청 (1건)</span>
+            <span class="ai-sample-chip" data-sample="excel">📊 표 양식 (여러 건)</span>
             <span class="ai-sample-chip" data-sample="invoice">📄 영문 인보이스</span>
           </div>
           <textarea class="ai-textarea" id="aiInput" placeholder="여기에 화주 서류 내용을 붙여넣으세요...">${prefillText||''}</textarea>
@@ -1731,7 +1744,13 @@ async function runAiParse(type){
     let raw = (data.result||'').replace(/```json/gi,'').replace(/```/g,'').trim();
     const parsed = JSON.parse(raw);
     window._pendingImage = null;
-    showAiReview(type, parsed);
+    // 여러 건(배열)이면 다건 미리보기, 단건이면 기존 폼
+    const list = Array.isArray(parsed) ? parsed : (parsed.shipments && Array.isArray(parsed.shipments) ? parsed.shipments : null);
+    if(list && list.length>1){
+      showAiMultiReview(type, list);
+    } else {
+      showAiReview(type, Array.isArray(parsed)?parsed[0]:(list?list[0]:parsed));
+    }
   } catch(err){
     $('#modalBox').querySelector('.modal-body').innerHTML = `
       <div class="ai-loading">
@@ -1741,6 +1760,78 @@ async function runAiParse(type){
         <button class="btn btn-ghost" onclick="closeModal()">닫기</button>
       </div>`;
   }
+}
+
+// 여러 건(표 양식) → 한 번에 등록 미리보기
+function showAiMultiReview(type, list){
+  window._aiMultiList = list.map((d,i)=>({ ...d, _idx:i, _on:true }));
+  const f = (v)=> (v===undefined||v===null)?'':v;
+  const rows = window._aiMultiList.map((d,i)=>`
+    <tr>
+      <td style="text-align:center"><input type="checkbox" class="ai-row-chk" data-idx="${i}" checked></td>
+      <td><input class="ai-cell" data-idx="${i}" data-k="shipper" value="${f(d.shipper||d.customer)}" placeholder="화주"></td>
+      <td><input class="ai-cell" data-idx="${i}" data-k="consignee" value="${f(d.consignee)}" placeholder="수하인"></td>
+      <td><input class="ai-cell" data-idx="${i}" data-k="pol" value="${f(d.pol)}" placeholder="POL"></td>
+      <td><input class="ai-cell" data-idx="${i}" data-k="pod" value="${f(d.pod)}" placeholder="POD"></td>
+      <td><input class="ai-cell" data-idx="${i}" data-k="commodity" value="${f(d.commodity)}" placeholder="품명"></td>
+      <td><input class="ai-cell" data-idx="${i}" data-k="qty" value="${f(d.qty)}" placeholder="수량"></td>
+      <td><input class="ai-cell" data-idx="${i}" data-k="carrier" value="${f(d.carrier)}" placeholder="선사"></td>
+      <td><input class="ai-cell" data-idx="${i}" data-k="etd" value="${f(d.etd)}" placeholder="ETD"></td>
+    </tr>`).join('');
+  $('#modalBox').querySelector('.modal-body').innerHTML = `
+    <div class="ai-result-banner">
+      <span class="ico">✨</span>
+      <div><b>AI 분석 완료 — ${list.length}건 발견!</b> <span style="font-size:12.5px;color:var(--ink-soft)">화주가 표로 여러 건을 보냈네요. 확인·수정 후 한 번에 등록하세요. (체크 해제하면 제외)</span></div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="ai-multi-table">
+        <thead><tr><th>등록</th><th>화주</th><th>수하인</th><th>POL</th><th>POD</th><th>품명</th><th>수량</th><th>선사</th><th>ETD</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <p style="font-size:11.5px;color:var(--ink-soft);margin-top:10px">💡 각 칸을 클릭해 수정할 수 있어요. 빈 칸은 나중에 단계별로 채우면 됩니다.</p>`;
+  const foot = $('#modalBox').querySelector('.modal-foot');
+  foot.innerHTML = `<button class="btn btn-ghost" onclick="closeModal()">취소</button><button class="btn btn-primary" data-savemulti="${type}">✓ 선택한 건 한 번에 등록</button>`;
+  // 셀 수정 반영
+  document.querySelectorAll('.ai-cell').forEach(inp=> inp.oninput = ()=>{ const i=+inp.dataset.idx; window._aiMultiList[i][inp.dataset.k]=inp.value; });
+  document.querySelectorAll('.ai-row-chk').forEach(chk=> chk.onchange = ()=>{ const i=+chk.dataset.idx; window._aiMultiList[i]._on=chk.checked; });
+  bindActions();
+  toast(`✨ ${list.length}건을 발견했어요! 확인 후 등록하세요.`);
+}
+
+function saveMultiShips(type){
+  const list = (window._aiMultiList||[]).filter(d=>d._on);
+  if(!list.length){ toast('⚠ 등록할 건을 선택하세요.'); return; }
+  let n = 0;
+  list.forEach(d=>{
+    if(!d.shipper && !d.consignee) return;
+    const prefix = type==='export'?'EXP':'IMP';
+    const arr = type==='export'?DB.shipments:DB.imports;
+    const id = `${prefix}-${2500 + DB.shipments.length + DB.imports.length + n + 1}`;
+    const ship = {
+      id, type, mode:'sea',
+      shipper: d.shipper||d.customer||'(미입력)', customer: d.customer||d.shipper||'',
+      consignee: d.consignee||'(미입력)',
+      pol: d.pol||'', pod: d.pod||'', carrier: d.carrier||'',
+      booking:'', bl:'', container:'', incoterms: d.incoterms||'FOB',
+      commodity: d.commodity||'', qty: d.qty||'', status:'booking',
+      etd: d.etd||'', eta: d.eta||'', revenue: Number(d.revenue)||0, cost:0,
+      paid:false, blReleased:false, workflowStep:1,
+      billingMonth: (d.etd||'').slice(0,7) || new Date().toISOString().slice(0,7),
+      billed:false, invoiceFromCarrier:0, confirmStatus:'pending',
+      memo: d.memo||'AI 일괄 등록'
+    };
+    arr.push(ship);
+    cloudUpsertShip(ship);
+    n++;
+  });
+  window._aiMultiList = null;
+  closeModal();
+  current = type; 
+  document.querySelectorAll('.nav-item').forEach(nv=>nv.classList.toggle('active', nv.dataset.view===type));
+  if($('#pageTitle')) $('#pageTitle').textContent = TITLES[type]||type;
+  render();
+  toast(`✅ ${n}건이 한 번에 등록됐어요! 각 건의 단계를 진행하세요.`);
 }
 
 function showAiReview(type, d){
@@ -1890,14 +1981,22 @@ function shipmentDetail(id, type){
       <!-- 화물 정보 -->
       <div class="detail-sec-label">📦 화물 정보 <span style="font-size:11px;color:var(--ink-faint);font-weight:400">(✏️ 클릭하면 수정)</span></div>
       <div class="detail-grid">
-        <div class="detail-cell"><div class="k">화주 (Shipper)</div><div class="v">${s.shipper}</div></div>
+        <div class="detail-cell"><div class="k">실거래처 (청구처)</div><div class="v">${s.customer||s.shipper||wfLock(2)}${cur>=2?` <button class="mini-edit" data-editstep="${s.id}|${type}|2" title="수정">✏️</button>`:''}</div></div>
+        <div class="detail-cell"><div class="k">송하인 (Shipper)</div><div class="v">${s.shipperName||s.shipper||(cur>=2?'(실거래처와 동일)':wfLock(2))}</div></div>
         <div class="detail-cell"><div class="k">수하인 (Consignee)</div><div class="v">${s.consignee||wfLock(2)}</div></div>
         <div class="detail-cell"><div class="k">선적항 → 도착항</div><div class="v">${s.pol} → ${s.pod}</div></div>
-        ${rowEdit('선사 / 인코텀즈', (cur>=2&&s.carrier)?`${s.carrier} / ${s.incoterms}`:'', 2, 2)}
+        ${rowEdit('선사 (Liner) / 인코텀즈', (cur>=2&&s.carrier)?`${s.carrier} / ${s.incoterms}`:'', 2, 2)}
         ${rowEdit('Job Number', s.jobNo?`<span class="mono">${s.jobNo}</span>`:'', 2, 2)}
         ${rowEdit('부킹 번호', s.booking?`<span class="mono">${s.booking}</span>`:'', 3, 3)}
+        ${rowEdit('선박명/항차 (Vessel)', s.vessel?`<span class="mono">${s.vessel}</span>`:'', 3, 3)}
+        ${rowEdit('서류 마감 (Doc CLS)', s.docCls?`<b style="color:var(--danger)">${s.docCls}</b>`:'', 3, 3)}
+        ${rowEdit('화물 마감 (Cargo CLS)', s.cargoCls?`<b style="color:var(--danger)">${s.cargoCls}</b>`:'', 3, 3)}
+        ${rowEdit('Empty 픽업지', s.pickupYard, 3, 3)}
+        ${rowEdit('반입지(코드)', s.inYard, 3, 3)}
         ${rowEdit('컨테이너 / VGM', s.container?`<span class="mono">${s.container}</span>${s.weight?` · ${s.weight}kg`:''}`:'', 4, 4)}
+        ${rowEdit('환적항 (T/S)', s.ts, 4, 4)}
         ${rowEdit('B/L 번호', s.bl?`<span class="mono">${s.bl}</span>`:'', 5, 5)}
+        ${rowEdit('도착지 터미널', s.destTerminal, 5, 5)}
         <div class="detail-cell"><div class="k">품명 / 수량</div><div class="v">${s.commodity} · ${s.qty}</div></div>
         ${rowEdit('도착예정 (ETA)', s.eta, 5, 5)}
         <div class="detail-cell"><div class="k">손익</div><div class="v">${cur>=2&&s.revenue?`<span style="color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span> <span style="font-size:11px;color:var(--ink-soft)">(매출 ${won(s.revenue)}${cur>=5&&s.cost?`, 원가 ${won(s.cost)}`:', 원가 '+wfLockShort(5)})</span> ${(cur>=2)?`<button class="mini-edit" data-editstep="${s.id}|${type}|2" title="수정">✏️</button>`:''}`:wfLock(2)}</div></div>
@@ -2038,10 +2137,10 @@ function wfLockShort(step){ return `<span class="wf-lock" style="font-size:10px"
 
 // 단계별로 입력받아야 할 정보 정의 (6단계 기준, 단계 진입 시 입력)
 const STEP_INPUTS = {
-  2: { fields:[ {k:'carrier',label:'선택된 선사',ph:'예: 고려해운'}, {k:'revenue',label:'운임(매출, 원)',ph:'4200000',type:'number'}, {k:'jobNo',label:'Job Number',ph:'예: SF-2506-001'} ], title:'컨펌·등록 — 선사·운임·Job No.' },
-  3: { fields:[ {k:'booking',label:'부킹번호 (Booking No.)',ph:'선사가 준 부킹번호'} ], title:'부킹 — 부킹번호' },
-  4: { fields:[ {k:'container',label:'컨테이너 번호',ph:'예: KMTU1234567'}, {k:'weight',label:'총중량 VGM (kg)',ph:'18000',type:'number'} ], title:'서류·S/I — 컨테이너·VGM' },
-  5: { fields:[ {k:'cost',label:'선사 운임(원가, 원)',ph:'3350000',type:'number'}, {k:'bl',label:'B/L 번호',ph:'선사 발행 B/L'}, {k:'eta',label:'도착예정 ETA',ph:'2025-06-28',type:'date'} ], title:'B/L·운임 — 원가·B/L·ETA' },
+  2: { fields:[ {k:'carrier',label:'선택된 선사 (Liner)',ph:'예: HMM'}, {k:'revenue',label:'운임(매출, 원)',ph:'4200000',type:'number'}, {k:'jobNo',label:'Job Number',ph:'예: SF-2506-001'}, {k:'customer',label:'실거래처 (청구처)',ph:'예: 금호미쓰이화학'}, {k:'shipperName',label:'송하인 Shipper (B/L용)',ph:'예: 유니드'} ], title:'컨펌·등록 — 선사·운임·거래처' },
+  3: { fields:[ {k:'booking',label:'부킹번호 (Master Booking No.)',ph:'예: SELA12192700'}, {k:'vessel',label:'선박명/항차 (Vessel)',ph:'예: HMM DIAMOND 0010W'}, {k:'docCls',label:'서류 마감 (Doc Closing)',ph:'예: 6/26 11:00'}, {k:'cargoCls',label:'화물 마감 (Cargo Closing)',ph:'예: 6/27'}, {k:'pickupYard',label:'Empty 픽업지',ph:'예: E-TRANS'}, {k:'inYard',label:'반입지(코드)',ph:'예: KIT(06277033)'} ], title:'부킹 — 부킹번호·선박·마감·픽업/반입지' },
+  4: { fields:[ {k:'container',label:'컨테이너 번호',ph:'예: KMTU1234567'}, {k:'weight',label:'총중량 VGM (kg)',ph:'18000',type:'number'}, {k:'ts',label:'환적항 T/S (있으면)',ph:'예: NINGBO'} ], title:'서류·S/I — 컨테이너·VGM·환적' },
+  5: { fields:[ {k:'cost',label:'선사 운임(원가, 원)',ph:'3350000',type:'number'}, {k:'bl',label:'B/L 번호',ph:'선사 발행 B/L'}, {k:'eta',label:'도착예정 ETA',ph:'2025-06-28',type:'date'}, {k:'destTerminal',label:'도착지 터미널',ph:'예: SIPG WAIGAOQIAO'} ], title:'B/L·운임 — 원가·B/L·ETA·터미널' },
 };
 
 // 단계별 "실제 작업" 버튼 (6단계 기준)
@@ -2375,6 +2474,7 @@ function bindActions(){
   });
   document.querySelectorAll('[data-newpartner]').forEach(b=> b.onclick = ()=>{ openModal(partnerForm()); bindActions(); });
   document.querySelectorAll('[data-saveship]').forEach(b=> b.onclick = ()=> saveShipment(b.dataset.saveship));
+  document.querySelectorAll('[data-savemulti]').forEach(b=> b.onclick = ()=> saveMultiShips(b.dataset.savemulti));
   document.querySelectorAll('[data-savepartner]').forEach(b=> b.onclick = savePartner);
   // 컨펌 시스템 버튼
   document.querySelectorAll('[data-cfopenmodal]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.cfopenmodal.split('|'); openConfirmModal(id,t); });
