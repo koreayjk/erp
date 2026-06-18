@@ -115,11 +115,22 @@
   .detail-cell .k { font-size: 11.5px; color: var(--ink-soft); font-weight: 500; margin-bottom: 3px; }
   .detail-cell .v { font-size: 14px; font-weight: 600; }
   /* 상세 좌우 2단 레이아웃 (스크롤 최소화) */
-  .detail-2col { display:grid; grid-template-columns: 1fr 1.15fr; gap:18px; margin-top:16px; align-items:start; }
+  .detail-2col { display:grid; grid-template-columns: 0.85fr 1.25fr; gap:18px; margin-top:16px; align-items:start; }
   .detail-col-left { position:sticky; top:0; }
   .detail-tools-btn { width:100%; margin-top:10px; }
-  .detail-2col .detail-grid { grid-template-columns: 1fr 1fr; }
+  /* 오른쪽 정보 그리드: 3열 + 컴팩트 */
+  .detail-2col .detail-grid { grid-template-columns: 1fr 1fr; gap:1px; }
+  .detail-2col .detail-cell { padding:7px 11px; }
+  .detail-2col .detail-cell .k { font-size:10.5px; margin-bottom:1px; }
+  .detail-2col .detail-cell .v { font-size:12.5px; font-weight:600; line-height:1.35; }
+  .detail-2col .wf-lock { font-size:10.5px; padding:1px 6px; }
+  .detail-2col .mini-edit { font-size:11px; padding:1px 3px; }
   @media (max-width:760px){ .detail-2col { grid-template-columns: 1fr; } .detail-col-left{position:static;} }
+  /* 예정 정보 (아직 안 온 것) 컴팩트 모음 */
+  .pending-info { margin-top:10px; padding:10px 12px; background:#F7F9FB; border:1px dashed var(--line); border-radius:9px; line-height:1.9; }
+  .pending-label { font-size:11px; color:var(--ink-soft); font-weight:600; margin-right:4px; }
+  .pending-chip { display:inline-block; font-size:11px; color:var(--ink-soft); background:#fff; border:1px solid var(--line); border-radius:7px; padding:2px 8px; margin:2px 3px; }
+  .pending-chip em { font-style:normal; color:var(--ink-faint); font-size:10px; }
   .track-flow { display:flex; align-items:center; gap:0; margin: 18px 0 4px; }
   .track-step { flex:1; text-align:center; position:relative; }
   .track-step::after { content:''; position:absolute; top:11px; left:50%; width:100%; height:2px; background: var(--line); z-index:0; }
@@ -298,6 +309,33 @@
   .wl-balanced { margin-top:14px; background:#F0F8F3; border:1px solid #A8D5BA; border-radius:9px; padding:12px 15px; font-size:12.5px; color:var(--ok,#2E8B57); }
   .staff-shipper-pick { display:flex; flex-wrap:wrap; gap:8px; max-height:160px; overflow-y:auto; padding:10px; border:1px solid var(--line); border-radius:8px; }
   .ssp-item { font-size:12px; display:flex; align-items:center; gap:5px; cursor:pointer; background:#F7FAFC; padding:5px 10px; border-radius:7px; }
+
+  /* ===== 변경 알림 ===== */
+  .changed-badge { display:inline-block; background:var(--danger); color:#fff; font-size:9.5px; font-weight:700; padding:1px 6px; border-radius:8px; margin-left:5px; animation:blink 1.5s infinite; }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.55;} }
+  .row-changed { background:#FEF8F2; }
+  .change-alert-banner { background:linear-gradient(135deg,#FFF4E5,#FFE4CC); border:1.5px solid #E8B86A; border-radius:11px; padding:14px 16px; margin-bottom:16px; }
+  .cab-head { font-size:14px; color:#B23A2E; margin-bottom:8px; }
+  .cab-time { font-size:11px; color:#92702A; font-weight:400; margin-left:6px; }
+  .cab-list { display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
+  .cab-item { font-size:12.5px; color:var(--ink); background:rgba(255,255,255,.6); padding:6px 10px; border-radius:7px; }
+  .cab-from { color:var(--ink-soft); text-decoration:line-through; }
+  .cab-to { color:var(--danger); font-weight:700; }
+  .cab-at { font-size:10.5px; color:var(--ink-faint); }
+  .cab-ack { background:#fff; border:1px solid #E8B86A; color:#B23A2E; font-weight:600; }
+  /* AI 업데이트 변경 내역 */
+  .upd-target { background:#F7FAFC; border:1px solid var(--line); border-radius:9px; padding:11px 14px; font-size:13px; margin-bottom:12px; }
+  .vessel-alert { background:#FDECEA; border:1px solid #E8927C; border-radius:9px; padding:11px 14px; font-size:12.5px; color:#B23A2E; margin-bottom:12px; }
+  .chg-label { font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px; }
+  .chg-count { background:var(--danger); color:#fff; font-size:11px; padding:1px 8px; border-radius:10px; margin-left:4px; }
+  .chg-box { border:1px solid var(--line); border-radius:9px; overflow:hidden; }
+  .chg-row { display:grid; grid-template-columns: 1fr 1.3fr 30px 1.3fr; align-items:center; padding:9px 12px; border-bottom:1px solid var(--line); font-size:12.5px; }
+  .chg-row:last-child { border-bottom:none; }
+  .chg-head { background:#F1F6FA; font-weight:700; color:var(--navy); font-size:11.5px; }
+  .chg-field { font-weight:600; color:var(--ink); }
+  .chg-from { color:var(--ink-soft); text-decoration:line-through; }
+  .chg-arrow { text-align:center; color:var(--danger); font-weight:700; }
+  .chg-to { color:var(--danger); font-weight:700; }
   .now-back { display:block; width:100%; margin-top:8px; background:transparent; border:none; color:rgba(255,255,255,.6); font-size:11.5px; cursor:pointer; padding:4px; }
   .now-back:hover { color:#fff; }
   .now-done { font-size:15px; font-weight:700; text-align:center; padding:8px; }
@@ -616,7 +654,7 @@ const DB = {
   shipments: [
     // ===== 실제 자료 기반 샘플 (부킹장·이메일) =====
     { id:'EXP-2510', type:'export', mode:'sea', customer:'금호미쓰이화학', shipperName:'유니드', shipper:'금호미쓰이화학', consignee:'NHAVA SHEVA IMPORTER', pol:'광양(KRKAN)', pod:'NHAVA SHEVA(INNSA)', carrier:'HMM', booking:'SELA12192700', vessel:'HMM DIAMOND 0010W', docCls:'6/26 11:00', cargoCls:'6/27', pickupYard:'E-TRANS', inYard:'KIT(06277033)', ts:'NINGBO', destTerminal:'NHAVA SHEVA', bl:'', container:'', weight:0, incoterms:'FOB', commodity:'PH (화학품)', qty:'20RF x 5 (-20도)', status:'booking', etd:'2026-06-29', eta:'2026-07-24', revenue:8500000, cost:0, paid:false, blReleased:false, workflowStep:3, billingMonth:'2026-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', staff:'S2', memo:'냉동 -20도 / 도착 최대 10~14일 지연 가능 / T/S 닝보' },
-    { id:'EXP-2511', type:'export', mode:'sea', customer:'MS CHEM', shipperName:'MS CHEM INTERNATIONAL', shipper:'MS CHEM', consignee:'SHANGHAI CHEM CO.', pol:'부산(KRPUS)', pod:'상해(CNSHA)', carrier:'ONE', booking:'SELGB0492600', vessel:'MARIA C 0095S', docCls:'6/19 14:00', cargoCls:'6/23', pickupYard:'', inYard:'', ts:'', destTerminal:'SIPG WAIGAOQIAO', bl:'', container:'', weight:0, incoterms:'FOB', commodity:'화학 원료', qty:'1 x 20GP', status:'booking', etd:'2026-06-25', eta:'2026-06-27', revenue:1800000, cost:0, paid:false, blReleased:false, workflowStep:2, billingMonth:'2026-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', staff:'S3', memo:'화주 요청으로 모선 여러 번 변경 (IRENES RALLY→PHOEBE→MARIA C). 작업일 협의중' },
+    { id:'EXP-2511', type:'export', mode:'sea', customer:'MS CHEM', shipperName:'MS CHEM INTERNATIONAL', shipper:'MS CHEM', consignee:'SHANGHAI CHEM CO.', pol:'부산(KRPUS)', pod:'상해(CNSHA)', carrier:'ONE', booking:'SELGB0492600', vessel:'MARIA C 0095S', docCls:'6/19 14:00', cargoCls:'6/23', pickupYard:'', inYard:'', ts:'', destTerminal:'SIPG WAIGAOQIAO', bl:'', container:'', weight:0, incoterms:'FOB', commodity:'화학 원료', qty:'1 x 20GP', status:'booking', etd:'2026-06-25', eta:'2026-06-27', revenue:1800000, cost:0, paid:false, blReleased:false, workflowStep:3, billingMonth:'2026-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', staff:'S3', _changed:true, _changedAt:'06/16 14:23', history:[ {at:'06/16 14:23', field:'선박명', from:'IRENES RALLY 0012S', to:'MARIA C 0095S'}, {at:'06/08 16:10', field:'선박명', from:'PHOEBE 0012S', to:'IRENES RALLY 0012S'} ], memo:'화주 요청으로 모선 여러 번 변경 (PHOEBE→IRENES RALLY(PHASE OUT)→MARIA C 최종확정). 작업일 협의중' },
 
     // ===== 대한정밀(주) — 자동차 부품 수출 (3건) =====
     { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'고려해운', booking:'KMTC25B0887', bl:'KMTCBSC2501', container:'KMTU1234567', incoterms:'FOB', commodity:'자동차 엔진 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-08', eta:'2025-06-14', revenue:4200000, cost:3350000, paid:false, blReleased:true, workflowStep:6, billingMonth:'2025-06', billed:false, invoiceFromCarrier:3350000, confirmStatus:'confirmed', staff:'S1', memo:'' },
@@ -951,8 +989,10 @@ function viewDashboard(){
   all.forEach(s=>{ const st=wfStepOf(s); (byStep[st]=byStep[st]||[]).push(s); });
   // 입금 대기 (정산 단계인데 미입금)
   const needCollect = all.filter(s=>wfStepOf(s)>=6 && !s.paid);
+  const changedShips = all.filter(s=>s._changed);
 
   const actions = [
+    { n:changedShips.length, ico:'🔔', label:'변경 알림', color:'#C0392B', go:'export', desc:'선박·일정 변경된 건' },
     { n:(byStep[1]||[]).length, ico:'💱', label:'견적 단계', color:'#3A7CA5', go:'export', desc:'견적 작성·발송할 건' },
     { n:(byStep[2]||[]).length, ico:'✅', label:'컨펌·등록', color:'#B8862F', go:'export', desc:'화주 확정·Job 등록' },
     { n:(byStep[3]||[]).length, ico:'🚢', label:'부킹 단계', color:'#134074', go:'export', desc:'선사 부킹할 건' },
@@ -1062,7 +1102,8 @@ function renderShipRows(list, type){
     const wfBadge = `<div class="wf-mini">${wf.icon} <b>${wfStepOf(s)}/${wfTotalSteps()}</b></div><div class="cell-sub" style="font-size:10.5px">${wf.title}</div><div class="wf-bar"><div class="wf-bar-fill" style="width:${pct}%"></div></div>`;
     const editable = canEdit(s);
     const staffBadge = `<span class="staff-tag ${editable?'mine':''}">${staffName(s.staff)}</span>${!editable?'<br><span class="cell-sub" style="font-size:9.5px">🔒 보기만</span>':''}`;
-    return `<tr class="${editable?'':'row-locked'}"><td class="mono">${s.id}</td><td>${staffBadge}</td><td><div class="cell-strong">${custOf(s)}</div><div class="cell-sub">${s.consignee}</div></td><td class="cell-sub">${s.pol}<br>→ ${s.pod}</td><td>${s.carrier||'-'}<br><span class="cell-sub mono">${s.bl||'B/L 대기'}</span></td><td style="min-width:120px">${wfBadge}</td><td><span style="font-weight:700;color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span>${cf}</td><td><span class="row-link" data-detail="${s.id}" data-type="${type}">${editable?'진행 →':'보기 →'}</span></td></tr>`;
+    const changedBadge = s._changed ? `<span class="changed-badge" title="${s._changedAt} 변경됨">🔔 변경</span>` : '';
+    return `<tr class="${editable?'':'row-locked'} ${s._changed?'row-changed':''}"><td class="mono">${s.id}${changedBadge}</td><td>${staffBadge}</td><td><div class="cell-strong">${custOf(s)}</div><div class="cell-sub">${s.consignee}</div></td><td class="cell-sub">${s.pol}<br>→ ${s.pod}</td><td>${s.carrier||'-'}<br><span class="cell-sub mono">${s.bl||'B/L 대기'}</span></td><td style="min-width:120px">${wfBadge}</td><td><span style="font-weight:700;color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span>${cf}</td><td><span class="row-link" data-detail="${s.id}" data-type="${type}">${editable?'진행 →':'보기 →'}</span></td></tr>`;
   }).join('');
 }
 
@@ -1999,11 +2040,19 @@ async function runAiParse(type){
     const parsed = JSON.parse(raw);
     window._pendingImage = null;
     // 여러 건(배열)이면 다건 미리보기, 단건이면 기존 폼
-    const list = Array.isArray(parsed) ? parsed : (parsed.shipments && Array.isArray(parsed.shipments) ? parsed.shipments : null);
-    if(list && list.length>1){
-      showAiMultiReview(type, list);
+    const arr = Array.isArray(parsed) ? parsed : (parsed.shipments && Array.isArray(parsed.shipments) ? parsed.shipments : null);
+    if(arr && arr.length>1){
+      showAiMultiReview(type, arr);
     } else {
-      showAiReview(type, Array.isArray(parsed)?parsed[0]:(list?list[0]:parsed));
+      const one = Array.isArray(parsed)?parsed[0]:(arr?arr[0]:parsed);
+      // 기존 화물과 매칭되면 "업데이트" 제안
+      const match = findMatchingShip(one, type);
+      if(match){
+        const changes = diffShip(match, one);
+        showAiUpdateReview(type, match, one, changes);
+      } else {
+        showAiReview(type, one);
+      }
     }
   } catch(err){
     $('#modalBox').querySelector('.modal-body').innerHTML = `
@@ -2014,6 +2063,96 @@ async function runAiParse(type){
         <button class="btn btn-ghost" onclick="closeModal()">닫기</button>
       </div>`;
   }
+}
+
+// ===== AI 추출 → 기존 화물 매칭 / 변경 감지 =====
+function findMatchingShip(d, type){
+  const arr = type==='export'?DB.shipments:DB.imports;
+  if(d.booking){ const m = arr.find(s=>s.booking && s.booking===d.booking); if(m) return m; }
+  const cust = (d.customer||d.shipper||'').trim();
+  if(!cust) return null;
+  return arr.find(s=> (custOf(s)===cust || s.shipper===cust) &&
+      s.pod && d.pod && s.pod.split('(')[0].trim()===d.pod.split('(')[0].trim() &&
+      wfStepOf(s) < wfTotalSteps()) || null;
+}
+const TRACK_FIELDS = [
+  {k:'vessel',label:'선박명'}, {k:'carrier',label:'선사'}, {k:'etd',label:'ETD'}, {k:'eta',label:'ETA'},
+  {k:'docCls',label:'서류마감'}, {k:'cargoCls',label:'화물마감'}, {k:'booking',label:'부킹번호'},
+  {k:'pod',label:'도착항'}, {k:'qty',label:'수량'}, {k:'revenue',label:'운임'},
+];
+function diffShip(existing, d){
+  const changes = [];
+  TRACK_FIELDS.forEach(f=>{
+    const oldV = existing[f.k]||'', newV = d[f.k]||'';
+    if(newV && String(oldV)!==String(newV)){
+      changes.push({ field:f.label, key:f.k, from:oldV||'(없음)', to:newV });
+    }
+  });
+  return changes;
+}
+// 변경 적용 + 이력 기록 + 알림 플래그
+function applyShipUpdate(existing, d, changes){
+  changes.forEach(c=>{ existing[c.key] = d[c.key]; });
+  existing.history = existing.history || [];
+  const now = new Date().toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  changes.forEach(c=> existing.history.unshift({ at:now, field:c.field, from:String(c.from), to:String(c.to) }));
+  existing._changed = true;  // 미확인 변경 플래그
+  existing._changedAt = now;
+  if(d.changeLog && !existing.memo.includes(d.changeLog)) existing.memo = (existing.memo?existing.memo+' / ':'') + d.changeLog;
+  cloudUpsertShip(existing);
+}
+
+// 기존 화물과 매칭됨 → 변경사항 한눈에 보여주고 업데이트
+function showAiUpdateReview(type, existing, d, changes){
+  window._aiUpdate = { type, existingId: existing.id, d };
+  const changeRows = changes.length ? changes.map(c=>`
+    <div class="chg-row">
+      <div class="chg-field">${c.field}</div>
+      <div class="chg-from">${c.from}</div>
+      <div class="chg-arrow">→</div>
+      <div class="chg-to">${c.to}</div>
+    </div>`).join('') : '<div style="padding:14px;color:var(--ink-soft);font-size:13px">변경된 정보가 없습니다. (동일 내용)</div>';
+  const hasVesselChange = changes.some(c=>c.key==='vessel'||c.key==='carrier');
+
+  $('#modalBox').className = 'modal wide';
+  $('#modalBox').querySelector('.modal-body').innerHTML = `
+    <div class="ai-result-banner" style="background:linear-gradient(135deg,#FFF4E5,#FFE9CC);border-color:#E8B86A;">
+      <span class="ico">🔔</span>
+      <div><b>기존 화물과 일치하는 건을 찾았어요!</b> <span style="font-size:12.5px;color:var(--ink-soft)">새로 등록하지 않고 <b>${existing.id}</b> 건을 업데이트할까요?</span></div>
+    </div>
+    <div class="upd-target">
+      <span class="staff-tag mine">${existing.id}</span>
+      <b>${custOf(existing)}</b> · ${existing.pol} → ${existing.pod} · ${existing.commodity}
+      <span class="cell-sub">(담당: ${staffName(existing.staff)})</span>
+    </div>
+    ${hasVesselChange?`<div class="vessel-alert">⚠️ <b>선사/선박이 변경되었습니다!</b> 작업 일정에 영향이 있을 수 있으니 꼭 확인하세요.</div>`:''}
+    <div class="chg-label">📝 변경 내역 ${changes.length?`<span class="chg-count">${changes.length}건</span>`:''}</div>
+    <div class="chg-box">
+      <div class="chg-row chg-head"><div class="chg-field">항목</div><div class="chg-from">기존</div><div class="chg-arrow"></div><div class="chg-to">변경</div></div>
+      ${changeRows}
+    </div>`;
+  const foot = $('#modalBox').querySelector('.modal-foot');
+  foot.innerHTML = `
+    <button class="btn btn-ghost" data-ainewinstead="${type}">새 건으로 등록</button>
+    <span style="flex:1"></span>
+    <button class="btn btn-ghost" onclick="closeModal()">취소</button>
+    <button class="btn btn-primary" data-applyupdate="1" ${changes.length?'':'disabled'}>✓ ${existing.id} 업데이트</button>`;
+  bindActions();
+  toast('🔔 기존 화물과 일치하는 건을 찾았어요!');
+}
+function applyAiUpdate(){
+  const u = window._aiUpdate; if(!u) return;
+  const existing = findShip(u.existingId, u.type); if(!existing) return;
+  const changes = diffShip(existing, u.d);
+  applyShipUpdate(existing, u.d, changes);
+  window._aiUpdate = null;
+  closeModal();
+  current = u.type;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.view===u.type));
+  if($('#pageTitle')) $('#pageTitle').textContent = TITLES[u.type]||u.type;
+  render();
+  toast(`✅ ${existing.id} 업데이트 완료! ${changes.length}개 항목이 변경됐어요.`);
+  setTimeout(()=> shipmentDetail(existing.id, u.type), 300);
 }
 
 // 여러 건(표 양식) → 한 번에 등록 미리보기
@@ -2212,18 +2351,25 @@ function shipmentDetail(id, type){
       </button>`;
   }
 
-  // 정보 행: 입력된 건 수정버튼(담당자만), 안 된 건 잠금
+  // 정보 행: 채워진 건 그리드, 안 채워진 건 별도 모음
+  const pendingRows = [];  // 아직 안 온 정보 [{label, step}]
   const rowEdit = (label, val, lockStep, editStep) => {
     if(val){
       const showEdit = editable && editStep && STEP_INPUTS[editStep];
       return `<div class="detail-cell"><div class="k">${label}</div><div class="v">${val}${showEdit?` <button class="mini-edit" data-editstep="${s.id}|${type}|${editStep}" title="수정">✏️</button>`:''}</div></div>`;
     }
-    return `<div class="detail-cell"><div class="k">${label}</div><div class="v">${wfLock(lockStep)}</div></div>`;
+    pendingRows.push({ label, step:lockStep });
+    return '';  // 빈 항목은 그리드에서 빼고 아래 모음으로
   };
 
   openModal(`
     <div class="modal-head"><h3>${s.id} · ${s.type==='export'?'수출':'수입'} 상세${s.jobNo?` <span style="font-size:12px;color:var(--ink-soft)">· ${s.jobNo}</span>`:''} <span class="staff-tag ${editable?'mine':''}" style="margin-left:6px">${staffName(s.staff)}</span></h3><button class="modal-x" onclick="closeModal()">×</button></div>
     <div class="modal-body">
+      ${s._changed ? `<div class="change-alert-banner">
+        <div class="cab-head">🔔 <b>최근 변경된 화물입니다</b> <span class="cab-time">${s._changedAt}</span></div>
+        <div class="cab-list">${(s.history||[]).slice(0,5).map(h=>`<div class="cab-item"><b>${h.field}</b>: <span class="cab-from">${h.from}</span> → <span class="cab-to">${h.to}</span> <span class="cab-at">(${h.at})</span></div>`).join('')}</div>
+        ${editable?`<button class="btn btn-sm cab-ack" data-ackchange="${s.id}|${type}">✓ 확인했어요</button>`:''}
+      </div>`:''}
       <!-- 진행 단계 (상단 가로 풀폭) -->
       <div class="wf-mini-track">
         <div class="wf-mini-head"><b>STEP ${cur}/${TOT}</b> · ${curStep.title} <span class="wf-who">${curStep.who}</span></div>
@@ -2266,6 +2412,7 @@ function shipmentDetail(id, type){
             ${s.memo?`<div class="detail-cell full"><div class="k">메모</div><div class="v" style="font-weight:500">${s.memo}</div></div>`:''}
             ${s.confirmStatus?`<div class="detail-cell full"><div class="k">화주 컨펌 상태</div><div class="v" style="font-weight:700;color:${(CONFIRM_LABEL[s.confirmStatus]||{}).color||'#888'}">${(CONFIRM_LABEL[s.confirmStatus]||{}).label||s.confirmStatus}${s.confirmedAt?` <span style="font-size:11px;color:var(--ink-soft);font-weight:400">(${s.confirmedAt})</span>`:''}</div></div>`:''}
           </div>
+          ${pendingRows.length?`<div class="pending-info"><span class="pending-label">🔒 아직 입력 전 (단계 진행 시 채워짐):</span> ${pendingRows.map(p=>`<span class="pending-chip">${p.label} <em>STEP ${p.step}</em></span>`).join('')}</div>`:''}
         </div>
       </div>
     </div>
@@ -2808,6 +2955,9 @@ function bindActions(){
   document.querySelectorAll('[data-newpartner]').forEach(b=> b.onclick = ()=>{ openModal(partnerForm()); bindActions(); });
   document.querySelectorAll('[data-saveship]').forEach(b=> b.onclick = ()=> saveShipment(b.dataset.saveship));
   document.querySelectorAll('[data-savemulti]').forEach(b=> b.onclick = ()=> saveMultiShips(b.dataset.savemulti));
+  // AI 업데이트
+  document.querySelectorAll('[data-applyupdate]').forEach(b=> b.onclick = ()=> applyAiUpdate());
+  document.querySelectorAll('[data-ainewinstead]').forEach(b=> b.onclick = ()=>{ const t=b.dataset.ainewinstead; const d=window._aiUpdate?window._aiUpdate.d:null; window._aiUpdate=null; if(d) showAiReview(t, d); });
   document.querySelectorAll('[data-savepartner]').forEach(b=> b.onclick = savePartner);
   // 컨펌 시스템 버튼
   document.querySelectorAll('[data-cfopenmodal]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.cfopenmodal.split('|'); openConfirmModal(id,t); });
@@ -2868,6 +3018,8 @@ function bindActions(){
   document.querySelectorAll('[data-viewstaffwork]').forEach(b=> b.onclick = ()=>{ window._activeStaff=b.dataset.viewstaffwork; window._staffViewAll=false; window._stepFilter=0; current='export'; document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view==='export')); $('#pageTitle').textContent='수출 관리'; render(); });
   // 부킹시트 발행
   document.querySelectorAll('[data-bookingsheet]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.bookingsheet.split('|'); bookingSheet(id,t); });
+  // 변경 확인 처리 (배지 제거)
+  document.querySelectorAll('[data-ackchange]').forEach(b=> b.onclick = ()=>{ const [id,t]=b.dataset.ackchange.split('|'); const s=findShip(id,t); if(s){ s._changed=false; cloudUpsertShip(s); toast('✓ 변경 사항을 확인 처리했어요.'); shipmentDetail(id,t); } });
   document.querySelectorAll('#kindSeg button').forEach(btn=> btn.onclick = ()=>{ document.querySelectorAll('#kindSeg button').forEach(x=>x.classList.remove('on')); btn.classList.add('on'); $('#partnerRows').innerHTML = renderPartnerRows(btn.dataset.kind); bindActions(); });
   document.querySelectorAll('[data-refresh]').forEach(b=> b.onclick = ()=> toast('📡 선사 API 연동 후 실시간 갱신됩니다.'));
   document.querySelectorAll('[data-tax]').forEach(b=> b.onclick = ()=> toast('🧾 홈택스 전자세금계산서 연동 예정입니다.'));
