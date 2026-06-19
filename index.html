@@ -653,8 +653,8 @@ const DB = {
   ],
   shipments: [
     // ===== 실제 자료 기반 샘플 (부킹장·이메일) =====
-    { id:'EXP-2510', type:'export', mode:'sea', customer:'금호미쓰이화학', shipperName:'유니드', shipper:'금호미쓰이화학', consignee:'NHAVA SHEVA IMPORTER', pol:'광양(KRKAN)', pod:'NHAVA SHEVA(INNSA)', carrier:'HMM', booking:'SELA12192700', vessel:'HMM DIAMOND 0010W', docCls:'6/26 11:00', cargoCls:'6/27', pickupYard:'E-TRANS', inYard:'KIT(06277033)', ts:'NINGBO', destTerminal:'NHAVA SHEVA', bl:'', container:'', weight:0, incoterms:'FOB', commodity:'PH (화학품)', qty:'20RF x 5 (-20도)', status:'booking', etd:'2026-06-29', eta:'2026-07-24', revenue:8500000, cost:0, paid:false, blReleased:false, workflowStep:3, billingMonth:'2026-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', staff:'S2', memo:'냉동 -20도 / 도착 최대 10~14일 지연 가능 / T/S 닝보' },
-    { id:'EXP-2511', type:'export', mode:'sea', customer:'MS CHEM', shipperName:'MS CHEM INTERNATIONAL', shipper:'MS CHEM', consignee:'SHANGHAI CHEM CO.', pol:'부산(KRPUS)', pod:'상해(CNSHA)', carrier:'ONE', booking:'SELGB0492600', vessel:'MARIA C 0095S', docCls:'6/19 14:00', cargoCls:'6/23', pickupYard:'', inYard:'', ts:'', destTerminal:'SIPG WAIGAOQIAO', bl:'', container:'', weight:0, incoterms:'FOB', commodity:'화학 원료', qty:'1 x 20GP', status:'booking', etd:'2026-06-25', eta:'2026-06-27', revenue:1800000, cost:0, paid:false, blReleased:false, workflowStep:3, billingMonth:'2026-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', staff:'S3', _changed:true, _changedAt:'06/16 14:23', history:[ {at:'06/16 14:23', field:'선박명', from:'IRENES RALLY 0012S', to:'MARIA C 0095S'}, {at:'06/08 16:10', field:'선박명', from:'PHOEBE 0012S', to:'IRENES RALLY 0012S'} ], memo:'화주 요청으로 모선 여러 번 변경 (PHOEBE→IRENES RALLY(PHASE OUT)→MARIA C 최종확정). 작업일 협의중' },
+    { id:'EXP-2510', type:'export', mode:'sea', customer:'금호미쓰이화학', shipperName:'유니드', shipper:'금호미쓰이화학', consignee:'NHAVA SHEVA IMPORTER', pol:'광양(KRKAN)', pod:'NHAVA SHEVA(INNSA)', carrier:'HMM', booking:'SELA12192700', vessel:'HMM DIAMOND 0010W', docCls:'6/26 11:00', cargoCls:'6/27', pickupYard:'E-TRANS', inYard:'KIT(06277033)', ts:'NINGBO', destTerminal:'NHAVA SHEVA', bl:'', container:'', weight:0, incoterms:'FOB', commodity:'PH (화학품)', qty:'20RF x 5 (-20도)', status:'booking', etd:'2026-06-29', eta:'2026-07-24', revenueUsd:5500, revenue:1300000, costUsd:0, cost:0, exRate:1352, revenue_legacy:8500000, paid:false, blReleased:false, workflowStep:3, billingMonth:'2026-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', staff:'S2', memo:'냉동 -20도 / 도착 최대 10~14일 지연 가능 / T/S 닝보' },
+    { id:'EXP-2511', type:'export', mode:'sea', customer:'MS CHEM', shipperName:'MS CHEM INTERNATIONAL', shipper:'MS CHEM', consignee:'SHANGHAI CHEM CO.', pol:'부산(KRPUS)', pod:'상해(CNSHA)', carrier:'ONE', booking:'SELGB0492600', vessel:'MARIA C 0095S', docCls:'6/19 14:00', cargoCls:'6/23', pickupYard:'', inYard:'', ts:'', destTerminal:'SIPG WAIGAOQIAO', bl:'', container:'', weight:0, incoterms:'FOB', commodity:'화학 원료', qty:'1 x 20GP', status:'booking', etd:'2026-06-25', eta:'2026-06-27', revenueUsd:1200, revenue:250000, costUsd:0, cost:0, exRate:1352, paid:false, blReleased:false, workflowStep:3, billingMonth:'2026-06', billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', staff:'S3', _changed:true, _changedAt:'06/16 14:23', history:[ {at:'06/16 14:23', field:'선박명', from:'IRENES RALLY 0012S', to:'MARIA C 0095S'}, {at:'06/08 16:10', field:'선박명', from:'PHOEBE 0012S', to:'IRENES RALLY 0012S'} ], memo:'화주 요청으로 모선 여러 번 변경 (PHOEBE→IRENES RALLY(PHASE OUT)→MARIA C 최종확정). 작업일 협의중' },
 
     // ===== 대한정밀(주) — 자동차 부품 수출 (3건) =====
     { id:'EXP-2501', type:'export', mode:'sea', shipper:'대한정밀(주)', consignee:'TOKYO TRADING CO.', pol:'부산(KRPUS)', pod:'도쿄(JPTYO)', carrier:'고려해운', booking:'KMTC25B0887', bl:'KMTCBSC2501', container:'KMTU1234567', incoterms:'FOB', commodity:'자동차 엔진 부품', qty:'1 x 40HC', status:'transit', etd:'2025-06-08', eta:'2025-06-14', revenue:4200000, cost:3350000, paid:false, blReleased:true, workflowStep:6, billingMonth:'2025-06', billed:false, invoiceFromCarrier:3350000, confirmStatus:'confirmed', staff:'S1', memo:'' },
@@ -718,6 +718,23 @@ function wfStepOf(s){ return s.workflowStep || 1; }
 function wfTotalSteps(){ return WORKFLOW.length; }
 // 청구·정산 대상 = 실거래처(customer) 우선, 없으면 기존 화주
 function custOf(s){ return s.customer || (s.type==='export'?s.shipper:s.consignee); }
+
+// ===== 통화/환율 (해상운임 USD + 내륙 원화) =====
+const DEFAULT_EXRATE = 1350; // 기본 전신환매도율 (실제는 화물마다 입력)
+function exRateOf(s){ return s.exRate || DEFAULT_EXRATE; }
+// 매출/원가를 원화로 환산 (원화부분 + USD부분×환율)
+function revKRW(s){ return (s.revenue||0) + (s.revenueUsd||0)*exRateOf(s); }
+function costKRW(s){ return (s.cost||0) + (s.costUsd||0)*exRateOf(s); }
+function profitKRW(s){ return revKRW(s) - costKRW(s); }
+// USD 금액 표시
+function usd(n){ return '$'+(n||0).toLocaleString('en-US'); }
+// 매출/원가 요약 (USD+원화 병행 표시)
+function moneyLabel(usdAmt, krwAmt){
+  const parts = [];
+  if(usdAmt) parts.push(usd(usdAmt));
+  if(krwAmt) parts.push(won(krwAmt));
+  return parts.length? parts.join(' + ') : won(0);
+}
 
 // ===== 담당 직원 / 권한 =====
 // 현재 작업 중인 직원 (로그인 개념). 기본 관리자.
@@ -978,7 +995,7 @@ function viewDashboard(){
   const all = [...DB.shipments, ...DB.imports];
   const active = all.filter(s=>s.status!=='arrived').length;
   const monthRev = all.reduce((a,s)=>a+s.revenue,0);
-  const monthProfit = all.reduce((a,s)=>a+(s.revenue-s.cost),0);
+  const monthProfit = all.reduce((a,s)=>a+profitKRW(s),0);
   const delayed = all.filter(s=>s.status==='delay').length;
   const riskUnpaid = all.filter(s=>!s.paid && s.blReleased).length;
   const recent = all.slice().reverse().slice(0,5);
@@ -1095,7 +1112,7 @@ function viewShipmentList(type){
 function renderShipRows(list, type){
   if(!list.length) return `<tr><td colspan="8"><div class="empty"><div class="empty-ico">📭</div><h4>담당 화물이 없습니다</h4><p>AI 자동 등록 또는 직접 등록으로 시작하세요.</p><button class="btn btn-ai" data-aiparse="${type}">🤖 AI 자동 등록</button></div></td></tr>`;
   return list.map(s=>{
-    const profit = s.revenue - s.cost;
+    const profit = profitKRW(s);
     const cf = s.confirmStatus && s.confirmStatus!=='confirmed' ? `<br><span class="cell-sub" style="color:${(CONFIRM_LABEL[s.confirmStatus]||{}).color||'#888'};font-weight:600">${(CONFIRM_LABEL[s.confirmStatus]||{}).label||''}</span>` : '';
     const wf = WORKFLOW[wfStepOf(s)-1] || WORKFLOW[0];
     const pct = Math.round(wfStepOf(s)/wfTotalSteps()*100);
@@ -1393,7 +1410,7 @@ function viewSettlement(){
     <div class="panel-head"><div class="panel-title">건별 손익 · 세금계산서 <span class="tag">홈택스 연동 예정</span></div></div>
     <div class="panel-body"><table>
       <thead><tr><th>건 번호</th><th>거래처</th><th>매출</th><th>원가</th><th>이익</th><th>이익률</th><th>세금계산서</th></tr></thead>
-      <tbody>${all.map(s=>{ const p = s.revenue-s.cost; const rate = Math.round(p/s.revenue*100); return `<tr><td class="mono">${s.id}</td><td class="cell-strong">${s.type==='export'?s.shipper:s.consignee}</td><td>${won(s.revenue)}</td><td class="cell-sub">${won(s.cost)}</td><td style="font-weight:700;color:${p>=0?'var(--ok)':'var(--danger)'}">${won(p)}</td><td><span class="cell-sub">${rate}%</span></td><td><button class="btn btn-ghost btn-sm" data-tax="${s.id}">발행</button></td></tr>`; }).join('')}</tbody>
+      <tbody>${all.map(s=>{ const rev=revKRW(s); const cst=costKRW(s); const p = rev-cst; const rate = rev?Math.round(p/rev*100):0; return `<tr><td class="mono">${s.id}</td><td class="cell-strong">${custOf(s)}</td><td>${won(rev)}${s.revenueUsd?`<br><span class="cell-sub">(${usd(s.revenueUsd)} 포함)</span>`:''}</td><td class="cell-sub">${won(cst)}</td><td style="font-weight:700;color:${p>=0?'var(--ok)':'var(--danger)'}">${won(p)}</td><td><span class="cell-sub">${rate}%</span></td><td><button class="btn btn-ghost btn-sm" data-tax="${s.id}">발행</button></td></tr>`; }).join('')}</tbody>
     </table></div>
   </div>`;
 }
@@ -2315,7 +2332,7 @@ function partnerForm(){
 function shipmentDetail(id, type){
   const list = type==='export'?DB.shipments:DB.imports;
   const s = list.find(x=>x.id===id); if(!s) return;
-  const profit = s.revenue-s.cost;
+  const profit = profitKRW(s);
   const cur = wfStepOf(s);
   const TOT = wfTotalSteps();
   const curStep = WORKFLOW[cur-1] || WORKFLOW[0];
@@ -2408,7 +2425,7 @@ function shipmentDetail(id, type){
             ${rowEdit('도착지 터미널', s.destTerminal, 5, 5)}
             <div class="detail-cell"><div class="k">품명 / 수량</div><div class="v">${s.commodity} · ${s.qty}</div></div>
             ${rowEdit('도착예정 (ETA)', s.eta, 5, 5)}
-            <div class="detail-cell full"><div class="k">손익</div><div class="v">${cur>=2&&s.revenue?`<span style="color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span> <span style="font-size:11px;color:var(--ink-soft)">(매출 ${won(s.revenue)}${cur>=5&&s.cost?`, 원가 ${won(s.cost)}`:', 원가 '+wfLockShort(5)})</span> ${(cur>=2&&editable)?`<button class="mini-edit" data-editstep="${s.id}|${type}|2" title="수정">✏️</button>`:''}`:wfLock(2)}</div></div>
+            <div class="detail-cell full"><div class="k">손익 (원화 환산)</div><div class="v">${cur>=2&&(s.revenue||s.revenueUsd)?`<span style="color:${profit>=0?'var(--ok)':'var(--danger)'}">${won(profit)}</span> <span style="font-size:11px;color:var(--ink-soft)">(매출 ${moneyLabel(s.revenueUsd,s.revenue)}${cur>=5&&(s.cost||s.costUsd)?`, 원가 ${moneyLabel(s.costUsd,s.cost)}`:', 원가 '+wfLockShort(5)}${(s.revenueUsd||s.costUsd)?` · 환율 ${exRateOf(s).toLocaleString()}`:''})</span> ${(cur>=2&&editable)?`<button class="mini-edit" data-editstep="${s.id}|${type}|2" title="수정">✏️</button>`:''}`:wfLock(2)}</div></div>
             ${s.memo?`<div class="detail-cell full"><div class="k">메모</div><div class="v" style="font-weight:500">${s.memo}</div></div>`:''}
             ${s.confirmStatus?`<div class="detail-cell full"><div class="k">화주 컨펌 상태</div><div class="v" style="font-weight:700;color:${(CONFIRM_LABEL[s.confirmStatus]||{}).color||'#888'}">${(CONFIRM_LABEL[s.confirmStatus]||{}).label||s.confirmStatus}${s.confirmedAt?` <span style="font-size:11px;color:var(--ink-soft);font-weight:400">(${s.confirmedAt})</span>`:''}</div></div>`:''}
           </div>
@@ -2615,10 +2632,10 @@ function wfLockShort(step){ return `<span class="wf-lock" style="font-size:10px"
 
 // 단계별로 입력받아야 할 정보 정의 (6단계 기준, 단계 진입 시 입력)
 const STEP_INPUTS = {
-  2: { fields:[ {k:'carrier',label:'선택된 선사 (Liner)',ph:'예: HMM'}, {k:'revenue',label:'운임(매출, 원)',ph:'4200000',type:'number'}, {k:'jobNo',label:'Job Number',ph:'예: SF-2506-001'}, {k:'customer',label:'실거래처 (청구처)',ph:'예: 금호미쓰이화학'}, {k:'shipperName',label:'송하인 Shipper (B/L용)',ph:'예: 유니드'} ], title:'컨펌·등록 — 선사·운임·거래처' },
+  2: { fields:[ {k:'carrier',label:'선택된 선사 (Liner)',ph:'예: HMM'}, {k:'revenueUsd',label:'해상운임 매출 USD ($)',ph:'3000',type:'number'}, {k:'revenue',label:'내륙·기타 매출 (₩)',ph:'500000',type:'number'}, {k:'exRate',label:'전신환매도율 (USD→₩)',ph:'1350',type:'number'}, {k:'jobNo',label:'Job Number',ph:'예: SF-2506-001'}, {k:'customer',label:'실거래처 (청구처)',ph:'예: 금호미쓰이화학'}, {k:'shipperName',label:'송하인 Shipper (B/L용)',ph:'예: 유니드'} ], title:'컨펌·등록 — 선사·운임(USD/₩)·거래처' },
   3: { fields:[ {k:'booking',label:'부킹번호 (Master Booking No.)',ph:'예: SELA12192700'}, {k:'vessel',label:'선박명/항차 (Vessel)',ph:'예: HMM DIAMOND 0010W'}, {k:'docCls',label:'서류 마감 (Doc Closing)',ph:'예: 6/26 11:00'}, {k:'cargoCls',label:'화물 마감 (Cargo Closing)',ph:'예: 6/27'}, {k:'pickupYard',label:'Empty 픽업지',ph:'예: E-TRANS'}, {k:'inYard',label:'반입지(코드)',ph:'예: KIT(06277033)'} ], title:'부킹 — 부킹번호·선박·마감·픽업/반입지' },
   4: { fields:[ {k:'container',label:'컨테이너 번호',ph:'예: KMTU1234567'}, {k:'weight',label:'총중량 VGM (kg)',ph:'18000',type:'number'}, {k:'ts',label:'환적항 T/S (있으면)',ph:'예: NINGBO'} ], title:'서류·S/I — 컨테이너·VGM·환적' },
-  5: { fields:[ {k:'cost',label:'선사 운임(원가, 원)',ph:'3350000',type:'number'}, {k:'bl',label:'B/L 번호',ph:'선사 발행 B/L'}, {k:'eta',label:'도착예정 ETA',ph:'2025-06-28',type:'date'}, {k:'destTerminal',label:'도착지 터미널',ph:'예: SIPG WAIGAOQIAO'} ], title:'B/L·운임 — 원가·B/L·ETA·터미널' },
+  5: { fields:[ {k:'costUsd',label:'해상운임 원가 USD ($, 선사)',ph:'2500',type:'number'}, {k:'cost',label:'내륙·기타 원가 (₩)',ph:'300000',type:'number'}, {k:'exRate',label:'전신환매도율 (USD→₩)',ph:'1350',type:'number'}, {k:'bl',label:'B/L 번호',ph:'선사 발행 B/L'}, {k:'eta',label:'도착예정 ETA',ph:'2025-06-28',type:'date'}, {k:'destTerminal',label:'도착지 터미널',ph:'예: SIPG WAIGAOQIAO'} ], title:'B/L·운임 — 원가(USD/₩)·B/L·ETA·터미널' },
 };
 
 // 단계별 "실제 작업" 버튼 (6단계 기준)
