@@ -736,6 +736,36 @@ function moneyLabel(usdAmt, krwAmt){
   return parts.length? parts.join(' + ') : won(0);
 }
 
+// ===== 날짜 유틸 / 지연 자동감지 =====
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+// to - from (일수). 입력은 'YYYY-MM-DD'
+function dayDiff(from, to){
+  if(!from || !to) return null;
+  const a = new Date(from+'T00:00:00'), b = new Date(to+'T00:00:00');
+  if(isNaN(a) || isNaN(b)) return null;
+  return Math.round((b - a) / 86400000);
+}
+// 오늘 기준 해당 날짜까지 남은 일수 (음수면 경과)
+function daysUntil(dateStr){ return dayDiff(todayStr(), dateStr); }
+// D-day 표기: D-3 / D-DAY / D+2(경과)
+function ddayLabel(dd){
+  if(dd===null || dd===undefined) return '';
+  if(dd===0) return 'D-DAY';
+  return dd>0 ? 'D-'+dd : 'D+'+(-dd);
+}
+// 화물이 선적(출항) 이후 단계인가
+function isSailed(s){ return ['sailing','transit','arrived'].includes(s.status); }
+// 화물 지연 자동 감지: 명시 지연상태 / ETA 경과인데 미입항 / 메모상 지연 언급
+// 반환: null 또는 { level:'delay'|'risk', label }
+function shipDelayInfo(s){
+  if(s.status==='arrived') return null;
+  if(s.status==='delay') return { level:'delay', label:'지연 확정' };
+  const dU = daysUntil(s.eta);
+  if(s.eta && dU!==null && dU < 0 && isSailed(s)) return { level:'delay', label:`ETA ${-dU}일 경과` };
+  if(/지연/.test(s.memo||'')) return { level:'risk', label:'지연 가능' };
+  return null;
+}
+
 // ===== 담당 직원 / 권한 =====
 // 현재 작업 중인 직원 (로그인 개념). 기본 관리자.
 window._activeStaff = window._activeStaff || 'ADMIN';
@@ -1008,6 +1038,25 @@ function viewDashboard(){
   const needCollect = all.filter(s=>wfStepOf(s)>=6 && !s.paid);
   const changedShips = all.filter(s=>s._changed);
 
+  // ===== 임박·지연 화물 (D-day / 지연 자동감지) =====
+  const urgent = all.filter(s=>s.status!=='arrived').map(s=>{
+    const delay = shipDelayInfo(s);
+    const sailed = isSailed(s);
+    // 선적 전이면 ETD(선적예정), 선적 후면 ETA(도착예정) 기준
+    const refDate = sailed ? s.eta : (s.etd || s.eta);
+    const refLabel = sailed ? 'ETA' : 'ETD';
+    const dd = daysUntil(refDate);
+    return { s, delay, refDate, refLabel, dd };
+  // 지연이거나, 기준일이 임박(3일 경과 ~ 7일 이내)한 건
+  }).filter(x=> x.delay || (x.refDate && x.dd!==null && x.dd>=-3 && x.dd<=7))
+    .sort((a,b)=>{
+      // 지연 먼저, 그 다음 D-day 가까운 순
+      const ad = a.delay?-1:0, bd = b.delay?-1:0;
+      if(ad!==bd) return ad-bd;
+      return (a.dd===null?9999:a.dd) - (b.dd===null?9999:b.dd);
+    }).slice(0,8);
+  const delayCnt = urgent.filter(x=>x.delay).length;
+
   const actions = [
     { n:changedShips.length, ico:'🔔', label:'변경 알림', color:'#C0392B', go:'export', desc:'선박·일정 변경된 건' },
     { n:(byStep[1]||[]).length, ico:'💱', label:'견적 단계', color:'#3A7CA5', go:'export', desc:'견적 작성·발송할 건' },
@@ -1023,7 +1072,31 @@ function viewDashboard(){
     <div class="stat"><div class="stat-label">진행중 건</div><div class="stat-value">${active}<small> 건</small></div><div class="stat-foot">전체 ${all.length}건 중 운송 진행</div></div>
     <div class="stat gold"><div class="stat-label">이번 달 매출</div><div class="stat-value" style="font-size:22px">${won(monthRev)}</div><div class="stat-foot"><span class="up">▲ 12%</span> 전월 대비</div></div>
     <div class="stat ok"><div class="stat-label">이번 달 영업이익</div><div class="stat-value" style="font-size:22px">${won(monthProfit)}</div><div class="stat-foot">이익률 ${monthRev?Math.round(monthProfit/monthRev*100):0}%</div></div>
-    <div class="stat ${(delayed||riskUnpaid)?'warn':''}"><div class="stat-label">주의 경보</div><div class="stat-value">${delayed+riskUnpaid}<small> 건</small></div><div class="stat-foot">${riskUnpaid?`⚠ 미수금 위험 ${riskUnpaid}건`:(delayed?'⚠ 지연 확인 필요':'정상 운영중')}</div></div>
+    <div class="stat ${(delayCnt||riskUnpaid)?'warn':''}"><div class="stat-label">주의 경보</div><div class="stat-value">${delayCnt+riskUnpaid}<small> 건</small></div><div class="stat-foot">${delayCnt?`⚠ 지연 ${delayCnt}건`:''}${delayCnt&&riskUnpaid?' · ':''}${riskUnpaid?`⚠ 미수금 위험 ${riskUnpaid}건`:''}${!delayCnt&&!riskUnpaid?'정상 운영중':''}</div></div>
+  </div>
+
+  <div class="panel" style="margin-bottom:18px;">
+    <div class="panel-head"><div class="panel-title">⏰ 임박·지연 화물 <span class="tag">${urgent.length}건</span>${delayCnt?`<span class="tag" style="background:#C0392B1a;color:#C0392B;margin-left:6px">🚨 지연 ${delayCnt}</span>`:''}</div><button class="btn btn-ghost btn-sm" data-go="tracking">트래킹 →</button></div>
+    <div class="panel-body" style="padding:${urgent.length?'4px 0':'0'};">
+      ${urgent.length ? `<table>
+        <thead><tr><th>D-day</th><th>건 번호</th><th>화주 / 노선</th><th>일정</th><th>상태</th></tr></thead>
+        <tbody>${urgent.map(x=>{
+          const s=x.s;
+          const dl = x.delay;
+          // D-day 뱃지 색: 지연/경과=빨강, D-2이내=주황, 그외=기본
+          const overdue = x.dd!==null && x.dd<0;
+          const ddColor = (dl||overdue)?'#C0392B':(x.dd!==null&&x.dd<=2?'#B8862F':'#134074');
+          const ddTxt = x.refDate ? ddayLabel(x.dd) : '-';
+          return `<tr data-go="tracking" style="cursor:pointer">
+            <td><span class="badge" style="background:${ddColor}1a;color:${ddColor};font-weight:700">${ddTxt}</span></td>
+            <td class="mono">${s.id}</td>
+            <td><div class="cell-strong">${custOf(s)}</div><div class="cell-sub">${s.pol} → ${s.pod}</div></td>
+            <td class="cell-sub">${x.refLabel} ${x.refDate||'미정'}</td>
+            <td><span class="badge ${STATUS_MAP[s.status].cls}">${STATUS_MAP[s.status].label}</span>${dl?` <span class="badge ${dl.level==='delay'?'b-delay':''}" style="${dl.level==='risk'?'background:#B8862F1a;color:#7A5C12':''}">${dl.label}</span>`:''}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>` : '<div style="text-align:center;padding:24px;color:var(--ink-soft)">임박하거나 지연된 화물이 없습니다. 👍</div>'}
+    </div>
   </div>
 
   <div class="panel" style="margin-bottom:18px;">
@@ -1373,12 +1446,18 @@ function renderInbox(){
 
 function viewTracking(){
   const all = [...DB.shipments, ...DB.imports].filter(s=>s.booking);
+  // 지연 자동 감지된 화물
+  const delayed = all.map(s=>({s, d:shipDelayInfo(s)})).filter(x=>x.d);
+  const hardDelay = delayed.filter(x=>x.d.level==='delay');
   return `
   <div class="panel" style="margin-bottom:14px;">
     <div class="panel-head"><div class="panel-title">실시간 항적 추적 <span class="tag">AIS 기반 지도</span></div></div>
     <div class="panel-body" style="padding:14px 18px;">
       <p style="font-size:13px;color:var(--ink-soft);margin-bottom:4px;">부킹·MBL·컨테이너 번호로 선박 위치와 항로를 지도에서 확인합니다. 아래 화물의 부킹번호를 클릭하면 바로 추적됩니다.</p>
-      ${all.length?`<div class="vt-jump">${all.map(s=>`<span class="chip" data-vtjump="${s.booking}">${s.id} · ${s.booking}</span>`).join('')}</div>`:''}
+      ${delayed.length?`<div style="margin:10px 0;padding:10px 12px;border-radius:8px;background:#FBEAE8;border:1px solid #E8C4BF;font-size:12.5px;color:#8A2A1E;line-height:1.7">
+        🚨 <b>지연 자동 감지 ${delayed.length}건</b>${hardDelay.length?` (확정·경과 ${hardDelay.length}건)`:''} — ${delayed.map(x=>`<span style="display:inline-block;margin:2px 4px 0 0;padding:2px 7px;background:#fff;border-radius:5px;border:1px solid #E8C4BF"><b>${x.s.id}</b> ${x.d.label}</span>`).join('')}
+      </div>`:''}
+      ${all.length?`<div class="vt-jump">${all.map(s=>{ const d=shipDelayInfo(s); return `<span class="chip" data-vtjump="${s.booking}"${d?` style="border-color:${d.level==='delay'?'#C0392B':'#B8862F'}"`:''}>${d?(d.level==='delay'?'🚨 ':'⚠ '):''}${s.id} · ${s.booking}</span>`; }).join('')}</div>`:''}
     </div>
   </div>
   <div class="vt-stage">
@@ -1440,10 +1519,21 @@ function viewReceivable(){
   const notBilledTotal = notBilled.reduce((a,g)=>a+g.total,0);
   const unpaidTotal = billedUnpaid.reduce((a,g)=>a+g.items.filter(i=>!i.paid).reduce((x,i)=>x+i.revenue,0),0);
 
+  // ===== 연체 자동 감지 (청구완료·미입금인데 결제예정일 경과) =====
+  function groupPayDueDate(g){
+    const [y,m] = g.month.split('-').map(Number);
+    if(!m) return null;
+    const dy = m===12?y+1:y, dm = m===12?1:m+1;
+    return `${dy}-${String(dm).padStart(2,'0')}-${new Date(dy,dm,0).getDate()}`;
+  }
+  const overdueGroups = billedUnpaid.filter(g=>{ const d=groupPayDueDate(g); return d && daysUntil(d) < 0; });
+  const overdueTotal = overdueGroups.reduce((a,g)=>a+g.items.filter(i=>!i.paid).reduce((x,i)=>x+i.revenue,0),0);
+
   return `
   <div class="stat-grid">
     <div class="stat ${notBilledTotal?'warn':''}"><div class="stat-label">미청구 (이번 달 누적)</div><div class="stat-value" style="font-size:21px">${won(notBilledTotal)}</div><div class="stat-foot">${notBilled.length}개 화주·월</div></div>
     <div class="stat ${unpaidTotal?'':'ok'}" ${unpaidTotal?'style="border-color:var(--gold)"':''}><div class="stat-label">미수금 (청구완료·입금대기)</div><div class="stat-value" style="font-size:21px">${won(unpaidTotal)}</div><div class="stat-foot">${billedUnpaid.length}건 회수 대기</div></div>
+    <div class="stat ${overdueTotal?'warn':'ok'}" ${overdueTotal?'style="border-color:#C0392B"':''}><div class="stat-label">🚨 연체 미수금</div><div class="stat-value" style="font-size:21px;${overdueTotal?'color:#C0392B':''}">${won(overdueTotal)}</div><div class="stat-foot">${overdueTotal?`${overdueGroups.length}건 결제일 경과`:'연체 없음'}</div></div>
     <div class="stat ok"><div class="stat-label">입금 완료</div><div class="stat-value">${fullyPaid.length}<small> 건</small></div></div>
     <div class="stat"><div class="stat-label">청구 그룹 합계</div><div class="stat-value">${groupList.length}<small> 건</small></div></div>
   </div>
@@ -1479,9 +1569,13 @@ function viewReceivable(){
         const billBadge = g.billed
           ? '<span class="badge b-arrived">청구완료</span>'
           : '<span class="badge b-booking">미청구</span>';
+        // 연체 자동 감지: 청구완료·미입금이고 결제예정일 경과
+        const payDueDate = groupPayDueDate(g);
+        const overdueDays = (g.billed && !allPaid && payDueDate) ? daysUntil(payDueDate) : null;
+        const isOverdue = overdueDays!==null && overdueDays < 0;
         const payBadge = !g.billed ? '<span class="cell-sub">-</span>'
           : (allPaid ? '<span class="badge b-sailing badge-static">입금완료</span>'
-             : `<span class="badge b-delay">미입금 ${g.items.length-paidCount}건</span>`);
+             : `<span class="badge b-delay">미입금 ${g.items.length-paidCount}건</span>${isOverdue?` <span class="badge" style="background:#C0392B;color:#fff;font-weight:700">🚨 연체 ${-overdueDays}일</span>`:''}`);
         let action;
         if(!g.billed){
           action = `<button class="btn btn-primary btn-sm" data-billgroup="${g.customer}|${g.month}">🧾 청구서 발행</button>`;
@@ -1493,7 +1587,7 @@ function viewReceivable(){
         // 다음달 말 결제 예정일 계산
         const [y,m] = g.month.split('-').map(Number);
         const payDue = m ? `${m===12?y+1:y}-${String(m===12?1:m+1).padStart(2,'0')}월말` : '-';
-        return `<tr><td class="mono">${g.month}<br><span class="cell-sub">→ ${payDue} 결제</span></td><td class="cell-strong">${g.customer}</td><td class="cell-sub">${g.items.length}건</td><td style="font-weight:700">${won(g.total)}</td><td>${billBadge}</td><td>${payBadge}</td><td>${action}</td></tr>`;
+        return `<tr${isOverdue?' style="background:#FBEAE8"':''}><td class="mono">${g.month}<br><span class="cell-sub" ${isOverdue?'style="color:#C0392B;font-weight:700"':''}>→ ${payDue} 결제${isOverdue?' (경과)':''}</span></td><td class="cell-strong">${g.customer}</td><td class="cell-sub">${g.items.length}건</td><td style="font-weight:700">${won(g.total)}</td><td>${billBadge}</td><td>${payBadge}</td><td>${action}</td></tr>`;
       }).join('')}</tbody>
     </table></div>
   </div>`;
