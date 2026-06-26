@@ -3679,7 +3679,8 @@ async function init(){
    - 선사 Open API 키를 받으면 LIVE_API가 실제 데이터를 반환합니다.
    ============================================================ */
 const VT_DATA = { shipments:{}, aliases:{} };  // 저장 데이터 (현재 비어있음 - 실시간 조회 위주)
-const VT_LIVE_API = "https://btkphqftlesknsngiruy.supabase.co/functions/v1/kmtc-track";
+// 실시간 항적 추적 Edge Function (메인 Supabase 프로젝트로 통합)
+const VT_LIVE_API = FN_BASE ? `${FN_BASE}/kmtc-track` : "";
 const VT_EVMETA={IN_GATE:['게이트 인','Gate In'],LOADED:['본선 적재','Loaded'],VSL_DEP:['출항','Departure'],
   VSL_ARR:['입항','Arrival'],TRANSSHIP:['환적','Transship'],DISCHARGE:['양하','Discharged'],
   GATE_OUT:['게이트 아웃','Gate Out'],TRK_DEP:['트럭 출발','Truck Dep'],TRK_ARR:['트럭 도착','Truck Arr']};
@@ -3817,7 +3818,9 @@ async function vtShow(raw){
     document.getElementById('vtHead').innerHTML=`<div class="vt-empty">⏳ '${raw}' 실시간 조회 중…</div>`;
     document.getElementById('vtCur').innerHTML=''; document.getElementById('vtTl').innerHTML='';
     try{
-      const resp=await fetch(`${VT_LIVE_API}?ref=${encodeURIComponent(vtNorm(raw))}`);
+      const resp=await fetch(`${VT_LIVE_API}?ref=${encodeURIComponent(vtNorm(raw))}`, {
+        headers:{ "Authorization":`Bearer ${SUPABASE_KEY}`, "apikey": SUPABASE_KEY }
+      });
       const data=await resp.json();
       if(data && data.legs && !data.error){
         data.via='BOOKING'; data.fb=false; data.queryRef=raw;
