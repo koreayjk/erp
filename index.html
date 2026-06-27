@@ -1852,14 +1852,15 @@ function saveQuote(){
   if(carriers.length<2){ toast('⚠ 선사 견적을 최소 2개 입력해주세요.'); return; }
   DB.quotes = DB.quotes || [];
   const id = 'QT-' + (2500 + DB.quotes.length + 1);
-  DB.quotes.push({ id, shipper:f.shipper.value, commodity:f.commodity.value||'-', pol:f.pol.value, pod:f.pod.value, qty:f.qty.value||'-', etd:f.etd.value||'-', carriers, status:'draft', selectedCarrier:'' });
+  const qobj = { id, shipper:f.shipper.value, commodity:f.commodity.value||'-', pol:f.pol.value, pod:f.pod.value, qty:f.qty.value||'-', etd:f.etd.value||'-', carriers, status:'draft', selectedCarrier:'' };
+  DB.quotes.push(qobj); cloudUpsertQuote(qobj);
   closeModal(); render();
   toast(`💱 견적 ${id} 생성됨. 화주에게 발송하세요.`);
 }
 
 function sendQuote(id){
   const q = (DB.quotes||[]).find(x=>x.id===id); if(!q) return;
-  q.status='sent'; render();
+  q.status='sent'; cloudUpsertQuote(q); render();
   // 견적 메일 초안
   const ship = DB.partners.find(p=>p.name===q.shipper)||{};
   const lines = q.carriers.map(c=>`· ${c.name}: ₩${c.price.toLocaleString()}`).join('\n');
@@ -1885,7 +1886,7 @@ function fixQuoteModal(id){
 }
 function pickCarrier(id, carrierName){
   const q = (DB.quotes||[]).find(x=>x.id===id); if(!q) return;
-  q.selectedCarrier = carrierName; q.status='fixed';
+  q.selectedCarrier = carrierName; q.status='fixed'; cloudUpsertQuote(q);
   closeModal(); render();
   const sel = q.carriers.find(c=>c.name===carrierName)||{};
   toast(`✅ ${carrierName} 확정! 운임 ${won(sel.price)} FIX. 이제 화물로 등록하세요.`);
@@ -1900,7 +1901,7 @@ function quoteToShipment(id){
   const obj = { id:sid, type:'export', mode:'sea', shipper:q.shipper, consignee:'-', pol:q.pol, pod:q.pod, carrier:q.selectedCarrier, booking:'', bl:'', container:'', incoterms:'FOB', commodity:q.commodity, qty:q.qty, status:'booking', etd:q.etd, eta:'-', revenue:sel.price||0, cost:0, paid:false, blReleased:false, billingMonth:month, billed:false, invoiceFromCarrier:0, confirmStatus:'confirmed', confirmedAt:'', memo:`견적 ${q.id}에서 전환 (${q.selectedCarrier} 선택)` };
   DB.shipments.push(obj); cloudUpsertShip(obj);
   // 견적은 완료 처리 (목록에서 제거)
-  DB.quotes = DB.quotes.filter(x=>x.id!==id);
+  DB.quotes = DB.quotes.filter(x=>x.id!==id); cloudDeleteQuote(id);
   current='export'; render();
   toast(`📦 ${sid} 화물 등록 완료! 이제 ${q.selectedCarrier}에 부킹하세요.`);
 }
@@ -3543,9 +3544,11 @@ async function cloudLoad(){
     // 원본 시드 데이터를 미리 백업 (클라우드가 비었을 때 채우기 위해)
     const seedShips = [...DB.shipments, ...DB.imports];
     const seedParts = [...DB.partners];
+    const seedQuotes = [...(DB.quotes||[])];
 
     const { data: ships } = await sb.from('shipments').select('*').order('created_at',{ascending:true});
     const { data: parts } = await sb.from('partners').select('*').order('created_at',{ascending:true});
+    const { data: quotes } = await sb.from('quotes').select('*').order('created_at',{ascending:true});
 
     // 클라우드가 비어있으면 → 시드 데이터를 올리고, DB는 시드 그대로 유지
     if(ships && ships.length===0){
@@ -3561,6 +3564,13 @@ async function cloudLoad(){
       // DB.partners 는 원본 시드 그대로 둠
     } else if(parts && parts.length){
       DB.partners = parts;
+    }
+
+    if(quotes && quotes.length===0){
+      for(const q of seedQuotes){ try{ await sb.from('quotes').insert(q); }catch(e){} }
+      // DB.quotes 는 원본 시드 그대로 둠
+    } else if(quotes){
+      DB.quotes = quotes;
     }
   } catch(e){ console.warn('cloud load fail', e); }
 }
@@ -3578,6 +3588,8 @@ async function cloudUpsertShip(obj){
 async function cloudDeleteShip(id){ if(CLOUD){ try{ await sb.from('shipments').delete().eq('id',id); }catch(e){console.warn(e);} } }
 async function cloudUpsertPartner(obj){ if(CLOUD){ try{ await sb.from('partners').upsert(obj); }catch(e){console.warn(e);} } }
 async function cloudDeletePartner(id){ if(CLOUD){ try{ await sb.from('partners').delete().eq('id',id); }catch(e){console.warn(e);} } }
+async function cloudUpsertQuote(obj){ if(CLOUD){ try{ await sb.from('quotes').upsert(obj); }catch(e){console.warn(e);} } }
+async function cloudDeleteQuote(id){ if(CLOUD){ try{ await sb.from('quotes').delete().eq('id',id); }catch(e){console.warn(e);} } }
 
 /* ====== 로그인 ====== */
 function enterApp(companyName){

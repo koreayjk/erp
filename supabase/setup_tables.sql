@@ -70,15 +70,34 @@ create table if not exists public.partners (
   "created_at" timestamptz default now()
 );
 
+-- ── 견적 (quotes) ───────────────────────────────────────────────────────────
+create table if not exists public.quotes (
+  "id"              text primary key,
+  "shipper"         text,
+  "commodity"       text,
+  "pol"             text,
+  "pod"             text,
+  "qty"             text,
+  "etd"             text,
+  "status"          text,            -- draft / sent / fixed
+  "selectedCarrier" text,
+  "carriers"        jsonb,           -- [{name, price}, ...]
+  "created_at"      timestamptz default now()
+);
+
 -- ── 권한: anon 키로 읽기/쓰기 허용 (현재 앱 동작과 동일) ──────────────────────
 -- ⚠️ 누구나 anon 키로 접근 가능. 운영 강화 시 정책을 좁히세요.
 alter table public.shipments enable row level security;
 alter table public.partners  enable row level security;
+alter table public.quotes    enable row level security;
 
 drop policy if exists "seaflow_all" on public.shipments;
 drop policy if exists "seaflow_all" on public.partners;
+drop policy if exists "seaflow_all" on public.quotes;
 create policy "seaflow_all" on public.shipments for all using (true) with check (true);
 create policy "seaflow_all" on public.partners  for all using (true) with check (true);
+create policy "seaflow_all" on public.quotes    for all using (true) with check (true);
 
 grant all on public.shipments to anon, authenticated;
 grant all on public.partners  to anon, authenticated;
+grant all on public.quotes    to anon, authenticated;
