@@ -3692,7 +3692,24 @@ async function init(){
    ============================================================ */
 const VT_DATA = { shipments:{}, aliases:{} };  // 저장 데이터 (현재 비어있음 - 실시간 조회 위주)
 // 실시간 항적 추적 Edge Function (메인 Supabase 프로젝트로 통합)
-const VT_LIVE_API = FN_BASE ? `${FN_BASE}/kmtc-track` : "";
+const VT_LIVE_API = FN_BASE ? `${FN_BASE}/kmtc-track` : "";       // 고려해운(KMTC)
+const MAERSK_TRACK_API = FN_BASE ? `${FN_BASE}/maersk-track` : ""; // 머스크(Maersk)
+
+// 조회번호/선사로 어느 추적 함수를 쓸지 자동 판별
+function trackApiFor(raw){
+  const ref = (raw||'').toUpperCase().replace(/[\s-]/g,'');
+  // 1) 저장된 화물에서 번호 매칭 → 그 화물의 선사로 판단
+  const all = [...DB.shipments, ...DB.imports];
+  const s = all.find(x => [x.booking, x.bl, x.container].some(v => v && v.toUpperCase().replace(/[\s-]/g,'')===ref));
+  const carrier = (s && s.carrier || '').toLowerCase();
+  if(MAERSK_TRACK_API && /maersk|머스크|maeu|sealand|hamburg|sud/.test(carrier)) return MAERSK_TRACK_API;
+  if(/kmtc|고려/.test(carrier)) return VT_LIVE_API;
+  // 2) 컨테이너/번호 접두로 판단 (머스크 그룹 prefix)
+  if(MAERSK_TRACK_API && /^(MAEU|MAEI|MRKU|MSKU|MRSU|MWCU|MNBU|MSWU|MCAU|MVIU|SUDU|SEAU)/.test(ref)) return MAERSK_TRACK_API;
+  if(/^(KMTU|KMTC|KR)/.test(ref)) return VT_LIVE_API;
+  // 3) 기본: KMTC (기존 동작 유지)
+  return VT_LIVE_API;
+}
 const VT_EVMETA={IN_GATE:['게이트 인','Gate In'],LOADED:['본선 적재','Loaded'],VSL_DEP:['출항','Departure'],
   VSL_ARR:['입항','Arrival'],TRANSSHIP:['환적','Transship'],DISCHARGE:['양하','Discharged'],
   GATE_OUT:['게이트 아웃','Gate Out'],TRK_DEP:['트럭 출발','Truck Dep'],TRK_ARR:['트럭 도착','Truck Arr']};
@@ -3825,12 +3842,13 @@ async function vtShow(raw){
   if(!vtInited){ initVoyageTracker(); }
   const r=vtResolve(raw);
   if(!r.error){ vtCur=r.s; vtDrawHead(); vtDrawCur(); vtDrawTl(); vtRender(); return; }
-  // 저장 데이터에 없으면 → 선사 실시간 백엔드 조회
-  if(VT_LIVE_API){
+  // 저장 데이터에 없으면 → 선사 실시간 백엔드 조회 (선사별 자동 분기)
+  const api = trackApiFor(raw);
+  if(api){
     document.getElementById('vtHead').innerHTML=`<div class="vt-empty">⏳ '${raw}' 실시간 조회 중…</div>`;
     document.getElementById('vtCur').innerHTML=''; document.getElementById('vtTl').innerHTML='';
     try{
-      const resp=await fetch(`${VT_LIVE_API}?ref=${encodeURIComponent(vtNorm(raw))}`, {
+      const resp=await fetch(`${api}?ref=${encodeURIComponent(vtNorm(raw))}`, {
         headers:{ "Authorization":`Bearer ${SUPABASE_KEY}`, "apikey": SUPABASE_KEY }
       });
       const data=await resp.json();
